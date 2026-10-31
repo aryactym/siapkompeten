@@ -163,8 +163,7 @@ class SkemaMenjahitPakaianWanitaSeeder extends Seeder
                     ], [
                         // TODO: verifikasi dengan dokumen SKKNI — butir KUK resmi harus dicocokkan dengan dokumen skema BNSP.
                         'pernyataan_kuk' => sprintf(
-                            '%s — butir unjuk kerja %d.%d (draft, perlu verifikasi SKKNI).',
-                            $namaElemen,
+                            'Butir unjuk kerja %d.%d (draft, perlu verifikasi SKKNI).',
                             $urutan,
                             $k
                         ),
