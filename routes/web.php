@@ -189,6 +189,7 @@ Route::prefix('admin')
         Route::post('pendaftaran/{pendaftaran}/tolak', [AdminPendaftaranController::class, 'reject'])->name('pendaftaran.reject');
 
         Route::get('pelaporan', [AdminPelaporanController::class, 'index'])->name('pelaporan.index');
+        Route::get('pelaporan/export', [AdminPelaporanController::class, 'export'])->name('pelaporan.export');
         Route::get('pelaporan/apl02', [AdminPelaporanController::class, 'apl02'])->name('pelaporan.apl02');
         Route::get('notifikasi/keluar', [AdminNotifikasiController::class, 'index'])->name('notifikasi.index');
         Route::post('notifikasi/{notifikasi}/kirim-ulang', [AdminNotifikasiController::class, 'retry'])->name('notifikasi.retry');
