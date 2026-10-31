@@ -133,6 +133,7 @@
                         ]],
 
                         ['title' => 'Sistem', 'items' => [
+                            ['label' => 'Manajemen Pengguna', 'icon' => 'ti-users', 'route' => 'admin.user.index', 'match' => 'admin.user.*'],
                             ['label' => 'Pengaturan', 'icon' => 'ti-settings', 'children' => [
                                 ['label' => 'Profil Lembaga', 'route' => 'admin.institution.index', 'match' => 'admin.institution.*'],
                                 ['label' => 'Tim & Persetujuan', 'route' => 'admin.pengaturan.group.show', 'match' => 'admin.pengaturan.group.*'],

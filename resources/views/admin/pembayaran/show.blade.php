@@ -15,6 +15,10 @@
     $pendaftaran = $pembayaran->pendaftaran;
     $rincianBiaya = $pendaftaran->skema->biayaTagihan();
     $sudahDiputuskan = $pembayaran->status !== \App\Models\Pembayaran::STATUS_MENUNGGU;
+    $bisaInputManual = in_array($pendaftaran->status, [
+        \App\Models\Pendaftaran::STATUS_MENUNGGU_PEMBAYARAN,
+        \App\Models\Pendaftaran::STATUS_PEMBAYARAN_DIAJUKAN,
+    ]) && $pembayaran->status !== \App\Models\Pembayaran::STATUS_VALID;
 @endphp
 
 <div class="row row-cards">
@@ -150,6 +154,79 @@
                 </form>
             @endif
         </x-tabler.card>
+
+        @if ($bisaInputManual)
+        <x-tabler.card title="Input Pembayaran oleh Admin" class="mt-3">
+            <p class="text-secondary small mb-3">
+                Gunakan form ini jika asesi membayar secara tunai atau transfer langsung tanpa mengunggah bukti sendiri.
+                Pembayaran akan langsung ditandai <strong>valid</strong> dan pendaftaran lanjut ke penjadwalan.
+            </p>
+
+            @if ($errors->hasAny(['rekening_bank_id', 'tanggal_bayar', 'bukti', 'catatan']))
+                <div class="alert alert-danger mb-3">
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST"
+                  action="{{ route('admin.pembayaran.input-manual', $pendaftaran) }}"
+                  enctype="multipart/form-data">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label required" for="rekening_bank_id_manual">Rekening Tujuan</label>
+                    <select name="rekening_bank_id" id="rekening_bank_id_manual"
+                            class="form-select @error('rekening_bank_id') is-invalid @enderror" required>
+                        <option value="">— Pilih rekening —</option>
+                        @foreach ($rekeningBanks as $rek)
+                            <option value="{{ $rek->id }}" @selected(old('rekening_bank_id') === $rek->id)>
+                                {{ $rek->nama_bank }} · {{ $rek->no_rekening }} · a.n. {{ $rek->atas_nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('rekening_bank_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label required" for="tanggal_bayar_manual">Tanggal Bayar</label>
+                    <input type="date" name="tanggal_bayar" id="tanggal_bayar_manual"
+                           class="form-control @error('tanggal_bayar') is-invalid @enderror"
+                           value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
+                           max="{{ date('Y-m-d') }}" required>
+                    @error('tanggal_bayar')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="bukti_manual">Bukti Pembayaran <span class="text-secondary small">(opsional)</span></label>
+                    <input type="file" name="bukti" id="bukti_manual"
+                           class="form-control @error('bukti') is-invalid @enderror"
+                           accept=".pdf,.jpg,.jpeg,.png">
+                    <div class="form-hint">PDF, JPG, atau PNG. Maks {{ config('pendaftaran.document_max_size_kb') }} KB.</div>
+                    @error('bukti')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="catatan_manual">Catatan</label>
+                    <textarea name="catatan" id="catatan_manual" rows="2" class="form-control"
+                              maxlength="500" placeholder="Opsional — misal: dibayar tunai di kantor">{{ old('catatan') }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100"
+                        onclick="return confirm('Tandai pembayaran ini sebagai valid?')">
+                    <i class="ti ti-circle-check me-1"></i> Tandai Sudah Bayar & Valid
+                </button>
+            </form>
+        </x-tabler.card>
+        @endif
     </div>
 </div>
 @endsection

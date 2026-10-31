@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\NotifikasiController as AdminNotifikasiController
 use App\Http\Controllers\Admin\PembayaranController as AdminPembayaranController;
 use App\Http\Controllers\Admin\PendaftaranController as AdminPendaftaranController;
 use App\Http\Controllers\Admin\RekeningBankController as AdminRekeningBankController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Asesi\ActivationController as AsesiActivationController;
 use App\Http\Controllers\Asesi\Apl02Controller as AsesiApl02Controller;
 use App\Http\Controllers\Asesi\PanduanController as AsesiPanduanController;
@@ -146,6 +147,8 @@ Route::prefix('admin')
         Route::put('asesor/{asesor}', [AdminAsesorController::class, 'update'])->name('asesor.update');
 
         Route::get('asesi', [AdminAsesiController::class, 'index'])->name('asesi.index');
+        Route::get('asesi/create', [AdminAsesiController::class, 'create'])->name('asesi.create');
+        Route::post('asesi', [AdminAsesiController::class, 'store'])->name('asesi.store');
 
         Route::get('asesi/impor', [AdminAsesiImportController::class, 'create'])->name('asesi.import.create');
         Route::get('asesi/impor/template', [AdminAsesiImportController::class, 'template'])->name('asesi.import.template');
@@ -161,6 +164,8 @@ Route::prefix('admin')
 
         Route::get('asesi/{asesi}', [AdminAsesiController::class, 'show'])->name('asesi.show');
         Route::post('asesi/{asesi}/verifikasi', [AdminAsesiController::class, 'verify'])->name('asesi.verify');
+        Route::post('asesi/{asesi}/pendaftaran', [AdminAsesiController::class, 'storePendaftaran'])->name('asesi.pendaftaran.store');
+        Route::post('asesi/{asesi}/password', [AdminAsesiController::class, 'setPassword'])->name('asesi.password.set');
 
         Route::get('pendaftaran/dokumen/{dokumen}/lihat', [AdminPendaftaranController::class, 'previewDokumen'])->name('pendaftaran.dokumen.preview');
         Route::get('pendaftaran/dokumen/{dokumen}/unduh', [AdminPendaftaranController::class, 'downloadDokumen'])->name('pendaftaran.dokumen.download');
@@ -187,9 +192,17 @@ Route::prefix('admin')
         Route::resource('cms', AdminCmsController::class)->except(['show']);
 
         Route::resource('pembayaran', AdminPembayaranController::class)->except(['create', 'edit', 'store']);
+        Route::get('pembayaran/{pembayaran}/bukti', [AdminPembayaranController::class, 'bukti'])
+            ->name('pembayaran.bukti');
         Route::post('pembayaran/{pembayaran}/putuskan', [AdminPembayaranController::class, 'putuskan'])
             ->middleware('throttle:30,1')
             ->name('pembayaran.putuskan');
+        Route::post('pembayaran/{pendaftaran}/input-manual', [AdminPembayaranController::class, 'inputManual'])
+            ->middleware('throttle:10,1')
+            ->name('pembayaran.input-manual');
+
+        // Manajemen Pengguna
+        Route::resource('user', AdminUserController::class)->except(['show']);
 
         // Dokumen Lembaga (dipindahkan dari route global untuk memastikan prefix /admin)
         Route::post('documents', [DocumentController::class, 'store'])

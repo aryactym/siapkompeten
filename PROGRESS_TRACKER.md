@@ -3,6 +3,45 @@
 > Diperbarui setiap akhir sesi kerja. Sumber fase: `docs/System_Design_Aplikasi_LSPKU.md` bagian 14.
 > Standar keamanan wajib: `docs/SECURITY_STANDARDS_OWASP.md` (OWASP Top 10:2025).
 
+---
+
+## 🌿 Informasi Branch
+
+### Branch `single` — Mode 1 Aplikasi, 1 Lembaga
+
+> **Dibuat**: 31 Oktober 2026 dari branch utama (main/master)
+
+Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per instalasi. Tujuannya adalah menghilangkan kerumitan session-based multitenancy agar lebih mudah diuji dan di-deploy.
+
+**Perbedaan utama dari branch utama:**
+
+| Aspek | Branch Utama | Branch `single` |
+|---|---|---|
+| `TenantContext` | Berbasis session, perlu `set()` eksplisit setelah login | Membaca langsung dari DB (institution aktif pertama), tidak perlu session |
+| Institution switcher | Ada — user bisa pindah antar lembaga | Dihapus — hanya satu lembaga per instalasi |
+| `accessibleInstitutions()` | Query pivot `institution_user` per user | Tidak kritis — satu institution selalu sama untuk semua user |
+| Login flow | `TenantContext::set()` wajib dijalankan setelah login | Login tidak perlu menyentuh TenantContext |
+| `EnsureTenantContext` middleware | Resolusi tenant kompleks + fallback pivot | Disederhanakan: cukup pastikan institution aktif tersedia dari config/DB |
+| Registrasi asesi | Nama LSP ditampilkan dari `defaultInstitution()` | Sama — sudah sesuai pola single-tenant |
+| `BelongsToTenant` trait | Fail-closed, bergantung pada session | Sama — tetap fail-closed, tapi `TenantContext::id()` selalu tersedia tanpa session |
+
+**Rencana perubahan yang masih pending di branch ini:**
+- [ ] `TenantContext::id()` / `institution()` / `name()` — baca dari DB, cache static property, tidak bergantung session
+- [ ] `TenantContext::set()` dan `clear()` — dijadikan no-op (tidak dihapus agar interface tidak rusak)
+- [ ] `EnsureTenantContext` middleware — disederhanakan, hapus logika `accessibleInstitutions()`
+- [ ] `LoginController` — hapus blok `accessibleInstitutions()` dan `TenantContext::set()` setelah login
+- [ ] `DashboardController::switchInstitution()` — route `tenant.switch` dihapus
+- [ ] `header.blade.php` — hapus institution switcher dropdown
+- [ ] Halaman login menampilkan nama LSP dari institution aktif (✅ **sudah dilakukan di sesi ini**)
+
+**Yang tidak berubah di branch `single`:**
+- Struktur database tetap sama (kolom `institution_id` di semua tabel, pivot `institution_user` tetap ada)
+- `BelongsToTenant` trait tetap ada di 29+ model
+- Semua fitur bisnis (pendaftaran, asesmen, pembayaran, dll.) tidak berubah
+- Skema DB tetap siap multi-LSP untuk migrasi kembali ke branch utama
+
+---
+
 ## Status Ringkasan
 
 - **Fase Saat Ini**: Fase 0–5 selesai — berikutnya Fase 6 (Hasil & Laporan). 68/68 feature tests passing (Dusk tertunda: `laravel/dusk` belum terpasang di `vendor`)
@@ -202,3 +241,9 @@
   - **Route cache basi**: `bootstrap/cache/routes-v7.php` masih menyimpan nama lama dan action `AdminStkkniController` tanpa namespace; `php artisan route:clear` menghapus cache dan `route:list` kembali normal.
   - **Testing**: `PembayaranTest` 5/5 lulus (18 assertion pada `test_admin_can_manage_rekening_bank`).
   - **Kendala**: Dusk `AlurFase4Dan5Test` masih menargetkan menu `#sidebar-lsp` / tautan "Rekening Bank LSP" yang belum ada pada layout admin hasil revisi terbaru.
+
+- **31 Oktober 2026 — Sesi 6 (Branch: `single`)**
+  - **Branch `single` dibuat** dari branch utama sebagai varian 1 aplikasi = 1 lembaga untuk memudahkan pengujian dan deployment sederhana.
+  - **Halaman login menampilkan nama LSP**: `LoginController::create()` sekarang mengambil institution aktif dari DB dan meneruskan ke view (`compact('institution')`), sehingga nama LSP tampil sebagai subtitle di bawah judul "Masuk ke Portal" — pola yang sama dengan halaman register.
+  - **Dokumentasi branch `single`** ditambahkan ke bagian "Informasi Branch" di `PROGRESS_TRACKER.md`: tabel perbedaan arsitektur dari branch utama, daftar perubahan pending, dan batasan scope.
+  - **Rencana pending** (belum dikerjakan di sesi ini): penyederhanaan `TenantContext` agar tidak bergantung session, sederhanakan `EnsureTenantContext` middleware, hapus institution switcher dari header dan route `tenant.switch`, hapus logika `accessibleInstitutions()` dari alur login.

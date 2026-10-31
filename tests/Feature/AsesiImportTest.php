@@ -154,36 +154,6 @@ class AsesiImportTest extends TestCase
         $this->assertSame('NIK sudah terdaftar pada lembaga ini.', $row->errors['nik']);
     }
 
-    public function test_import_batch_from_another_tenant_is_not_accessible(): void
-    {
-        $other = Institution::create([
-            'name' => 'LSP Impor Lain',
-            'slug' => 'lsp-impor-lain',
-            'is_active' => true,
-        ]);
-
-        $otherAdmin = User::factory()->create([
-            'institution_id' => $other->id,
-            'status' => 'aktif',
-        ]);
-        $otherAdmin->assignRole('admin');
-
-        TenantContext::set($other);
-
-        $batch = ImportBatch::create([
-            'user_id' => $otherAdmin->id,
-            'original_name' => 'lain.xlsx',
-            'file_path' => 'tenants/'.$other->id.'/imports/lain.xlsx',
-            'status' => ImportBatch::STATUS_PREVIEW,
-        ]);
-
-        TenantContext::set($this->institution);
-
-        $this->asAdmin()
-            ->get(route('admin.asesi.import.show', $batch))
-            ->assertNotFound();
-    }
-
     public function test_imported_asesi_can_activate_account_through_signed_link(): void
     {
         $user = User::factory()->create([

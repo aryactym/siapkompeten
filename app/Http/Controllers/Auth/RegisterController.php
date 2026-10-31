@@ -153,11 +153,21 @@ class RegisterController extends Controller
     private function generateNoRegistrasi(string $institutionId): string
     {
         $prefix = now()->format('Ymd');
-        $count = Asesi::withoutTenantScope()
+        $sequence = Asesi::withoutTenantScope()
             ->where('institution_id', $institutionId)
             ->where('no_registrasi', 'like', $prefix.'%')
-            ->count();
+            ->count() + 1;
 
-        return $prefix.str_pad((string) ($count + 1), 4, '0', STR_PAD_LEFT);
+        do {
+            $number = $prefix.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+            $sequence++;
+        } while (
+            Asesi::withoutTenantScope()
+                ->where('institution_id', $institutionId)
+                ->where('no_registrasi', $number)
+                ->exists()
+        );
+
+        return $number;
     }
 }

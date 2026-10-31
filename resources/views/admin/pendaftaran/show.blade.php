@@ -17,6 +17,7 @@
     </a>
 </div>
 <div class="row row-cards">
+    <div class="col-lg-8">
         <x-tabler.card title="Data Pendaftar">
             <div class="row g-3">
                 <div class="col-md-6">
@@ -134,7 +135,7 @@
                 </div>
             @endif
         </x-tabler.card>
-    </div>
+    </div>{{-- /col-lg-8 --}}
 
     <div class="col-lg-4">
         <x-tabler.card title="Status Pendaftaran">

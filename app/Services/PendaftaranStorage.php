@@ -22,20 +22,51 @@ class PendaftaranStorage
             throw new RuntimeException('Berkas hanya dapat disimpan pada lembaga aktif.');
         }
 
-        $extension = strtolower($file->extension() ?: $file->getClientOriginalExtension() ?: 'bin');
-        $filename = Str::uuid()->toString().'.'.$extension;
+        if (! $file->isValid()) {
+            throw new RuntimeException(
+                'Berkas gagal diunggah (kode error: '.$file->getError().'). Coba lagi atau gunakan berkas lain.'
+            );
+        }
 
-        $path = Storage::disk(self::DISK)->putFileAs(
-            'tenants/'.$pendaftaran->institution_id.'/pendaftaran/'.$pendaftaran->id,
-            $file,
-            $filename
+        $extension = strtolower(
+            $file->getClientOriginalExtension()
+                ?: pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION)
+                ?: 'bin'
         );
 
-        if ($path === false) {
+        $relativePath = sprintf(
+            'tenants/%s/pendaftaran/%s/%s.%s',
+            $pendaftaran->institution_id,
+            $pendaftaran->id,
+            Str::uuid()->toString(),
+            $extension
+        );
+
+        // Gunakan fopen() langsung pada path temp file, bukan pass UploadedFile object,
+        // karena getRealPath() di PHP 8.4/Windows kadang return false meski isValid() true.
+        $tempPath = $file->getPathname();
+
+        if (blank($tempPath) || ! is_readable($tempPath)) {
+            throw new RuntimeException('Berkas sementara tidak dapat dibaca. Coba unggah ulang.');
+        }
+
+        $stream = fopen($tempPath, 'rb');
+
+        if ($stream === false) {
+            throw new RuntimeException('Berkas sementara tidak dapat dibuka. Coba unggah ulang.');
+        }
+
+        try {
+            $stored = Storage::disk(self::DISK)->put($relativePath, $stream);
+        } finally {
+            fclose($stream);
+        }
+
+        if (! $stored) {
             throw new RuntimeException('Berkas gagal disimpan.');
         }
 
-        return $path;
+        return $relativePath;
     }
 
     public function delete(?string $path): void

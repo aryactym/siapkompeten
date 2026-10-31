@@ -16,7 +16,9 @@ class LoginController extends Controller
 {
     public function create(): View
     {
-        return view('auth.login');
+        return view('auth.login', [
+            'institution' => TenantContext::institution(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -71,28 +73,6 @@ class LoginController extends Controller
         $user->last_login_ip = $request->ip();
         $user->is_locked = false;
         $user->saveQuietly();
-
-        // Tetapkan konteks tenant aktif
-        $accessible = $user->accessibleInstitutions();
-        $defaultInst = $accessible->firstWhere('id', $user->institution_id) ?? $accessible->first();
-
-        if (! $user->hasRole('super-admin')) {
-            if ($defaultInst === null) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-
-                throw ValidationException::withMessages([
-                    'login' => 'Akun Anda belum terhubung ke lembaga aktif mana pun.',
-                ]);
-            }
-
-            TenantContext::set($defaultInst);
-        } else {
-            if ($defaultInst) {
-                TenantContext::set($defaultInst);
-            }
-        }
 
         return redirect()->intended(route('dashboard'));
     }

@@ -5,15 +5,23 @@
 @section('page-title', $asesi->user->name)
 
 @section('actions')
-    @if ($asesi->status_verifikasi === 'belum_terverifikasi')
-        <form method="POST" action="{{ route('admin.asesi.verify', $asesi) }}"
-              onsubmit="return confirm('Verifikasi data asesi ini?')">
-            @csrf
-            <button type="submit" class="btn btn-success">
-                <i class="ti ti-check me-1"></i> Verifikasi Asesi
-            </button>
-        </form>
-    @endif
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modal-password">
+            <i class="ti ti-key me-1"></i> Set Password
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-daftar-skema">
+            <i class="ti ti-file-plus me-1"></i> Daftarkan ke Skema
+        </button>
+        @if ($asesi->status_verifikasi === 'belum_terverifikasi')
+            <form method="POST" action="{{ route('admin.asesi.verify', $asesi) }}"
+                  onsubmit="return confirm('Verifikasi data asesi ini?')">
+                @csrf
+                <button type="submit" class="btn btn-success">
+                    <i class="ti ti-check me-1"></i> Verifikasi Asesi
+                </button>
+            </form>
+        @endif
+    </div>
 @endsection
 
 @section('content')
@@ -125,6 +133,101 @@
                 </div>
             @endif
         </x-tabler.card>
+    </div>
+</div>
+
+{{-- Modal: Daftarkan ke Skema --}}
+<div class="modal modal-blur fade" id="modal-daftar-skema" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form method="POST" action="{{ route('admin.asesi.pendaftaran.store', $asesi) }}" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title">Daftarkan ke Skema Sertifikasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">
+                    Asesi: <strong>{{ $asesi->user->name }}</strong>
+                    ({{ $asesi->no_registrasi }})
+                </p>
+                <div class="mb-3">
+                    <label class="form-label required">Skema Sertifikasi</label>
+                    @if ($skemas->isEmpty())
+                        <div class="alert alert-warning mb-0">
+                            Belum ada skema sertifikasi aktif. Aktifkan skema terlebih dahulu di menu Master Standar.
+                        </div>
+                    @else
+                        <select name="skema_id" class="form-select @error('skema_id') is-invalid @enderror" required>
+                            <option value="">Pilih skema...</option>
+                            @foreach ($skemas as $skema)
+                                <option value="{{ $skema->id }}" @selected(old('skema_id') === $skema->id)>
+                                    {{ $skema->nama_skema }}
+                                    @if ($skema->kode_skema)
+                                        — {{ $skema->kode_skema }}
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('skema_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    @endif
+                </div>
+                <div class="form-hint">
+                    Pendaftaran akan dibuat dengan status <strong>Draf</strong>. Dokumen persyaratan dapat diunggah dari halaman detail pendaftaran.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary me-auto" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary" @disabled($skemas->isEmpty())>
+                    <i class="ti ti-file-plus me-1"></i> Buat Pendaftaran
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal: Set Password --}}
+<div class="modal modal-blur fade" id="modal-password" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form method="POST" action="{{ route('admin.asesi.password.set', $asesi) }}" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title">Set Kata Sandi Asesi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">
+                    Akun: <strong>{{ $asesi->user->name }}</strong>
+                    ({{ $asesi->user->email }})
+                </p>
+                <div class="mb-3">
+                    <label class="form-label required">Kata Sandi Baru</label>
+                    <input type="password" name="password"
+                           class="form-control @error('password') is-invalid @enderror"
+                           required autocomplete="new-password"
+                           placeholder="Minimal 8 karakter, huruf dan angka">
+                    @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label required">Konfirmasi Kata Sandi</label>
+                    <input type="password" name="password_confirmation"
+                           class="form-control" required autocomplete="new-password">
+                </div>
+                <div class="alert alert-warning">
+                    <i class="ti ti-alert-triangle me-1"></i>
+                    Kata sandi yang ditetapkan admin hanya boleh dibagikan secara langsung kepada asesi. Anjurkan asesi segera menggantinya setelah masuk.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary me-auto" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-key me-1"></i> Simpan Kata Sandi
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

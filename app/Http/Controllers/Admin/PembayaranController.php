@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pembayaran;
 use App\Models\Pendaftaran;
+use App\Models\RekeningBank;
 use App\Services\BuktiBayarStorage;
+use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,8 +44,14 @@ class PembayaranController extends Controller
     {
         $pembayaran->load(['pendaftaran.asesi.user', 'pendaftaran.skema', 'rekeningBank', 'divalidasiOleh']);
 
+        $rekeningBanks = RekeningBank::query()
+            ->where('is_aktif', true)
+            ->orderBy('nama_bank')
+            ->get();
+
         return view('admin.pembayaran.show', [
             'pembayaran' => $pembayaran,
+            'rekeningBanks' => $rekeningBanks,
         ]);
     }
 
@@ -114,5 +122,92 @@ class PembayaranController extends Controller
         return redirect()
             ->route('admin.pembayaran.show', $pembayaran)
             ->with('success', $pesan);
+    }
+
+    /**
+     * Admin input bukti pembayaran manual dan langsung validasi sebagai valid (FR-PAY-05).
+     * Digunakan saat asesi membayar tunai/transfer tanpa mengunggah bukti sendiri.
+     */
+    public function inputManual(Request $request, Pendaftaran $pendaftaran, BuktiBayarStorage $storage): RedirectResponse
+    {
+        abort_unless(
+            in_array($pendaftaran->status, [
+                Pendaftaran::STATUS_MENUNGGU_PEMBAYARAN,
+                Pendaftaran::STATUS_PEMBAYARAN_DIAJUKAN,
+            ], true),
+            403,
+            'Pendaftaran tidak berada pada tahap pembayaran.'
+        );
+
+        $validated = $request->validate([
+            'rekening_bank_id' => [
+                'required',
+                'uuid',
+                Rule::exists('rekening_banks', 'id')
+                    ->where('institution_id', TenantContext::id())
+                    ->where('is_aktif', true),
+            ],
+            'tanggal_bayar' => ['required', 'date', 'before_or_equal:today'],
+            'catatan' => ['nullable', 'string', 'max:500'],
+            'bukti' => [
+                'nullable',
+                'file',
+                'mimes:'.implode(',', config('pendaftaran.document_mimes')),
+                'mimetypes:application/pdf,image/jpeg,image/png',
+                'max:'.config('pendaftaran.document_max_size_kb'),
+            ],
+        ]);
+
+        $path = null;
+        if ($request->hasFile('bukti') && $request->file('bukti')->isValid()) {
+            $path = $storage->store($pendaftaran, $request->file('bukti'));
+        }
+
+        $pembayaran = null;
+
+        DB::transaction(function () use ($pendaftaran, $validated, $path, $request, &$pembayaran): void {
+            $oldPath = null;
+
+            $pembayaran = Pembayaran::firstOrNew(['pendaftaran_id' => $pendaftaran->id]);
+            $oldPath = $pembayaran->bukti_path;
+
+            $pembayaran->fill([
+                'total' => $pendaftaran->totalTagihan(),
+                'rekening_bank_id' => $validated['rekening_bank_id'],
+                'tanggal_bayar' => $validated['tanggal_bayar'],
+                'catatan' => $validated['catatan'] ?? null,
+                'status' => Pembayaran::STATUS_VALID,
+                'divalidasi_oleh' => $request->user()->id,
+                'divalidasi_pada' => now(),
+            ]);
+
+            if ($path !== null) {
+                $pembayaran->fill([
+                    'bukti_path' => $path,
+                    'bukti_original_name' => $request->file('bukti')->getClientOriginalName(),
+                    'bukti_mime' => $request->file('bukti')->getMimeType(),
+                    'bukti_size' => $request->file('bukti')->getSize(),
+                ]);
+            }
+
+            $pembayaran->save();
+
+            $pendaftaran->update(['status' => Pendaftaran::STATUS_MENUNGGU_JADWAL]);
+
+            activity('pembayaran')
+                ->causedBy($request->user())
+                ->performedOn($pendaftaran)
+                ->withProperties(['input_manual' => true])
+                ->log('Admin menginput pembayaran manual dan memvalidasi langsung.');
+
+            // Hapus bukti lama jika diganti
+            if (filled($oldPath) && $path !== null && $oldPath !== $path) {
+                $storage->delete($oldPath);
+            }
+        });
+
+        return redirect()
+            ->route('admin.pembayaran.show', $pembayaran)
+            ->with('success', 'Pembayaran berhasil diinput. Pendaftaran masuk ke tahap penjadwalan.');
     }
 }

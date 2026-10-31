@@ -12,6 +12,11 @@ class AsesiPolicy
         return $user->hasAnyRole(['super-admin', 'admin']);
     }
 
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin']);
+    }
+
     public function view(User $user, Asesi $asesi): bool
     {
         return $user->hasAnyRole(['super-admin', 'admin'])
@@ -25,6 +30,11 @@ class AsesiPolicy
     }
 
     public function verify(User $user, Asesi $asesi): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin']);
+    }
+
+    public function resetPassword(User $user, Asesi $asesi): bool
     {
         return $user->hasAnyRole(['super-admin', 'admin']);
     }

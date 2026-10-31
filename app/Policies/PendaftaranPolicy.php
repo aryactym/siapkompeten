@@ -12,6 +12,11 @@ class PendaftaranPolicy
         return $user->hasAnyRole(['super-admin', 'admin']);
     }
 
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin']);
+    }
+
     public function view(User $user, Pendaftaran $pendaftaran): bool
     {
         if ($user->hasAnyRole(['super-admin', 'admin'])) {

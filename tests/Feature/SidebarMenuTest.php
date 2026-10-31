@@ -88,7 +88,7 @@ class SidebarMenuTest extends TestCase
         $response->assertSee('Ringkasan');
         $response->assertSee('Sertifikasi');
         $response->assertSee('Keuangan');
-        $response->assertSee('Data & Integrasi');
+        $response->assertSee('Master Data');
         $response->assertSee('Sistem');
     }
 }

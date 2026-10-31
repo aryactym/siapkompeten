@@ -49,6 +49,11 @@
                 <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="ti ti-search"></i></button>
             </div>
             <div class="col-auto">
+                <a href="{{ route('admin.asesi.create') }}" class="btn btn-sm btn-primary">
+                    <i class="ti ti-user-plus me-1"></i> Tambah Asesi
+                </a>
+            </div>
+            <div class="col-auto">
                 <a href="{{ route('admin.asesi.import.create') }}" class="btn btn-sm btn-success">
                     <i class="ti ti-file-import me-1"></i> Impor Data Asesi
                 </a>

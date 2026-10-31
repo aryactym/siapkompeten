@@ -23,8 +23,7 @@ class MasterDataShowSmokeTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
         $this->seed(SkemaMenjahitPakaianWanitaSeeder::class);
 
-        $institution = Institution::where('slug', 'bpvp-bandung-barat')->first();
-        TenantContext::set($institution);
+        $institution = TenantContext::institution();
 
         $admin = User::factory()->create(['institution_id' => $institution->id, 'status' => 'aktif']);
         $admin->assignRole('admin');

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PendaftaranController extends Controller
 {
@@ -155,8 +155,13 @@ class PendaftaranController extends Controller
         ]);
 
         $file = $validated['file'];
-        $path = $storage->store($pendaftaran, $file);
         $oldPath = null;
+
+        try {
+            $path = $storage->store($pendaftaran, $file);
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['file' => $exception->getMessage()]);
+        }
 
         try {
             DB::transaction(function () use ($pendaftaran, $validated, $file, $path, &$oldPath): void {
@@ -242,7 +247,7 @@ class PendaftaranController extends Controller
     public function downloadDokumen(
         PendaftaranDokumen $dokumen,
         PendaftaranStorage $storage,
-    ): BinaryFileResponse {
+    ): StreamedResponse {
         $this->authorize('download', $dokumen);
 
         abort_unless($storage->exists($dokumen->file_path), 404, 'Berkas tidak ditemukan.');
@@ -261,11 +266,21 @@ class PendaftaranController extends Controller
     private function generateNoPendaftaran(string $institutionId): string
     {
         $prefix = now()->format('Ymd');
-        $count = Pendaftaran::withoutTenantScope()
+        $sequence = Pendaftaran::withoutTenantScope()
             ->where('institution_id', $institutionId)
             ->where('no_pendaftaran', 'like', $prefix.'%')
-            ->count();
+            ->count() + 1;
 
-        return $prefix.str_pad((string) ($count + 1), 4, '0', STR_PAD_LEFT);
+        do {
+            $number = $prefix.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+            $sequence++;
+        } while (
+            Pendaftaran::withoutTenantScope()
+                ->where('institution_id', $institutionId)
+                ->where('no_pendaftaran', $number)
+                ->exists()
+        );
+
+        return $number;
     }
 }

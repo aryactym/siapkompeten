@@ -24,14 +24,16 @@ class BuktiBayarStorage
 
         $extension = strtolower($file->extension() ?: $file->getClientOriginalExtension() ?: 'bin');
         $filename = Str::uuid()->toString().'.'.$extension;
+        $directory = 'tenants/'.$pendaftaran->institution_id.'/pembayaran/'.$pendaftaran->id;
 
-        $path = Storage::disk(self::DISK)->putFileAs(
-            'tenants/'.$pendaftaran->institution_id.'/pembayaran/'.$pendaftaran->id,
-            $file,
-            $filename
-        );
+        // Gunakan put() dengan konten file langsung untuk menghindari
+        // ValueError pada PHP 8.4 saat getRealPath() mengembalikan false.
+        $contents = $file->get();
+        $path = $directory.'/'.$filename;
 
-        if ($path === false) {
+        $stored = Storage::disk(self::DISK)->put($path, $contents);
+
+        if (! $stored) {
             throw new RuntimeException('Berkas gagal disimpan.');
         }
 

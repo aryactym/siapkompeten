@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PendaftaranController extends Controller
@@ -205,7 +204,7 @@ class PendaftaranController extends Controller
         );
     }
 
-    public function downloadDokumen(PendaftaranDokumen $dokumen, PendaftaranStorage $storage): BinaryFileResponse
+    public function downloadDokumen(PendaftaranDokumen $dokumen, PendaftaranStorage $storage): StreamedResponse
     {
         $this->authorize('download', $dokumen);
 

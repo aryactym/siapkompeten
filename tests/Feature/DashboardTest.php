@@ -40,7 +40,7 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Admin Portal');
         $response->assertSee('Dashboard Lembaga');
-        $response->assertSee('Master Standar');
+        $response->assertSee('Master Data');
     }
 
     public function test_asesor_sees_asesor_dashboard(): void

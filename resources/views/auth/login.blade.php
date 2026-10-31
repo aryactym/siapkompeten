@@ -5,7 +5,12 @@
 @section('content')
 <div class="card card-md shadow-sm">
     <div class="card-body">
-        <h2 class="h2 text-center mb-4">Masuk ke Portal</h2>
+        <h2 class="h2 text-center mb-1">Masuk ke Portal</h2>
+        @if ($institution)
+            <p class="text-secondary text-center small mb-4">{{ $institution->name }}</p>
+        @else
+            <div class="mb-4"></div>
+        @endif
         
         <form method="POST" action="{{ route('login.store') }}" autocomplete="off">
             @csrf
