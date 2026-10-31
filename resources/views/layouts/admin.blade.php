@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Portal') · {{ config('app.name', 'SiapKompeten') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', '@tabler/icons-webfont/dist/tabler-icons.css'])
     <style>
         @import url('https://rsms.me/inter/inter.css');
         :root {
@@ -45,18 +45,18 @@
                 <nav class="sidebar-nav">
 
                     <!-- Dashboard -->
-                    <div class="nav-item nav-dropdown">
-                        <a class="nav-link nav-dropdown-toggle d-flex justify-content-between align-items-center w-100" href="#"
+                    <div class="nav-item nav-dropdown">                        <a class="nav-link nav-dropdown-toggle d-flex justify-content-between align-items-center w-100"
+                           href="#"
                            data-bs-toggle="collapse" data-bs-target="#sidebar-dashboard" aria-expanded="false" aria-controls="sidebar-dashboard">
                             <span class="nav-link-title">Dashboard</span>
-                            <i class="nav-arrow ti ti-chevron-down"></i>
+                            <svg class="nav-arrow"><use href="{{ asset('build/assets/tabler-icons.core-Qc6vVPBT.woff2') }}#chevron-down"></use></svg>
                         </a>
                         <ul class="nav-dropdown-items collapse list-unstyled border-start ms-3 ps-2" id="sidebar-dashboard">
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
                                    href="{{ route('dashboard') }}">
                                     <span class="nav-link-icon d-sm-none d-lg-inline-block">
-                                        <i class="ti ti-layout-dashboard fs-4"></i>
+                                        <svg class="fs-4"><use href="{{ asset('build/assets/tabler-icons.core-Qc6vVPBT.woff2') }}#layout-dashboard"></use></svg>
                                     </span>
                                     <span class="nav-link-title">Dashboard Utama</span>
                                 </a>
