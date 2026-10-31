@@ -93,6 +93,8 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/lock/aktivasi', [LoginController::class, 'lock'])->name('lock.lock');
     Route::post('/lock', [LoginController::class, 'unlock'])->name('lock.unlock');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    // Ganti portal aktif tanpa login ulang (multi-role: asesor sekaligus asesi)
+    Route::post('/portal/switch', [LoginController::class, 'switchPortal'])->name('portal.switch');
 });
 
 Route::middleware(['auth', 'tenant.context'])->group(function (): void {

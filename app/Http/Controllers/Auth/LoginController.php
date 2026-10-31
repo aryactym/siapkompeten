@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ActivePortal;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class LoginController extends Controller
             'login' => ['nullable', 'string'],
             'email' => ['nullable', 'string'],
             'password' => ['required', 'string'],
+            'login_as' => ['nullable', 'string', 'in:asesi,asesor,admin'],
         ]);
 
         $loginInput = trim((string) ($request->input('login') ?: $request->input('email')));
@@ -65,8 +67,24 @@ class LoginController extends Controller
             ]);
         }
 
+        // Validasi pilihan portal terhadap role yang dimiliki user
+        $requestedPortal = $request->string('login_as')->toString();
+
+        if ($requestedPortal !== '' && ! ActivePortal::userCanUsePortal($user, $requestedPortal)) {
+            throw ValidationException::withMessages([
+                'login_as' => 'Akun Anda tidak memiliki akses ke portal yang dipilih.',
+            ]);
+        }
+
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
+
+        // Simpan portal aktif ke session
+        $portal = $requestedPortal !== ''
+            ? $requestedPortal
+            : ActivePortal::defaultPortalFor($user);
+
+        ActivePortal::set($request, $portal);
 
         // Update catatan login terakhir (OWASP A09)
         $user->last_login_at = now();
@@ -75,6 +93,30 @@ class LoginController extends Controller
         $user->saveQuietly();
 
         return redirect()->intended(route('dashboard'));
+    }
+
+    /**
+     * Ganti portal aktif tanpa perlu login ulang (FR-AUTH-01 multi-role).
+     */
+    public function switchPortal(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return redirect()->route('login');
+        }
+
+        $validated = $request->validate([
+            'portal' => ['required', 'string', 'in:asesi,asesor,admin'],
+        ]);
+
+        if (! ActivePortal::userCanUsePortal($user, $validated['portal'])) {
+            abort(403, 'Akun Anda tidak memiliki akses ke portal tersebut.');
+        }
+
+        ActivePortal::set($request, $validated['portal']);
+
+        return redirect()->route('dashboard');
     }
 
     /**
@@ -125,6 +167,7 @@ class LoginController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
+        ActivePortal::forget($request);
         Auth::logout();
 
         TenantContext::clear();

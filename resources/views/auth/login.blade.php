@@ -11,10 +11,11 @@
         @else
             <div class="mb-4"></div>
         @endif
-        
+
         <form method="POST" action="{{ route('login.store') }}" autocomplete="off">
             @csrf
 
+            {{-- Identitas login --}}
             <div class="mb-3">
                 <label class="form-label" for="login">Email, NIK, atau Username</label>
                 <div class="input-icon">
@@ -32,15 +33,15 @@
                         autofocus
                     >
                 </div>
-                <small class="form-hint">
-                    Admin: Username · Asesor: NIK · Asesi: NIK atau Email
-                </small>
+                @error('login')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
             </div>
 
+            {{-- Kata sandi --}}
             <div class="mb-3">
                 <label class="form-label d-flex justify-content-between align-items-center" for="password">
                     <span>Kata Sandi</span>
-                    <a href="#lupa-sandi" class="small text-decoration-none">Lupa kata sandi?</a>
                 </label>
                 <div class="input-group input-group-flat">
                     <span class="input-group-text">
@@ -55,9 +56,50 @@
                         autocomplete="current-password"
                         required
                     >
+                    <span class="input-group-text cursor-pointer" id="toggle-password"
+                          title="Tampilkan/sembunyikan kata sandi" role="button" tabindex="0"
+                          aria-label="Tampilkan atau sembunyikan kata sandi">
+                        <i class="ti ti-eye text-secondary" id="password-eye"></i>
+                    </span>
+                </div>
+                @error('password')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- ====== PILIHAN PORTAL ====== --}}
+            <div class="mb-3">
+                <label class="form-label d-flex align-items-center gap-1">
+                    Masuk sebagai
+                    <span class="badge bg-blue-lt text-blue small ms-1">Baru</span>
+                </label>
+                <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Pilih portal">
+                    @foreach ([
+                        'asesi'  => ['Peserta (Asesi)',  'ti-user-check',   'primary'],
+                        'asesor' => ['Asesor',            'ti-clipboard-check', 'teal'],
+                        'admin'  => ['Pengelola', 'ti-settings', 'orange'],
+                    ] as $value => [$label, $icon, $color])
+                        <label class="portal-option @error('login_as') is-invalid @enderror"
+                               style="cursor:pointer;">
+                            <input type="radio" name="login_as" value="{{ $value }}"
+                                   class="visually-hidden portal-radio"
+                                   {{ old('login_as', 'asesi') === $value ? 'checked' : '' }}>
+                            <span class="portal-card d-flex align-items-center gap-2 px-3 py-2 rounded border bg-white">
+                                <i class="ti {{ $icon }} text-{{ $color }}"></i>
+                                <span class="small fw-medium">{{ $label }}</span>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                @error('login_as')
+                    <div class="text-danger small mt-1">{{ $message }}</div>
+                @enderror
+                <div class="form-hint mt-1">
+                    Satu akun dapat memiliki lebih dari satu peran — pilih portal yang ingin digunakan.
                 </div>
             </div>
 
+            {{-- Ingat saya --}}
             <div class="mb-3">
                 <label class="form-check">
                     <input type="checkbox" name="remember" value="1" class="form-check-input" {{ old('remember') ? 'checked' : '' }}>
@@ -75,6 +117,28 @@
 </div>
 
 <div class="text-center text-secondary mt-3">
-    Belum memiliki akun asesi? <a href="{{ route('register') }}" class="fw-medium text-decoration-none">Daftar sebagai Asesi</a>
+    Belum memiliki akun asesi?
+    <a href="{{ route('register') }}" class="fw-medium text-decoration-none">Daftar sebagai Asesi</a>
 </div>
+
+@push('styles')
+{{-- portal styles sudah di layouts/auth.blade.php --}}
+@endpush
+
+@push('scripts')
+<script>
+// Toggle show/hide password
+document.getElementById('toggle-password')?.addEventListener('click', function () {
+    const input = document.getElementById('password');
+    const eye   = document.getElementById('password-eye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        eye.classList.replace('ti-eye', 'ti-eye-off');
+    } else {
+        input.type = 'password';
+        eye.classList.replace('ti-eye-off', 'ti-eye');
+    }
+});
+</script>
+@endpush
 @endsection

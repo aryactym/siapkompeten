@@ -1,4 +1,5 @@
 @php
+    use App\Support\ActivePortal;
     use App\Support\TenantContext;
 
     $user = auth()->user();
@@ -6,6 +7,15 @@
     $accessibleInstitutions = $user ? $user->accessibleInstitutions() : collect();
     $hasMultipleTenants = $accessibleInstitutions->count() > 1;
     $activeInstitutionName = $activeInstitution?->name ?? config('app.name');
+    $availablePortals = $user ? ActivePortal::availablePortals($user) : [];
+    $activePortal = $user ? ActivePortal::get(request()) : null;
+    $hasMultiplePortals = count($availablePortals) > 1;
+
+    $portalLabels = [
+        ActivePortal::PORTAL_ASESI  => ['label' => 'Peserta (Asesi)',   'icon' => 'ti-user-check'],
+        ActivePortal::PORTAL_ASESOR => ['label' => 'Asesor Kompetensi', 'icon' => 'ti-clipboard-check'],
+        ActivePortal::PORTAL_ADMIN  => ['label' => 'Pengelola',          'icon' => 'ti-settings'],
+    ];
 @endphp
 
 {{--
@@ -58,7 +68,7 @@
             @if ($user)
                 <div class="nav-item dropdown">
                     <a href="#"
-                       class="nav-link d-flex lh-1 text-reset p-0"
+                       class="nav-link d-flex lh-1 text-reset p-0 align-items-center gap-2"
                        data-bs-toggle="dropdown"
                        aria-label="Menu pengguna: {{ $user->name }}"
                        aria-haspopup="true"
@@ -66,20 +76,63 @@
                         <span class="avatar avatar-sm bg-primary-lt text-primary fw-bold" aria-hidden="true">
                             {{ strtoupper(substr($user->name, 0, 2)) }}
                         </span>
-                        <div class="d-none d-xl-block ps-2">
+                        <div class="d-none d-xl-block">
                             <div class="fw-semibold lh-1">{{ $user->name }}</div>
-                            <div class="mt-1 small text-secondary lh-1">
-                                {{ ucfirst($user->getRoleNames()->first() ?? 'Pengguna') }}
+                            <div class="mt-1 small text-secondary lh-1 d-flex align-items-center gap-1">
+                                @if ($activePortal && isset($portalLabels[$activePortal]))
+                                    <i class="ti {{ $portalLabels[$activePortal]['icon'] }}" aria-hidden="true"></i>
+                                    {{ $portalLabels[$activePortal]['label'] }}
+                                @else
+                                    {{ ucfirst($user->getRoleNames()->first() ?? 'Pengguna') }}
+                                @endif
                             </div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow shadow-sm">
+                        {{-- Info user --}}
+                        <div class="dropdown-header text-body-secondary">
+                            <div class="fw-semibold text-body">{{ $user->name }}</div>
+                            <div class="small">{{ $user->email }}</div>
+                        </div>
+
                         @if (Route::has('profile.show'))
                             <a href="{{ route('profile.show') }}" class="dropdown-item">
                                 <i class="ti ti-user me-2 text-secondary" aria-hidden="true"></i>
                                 Profil Saya
                             </a>
                         @endif
+
+                        {{-- Portal Switcher: tampil hanya jika user punya > 1 portal --}}
+                        @if ($hasMultiplePortals)
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-header">Ganti Portal</div>
+                            @foreach ($availablePortals as $portalKey => $portalLabel)
+                                @php
+                                    $isActive = $activePortal === $portalKey;
+                                    $pInfo = $portalLabels[$portalKey] ?? ['label' => $portalLabel, 'icon' => 'ti-circle'];
+                                @endphp
+                                @if ($isActive)
+                                    <span class="dropdown-item active d-flex align-items-center justify-content-between pe-none">
+                                        <span>
+                                            <i class="ti {{ $pInfo['icon'] }} me-2" aria-hidden="true"></i>
+                                            {{ $pInfo['label'] }}
+                                        </span>
+                                        <i class="ti ti-check ms-2 text-success" aria-hidden="true"></i>
+                                    </span>
+                                @else
+                                    <form method="POST" action="{{ route('portal.switch') }}" class="d-block">
+                                        @csrf
+                                        <input type="hidden" name="portal" value="{{ $portalKey }}">
+                                        <button type="submit" class="dropdown-item d-flex align-items-center">
+                                            <i class="ti {{ $pInfo['icon'] }} me-2 text-secondary" aria-hidden="true"></i>
+                                            {{ $pInfo['label'] }}
+                                        </button>
+                                    </form>
+                                @endif
+                            @endforeach
+                        @endif
+
+                        <div class="dropdown-divider"></div>
 
                         {{-- Kunci Layar: POST + CSRF agar tidak mengubah state via GET --}}
                         <form method="POST" action="{{ route('lock.lock') }}" id="form-lock-screen">

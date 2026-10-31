@@ -11,6 +11,7 @@ use App\Models\Skema;
 use App\Models\Skkni;
 use App\Models\Tuk;
 use App\Services\SystemHealthService;
+use App\Support\ActivePortal;
 use App\Support\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -23,11 +24,20 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user && $user->hasRole('asesor')) {
+        $portal = $user !== null
+            ? ActivePortal::resolve($request, $user)
+            : ActivePortal::PORTAL_ASESI;
+
+        // Pastikan session sinkron dengan portal yang dipilih.
+        if ($user !== null) {
+            ActivePortal::set($request, $portal);
+        }
+
+        if ($portal === ActivePortal::PORTAL_ASESOR && $user?->hasRole('asesor')) {
             return $this->asesorDashboard($user);
         }
 
-        if ($user && $user->hasRole('asesi')) {
+        if ($portal === ActivePortal::PORTAL_ASESI && $user?->hasRole('asesi')) {
             return $this->asesiDashboard($user);
         }
 

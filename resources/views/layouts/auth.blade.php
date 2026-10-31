@@ -8,6 +8,24 @@
     <title>@yield('title', 'Masuk') · {{ config('app.name', 'SiapKompeten') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fonts
+    <style>
+        /* Portal selector — login page */
+        .portal-radio:checked + .portal-card {
+            border-color: var(--tblr-primary) !important;
+            background-color: var(--tblr-primary-lt) !important;
+            box-shadow: 0 0 0 2px rgba(var(--tblr-primary-rgb), .2);
+        }
+        .portal-card {
+            transition: border-color .15s, background-color .15s;
+            user-select: none;
+            min-width: 120px;
+        }
+        .portal-card:hover {
+            border-color: var(--tblr-border-color-translucent);
+            background-color: var(--tblr-bg-surface-secondary) !important;
+        }
+    </style>
+    @stack('styles')
 </head>
 <body class="d-flex flex-column">
     <div class="page page-center">

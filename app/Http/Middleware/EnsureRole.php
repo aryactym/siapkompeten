@@ -11,6 +11,10 @@ class EnsureRole
     /**
      * Pastikan pengguna memiliki salah satu dari peran yang diizinkan (OWASP A01).
      * Super admin selalu memiliki akses ke semua peran.
+     *
+     * Untuk user multi-role (mis. asesor yang juga asesi): cukup memiliki role-nya —
+     * portal aktif hanya mengontrol arah redirect dari Dashboard, bukan otorisasi route.
+     * Dengan cara ini seorang user bisa mengakses portal asesi meskipun juga punya role asesor.
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
