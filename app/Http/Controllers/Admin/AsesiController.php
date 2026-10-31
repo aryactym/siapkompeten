@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Asesi;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Laravolt\Indonesia\Models\City;
+use Laravolt\Indonesia\Models\Province;
+
+class AsesiController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $tab = $request->string('tab')->toString() ?: 'semua';
+        $provinsiCode = $request->string('provinsi_code')->toString();
+        $kotaCode = $request->string('kota_code')->toString();
+
+        $asesis = Asesi::query()
+            ->with(['user', 'province', 'city'])
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = '%'.$request->string('q')->trim().'%';
+                $query->where(function ($query) use ($search): void {
+                    $query->where('no_registrasi', 'like', $search)
+                        ->orWhereHas('user', function ($userQuery) use ($search): void {
+                            $userQuery->where('name', 'like', $search)
+                                ->orWhere('email', 'like', $search);
+                        });
+                });
+            })
+            ->when($provinsiCode !== '', fn ($query) => $query->where('provinsi_code', $provinsiCode))
+            ->when($kotaCode !== '', fn ($query) => $query->where('kota_code', $kotaCode))
+            ->when($tab === 'belum_terverifikasi', fn ($query) => $query->belumTerverifikasi())
+            ->when($tab === 'terverifikasi', fn ($query) => $query->terverifikasi())
+            ->when($tab === 'kompeten', fn ($query) => $query->where('status_kompetensi', 'kompeten'))
+            ->when($tab === 'belum_kompeten', fn ($query) => $query->where('status_kompetensi', 'belum_kompeten'))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.asesi.index', [
+            'asesis' => $asesis,
+            'tab' => $tab,
+            'search' => $request->string('q')->toString(),
+            'provinsiCode' => $provinsiCode,
+            'kotaCode' => $kotaCode,
+            'provinces' => Province::orderBy('name')->get(),
+            'cities' => City::query()
+                ->when($provinsiCode !== '', fn ($query) => $query->where('province_code', $provinsiCode))
+                ->orderBy('name')
+                ->get(),
+        ]);
+    }
+
+    public function show(Asesi $asesi): View
+    {
+        $this->authorize('view', $asesi);
+
+        $asesi->load([
+            'user',
+            'province',
+            'city',
+            'pendaftarans.skema',
+            'pendaftarans.jadwal.tuk',
+        ]);
+
+        return view('admin.asesi.show', [
+            'asesi' => $asesi,
+        ]);
+    }
+
+    public function verify(Request $request, Asesi $asesi): RedirectResponse
+    {
+        $this->authorize('verify', $asesi);
+
+        $asesi->update(['status_verifikasi' => 'terverifikasi']);
+
+        activity('asesi')
+            ->causedBy($request->user())
+            ->performedOn($asesi)
+            ->log('Status verifikasi asesi diubah menjadi terverifikasi.');
+
+        return back()->with('success', 'Asesi berhasil diverifikasi.');
+    }
+}

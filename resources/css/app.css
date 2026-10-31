@@ -1,0 +1,181 @@
+@import '@tabler/core/dist/css/tabler.min.css';
+@import '@tabler/icons-webfont/dist/tabler-icons.min.css';
+
+/* Custom adjustments for SiapKompeten Tabler theme */
+:root {
+    --tblr-primary: #206bc4;
+    --tblr-primary-rgb: 32, 107, 196;
+}
+
+.avatar-institution {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Force include Tabler sidebar styles - prevent purge */
+.sidebar {
+    --tblr-sidebar-width: 260px;
+    --tblr-sidebar-collapsed-width: 0px;
+    height: 100vh;
+    width: var(--tblr-sidebar-collapsed-width);
+    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.sidebar-darksidebar {
+    background-color: var(--tblr-dark);
+    color: var(--tblr-light);
+}
+
+.sidebar-darksidebar .sidebar-header,
+.sidebar-darksidebar .sidebar-logo-text {
+    color: var(--tblr-light);
+}
+
+.expand-sidebar .sidebar {
+    width: var(--tblr-sidebar-width);
+}
+
+.sidebar-inner {
+    min-height: 100%;
+    padding: 0;
+}
+
+.sidebar-header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-nav {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.nav-item {
+    margin: 0;
+}
+
+.nav-item.nav-dropdown {
+    position: relative;
+}
+
+.nav-item.nav-dropdown > .nav-link {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.nav-dropdown-items {
+    display: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-dropdown-toggle[aria-expanded="true"] ~ .nav-dropdown-items,
+.nav-dropdown-toggle[data-bs-toggle="collapse"][aria-expanded="true"] ~ .nav-dropdown-items {
+    display: block;
+}
+
+/* Tabler layout structure - sidebar layout (Page layouts: Side navigation) */
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Page wrapper is pushed right by sidebar width in .expand-sidebar */
+.page-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 56px); /* navbar height */
+    margin-left: var(--tblr-sidebar-width);
+}
+
+.page-body {
+    flex: 1;
+    min-width: 0;
+    padding: 1rem;
+}
+
+.sidebar-darknavbar .navbar {
+    background-color: var(--tblr-dark);
+    color: var(--tblr-light);
+}
+
+.sidebar-darknavbar .navbar-brand {
+    color: var(--tblr-light);
+}
+
+/* [DEPRECATED] Kept for reference only - not used since layout-boxed removed */
+/* .layout-boxed .page-wrapper{flex-wrap:nowrap}
+.layout-boxed .page-body{margin-left:var(--tblr-sidebar-width)} */
+
+/* Force sidebar to be visible - override any hidden styles */
+.sidebar {
+    display: block !important;
+    visibility: visible !important;
+    width: var(--tblr-sidebar-width) !important;
+}
+
+.expand-sidebar .sidebar {
+    width: var(--tblr-sidebar-width) !important;
+}
+
+/* Make page-wrapper respect sidebar width */
+.page-wrapper {
+    margin-left: var(--tblr-sidebar-width) !important;
+}
+
+/* Ensure navbar is above page-body but below sidebar */
+.page-wrapper > .navbar {
+    position: relative;
+    z-index: 102;
+}
+
+/* Override any collapsed/hidden sidebar states */
+.sidebar.collapsed,
+.sidebar:not(.expand-sidebar) {
+    width: var(--tblr-sidebar-collapsed-width) !important;
+}
+
+.expand-sidebar .sidebar.collapsed {
+    width: var(--tblr-sidebar-width) !important;
+}
+
+/* Ensure sidebar-inner fills the sidebar */
+.sidebar-inner {
+    min-height: 100vh;
+}
+
+/* Ensure body content doesn't overlap with sidebar */
+body {
+    overflow-x: hidden;
+}
+
+/* Mobile responsiveness - sidebar becomes overlay on small screens */
+@media (max-width: 991.98px) {
+    .sidebar-expand-icon {
+        display: flex;
+    }
+}

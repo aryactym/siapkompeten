@@ -1,0 +1,163 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Asesor;
+use App\Models\User;
+use App\Support\TenantContext;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Laravolt\Indonesia\Models\City;
+use Laravolt\Indonesia\Models\Province;
+
+class AsesorController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $asesors = Asesor::query()
+            ->with(['user', 'city'])
+            ->withCount('penugasan')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = '%'.$request->string('q')->trim().'%';
+                $query->where(function ($query) use ($search): void {
+                    $query->where('no_register', 'like', $search)
+                        ->orWhere('bidang_keahlian', 'like', $search)
+                        ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', $search));
+                });
+            })
+            ->orderBy('no_register')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.asesor.index', [
+            'asesors' => $asesors,
+            'search' => $request->string('q')->toString(),
+        ]);
+    }
+
+    public function create(): View
+    {
+        $candidates = User::role('asesor')
+            ->where('institution_id', TenantContext::id())
+            ->whereDoesntHave('asesor')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.asesor.form', [
+            'asesor' => new Asesor(['status' => 'aktif', 'kebangsaan' => 'Indonesia']),
+            'candidates' => $candidates,
+            'provinces' => Province::orderBy('name')->get(),
+            'cities' => City::orderBy('name')->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $tenantId = (string) TenantContext::id();
+
+        $validated = $request->validate([
+            'user_id' => [
+                'required',
+                'uuid',
+                Rule::exists('users', 'id')->where('institution_id', $tenantId),
+                Rule::unique('asesors', 'user_id')->where('institution_id', $tenantId),
+            ],
+            'no_register' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('asesors', 'no_register')->where('institution_id', $tenantId),
+            ],
+            'no_lisensi' => ['nullable', 'string', 'max:100'],
+            'lisensi_berlaku_hingga' => ['nullable', 'date'],
+            'gelar_depan' => ['nullable', 'string', 'max:50'],
+            'gelar_belakang' => ['nullable', 'string', 'max:50'],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
+            'tempat_lahir' => ['nullable', 'string', 'max:100'],
+            'tanggal_lahir' => ['nullable', 'date', 'before:today'],
+            'kebangsaan' => ['required', 'string', 'max:100'],
+            'alamat' => ['nullable', 'string', 'max:1000'],
+            'provinsi_code' => ['nullable', 'string', 'max:2'],
+            'kota_code' => ['nullable', 'string', 'max:4'],
+            'kode_pos' => ['nullable', 'string', 'max:10'],
+            'pendidikan_terakhir' => ['nullable', 'string', 'max:100'],
+            'bidang_keahlian' => ['nullable', 'string', 'max:150'],
+            'institusi_asal' => ['nullable', 'string', 'max:200'],
+            'telepon' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:150'],
+            'status' => ['required', 'in:aktif,nonaktif'],
+        ]);
+
+        $user = User::whereKey($validated['user_id'])->firstOrFail();
+        abort_unless($user->hasRole('asesor'), 422, 'Pengguna bukan berperan asesor.');
+
+        $asesor = Asesor::create($validated);
+
+        activity('asesor')
+            ->causedBy($request->user())
+            ->performedOn($asesor)
+            ->log('Profil asesor dibuat.');
+
+        return redirect()
+            ->route('admin.asesor.index')
+            ->with('success', 'Profil asesor berhasil dibuat.');
+    }
+
+    public function edit(Asesor $asesor): View
+    {
+        return view('admin.asesor.form', [
+            'asesor' => $asesor->load('user'),
+            'candidates' => collect(),
+            'provinces' => Province::orderBy('name')->get(),
+            'cities' => City::orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Asesor $asesor): RedirectResponse
+    {
+        $tenantId = (string) TenantContext::id();
+
+        $validated = $request->validate([
+            'no_register' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('asesors', 'no_register')
+                    ->where('institution_id', $tenantId)
+                    ->ignore($asesor->id),
+            ],
+            'no_lisensi' => ['nullable', 'string', 'max:100'],
+            'lisensi_berlaku_hingga' => ['nullable', 'date'],
+            'gelar_depan' => ['nullable', 'string', 'max:50'],
+            'gelar_belakang' => ['nullable', 'string', 'max:50'],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
+            'tempat_lahir' => ['nullable', 'string', 'max:100'],
+            'tanggal_lahir' => ['nullable', 'date', 'before:today'],
+            'kebangsaan' => ['required', 'string', 'max:100'],
+            'alamat' => ['nullable', 'string', 'max:1000'],
+            'provinsi_code' => ['nullable', 'string', 'max:2'],
+            'kota_code' => ['nullable', 'string', 'max:4'],
+            'kode_pos' => ['nullable', 'string', 'max:10'],
+            'pendidikan_terakhir' => ['nullable', 'string', 'max:100'],
+            'bidang_keahlian' => ['nullable', 'string', 'max:150'],
+            'institusi_asal' => ['nullable', 'string', 'max:200'],
+            'telepon' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:150'],
+            'status' => ['required', 'in:aktif,nonaktif'],
+        ]);
+
+        $asesor->update($validated);
+
+        activity('asesor')
+            ->causedBy($request->user())
+            ->performedOn($asesor)
+            ->log('Profil asesor diperbarui.');
+
+        return redirect()
+            ->route('admin.asesor.index')
+            ->with('success', 'Profil asesor berhasil diperbarui.');
+    }
+}
