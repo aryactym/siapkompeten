@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\AdminWilayahController;
 use App\Http\Controllers\Admin\AsesiController as AdminAsesiController;
 use App\Http\Controllers\Admin\AsesiImportController as AdminAsesiImportController;
 use App\Http\Controllers\Admin\AsesorController as AdminAsesorController;
+use App\Http\Controllers\Admin\AsesorInviteController as AdminAsesorInviteController;
+use App\Http\Controllers\Admin\AsesorLingkupController as AdminAsesorLingkupController;
 use App\Http\Controllers\Admin\BiayaController as AdminBiayaController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\JadwalController as AdminJadwalController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\Admin\NotifikasiController as AdminNotifikasiController
 use App\Http\Controllers\Admin\PembayaranController as AdminPembayaranController;
 use App\Http\Controllers\Admin\PendaftaranController as AdminPendaftaranController;
 use App\Http\Controllers\Admin\RekeningBankController as AdminRekeningBankController;
+use App\Http\Controllers\Admin\SertifikatController as AdminSertifikatController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Asesi\ActivationController as AsesiActivationController;
 use App\Http\Controllers\Asesi\Apl02Controller as AsesiApl02Controller;
@@ -29,6 +32,7 @@ use App\Http\Controllers\Asesi\PanduanController as AsesiPanduanController;
 use App\Http\Controllers\Asesi\PembayaranController as AsesiPembayaranController;
 use App\Http\Controllers\Asesi\PendaftaranController as AsesiPendaftaranController;
 use App\Http\Controllers\Asesi\ProfilController as AsesiProfilController;
+use App\Http\Controllers\Asesi\SertifikatController as AsesiSertifikatController;
 use App\Http\Controllers\Asesor\Apl02Controller as AsesorApl02Controller;
 use App\Http\Controllers\Asesor\HasilAsesmenController as AsesorHasilAsesmenController;
 use App\Http\Controllers\Asesor\JadwalController as AsesorJadwalController;
@@ -37,6 +41,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\SertifikatVerifikasiController;
 use App\Http\Controllers\WidgetController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +54,11 @@ Route::get('/', function () {
 });
 
 Route::get('/beranda', [PublicController::class, 'index'])->name('beranda');
+
+// Verifikasi keaslian sertifikat (publik — tidak perlu auth) — FR-CMS-06
+Route::get('/sertifikat/{token}', [SertifikatVerifikasiController::class, 'verify'])
+    ->where('token', '[a-zA-Z0-9]{32}')
+    ->name('sertifikat.verifikasi');
 
 // Wilayah — endpoint publik untuk dependent select kota/provinsi
 Route::get('/wilayah/provinsi/{code}/kota', [WilayahController::class, 'kotaByProvinsi'])
@@ -207,6 +217,29 @@ Route::prefix('admin')
         // Dokumen Lembaga (dipindahkan dari route global untuk memastikan prefix /admin)
         Route::post('documents', [DocumentController::class, 'store'])
             ->name('documents.store');
+
+        // Lingkup Kompetensi Asesor (FR-ASR-10)
+        Route::get('asesor-skema', [AdminAsesorLingkupController::class, 'index'])->name('asesor.skema.index');
+        Route::get('asesor/{asesor}/skema', [AdminAsesorLingkupController::class, 'show'])->name('asesor.skema.show');
+        Route::post('asesor/{asesor}/skema', [AdminAsesorLingkupController::class, 'store'])->name('asesor.skema.store');
+        Route::delete('asesor/{asesor}/skema/{kompetensi}', [AdminAsesorLingkupController::class, 'destroy'])->name('asesor.skema.destroy');
+
+        // Undang Keanggotaan Asesor (FR-ASR-09)
+        Route::get('asesor-undangan', [AdminAsesorInviteController::class, 'index'])->name('asesor.invite.index');
+        Route::get('asesor-undangan/create', [AdminAsesorInviteController::class, 'create'])->name('asesor.invite.create');
+        Route::post('asesor-undangan', [AdminAsesorInviteController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('asesor.invite.store');
+        Route::get('asesor-undangan/{invitation}', [AdminAsesorInviteController::class, 'show'])->name('asesor.invite.show');
+        Route::delete('asesor-undangan/{invitation}', [AdminAsesorInviteController::class, 'destroy'])->name('asesor.invite.destroy');
+
+        // Sertifikat Kompetensi (FR-RPT-04)
+        Route::get('sertifikat', [AdminSertifikatController::class, 'index'])->name('sertifikat.index');
+        Route::post('sertifikat', [AdminSertifikatController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('sertifikat.store');
+        Route::get('sertifikat/{sertifikat}', [AdminSertifikatController::class, 'show'])->name('sertifikat.show');
+        Route::get('sertifikat/{sertifikat}/pdf', [AdminSertifikatController::class, 'pdf'])->name('sertifikat.pdf');
     });
 
 Route::prefix('asesor')
@@ -238,6 +271,11 @@ Route::prefix('asesi')
         Route::get('profil', [AsesiProfilController::class, 'edit'])->name('profil.edit');
         Route::put('profil', [AsesiProfilController::class, 'update'])->name('profil.update');
         Route::get('panduan', AsesiPanduanController::class)->name('panduan');
+
+        // Hasil & Sertifikat (FR-RPT-04)
+        Route::get('sertifikat', [AsesiSertifikatController::class, 'index'])->name('sertifikat.index');
+        Route::get('sertifikat/{sertifikat}', [AsesiSertifikatController::class, 'show'])->name('sertifikat.show');
+        Route::get('sertifikat/{sertifikat}/pdf', [AsesiSertifikatController::class, 'pdf'])->name('sertifikat.pdf');
 
         Route::get('pendaftaran', [AsesiPendaftaranController::class, 'index'])->name('pendaftaran.index');
         Route::get('pendaftaran/create', [AsesiPendaftaranController::class, 'create'])->name('pendaftaran.create');

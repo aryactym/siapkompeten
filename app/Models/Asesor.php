@@ -68,6 +68,37 @@ class Asesor extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Lingkup kompetensi asesor: pemetaan ke skema yang dapat diasesinya.
+     */
+    public function kompetensis(): HasMany
+    {
+        return $this->hasMany(AsesorKompetensi::class);
+    }
+
+    /**
+     * Skema yang menjadi lingkup asesor (melalui asesor_kompetensis).
+     */
+    public function skemaKompetensis(): BelongsToMany
+    {
+        return $this->belongsToMany(Skema::class, 'asesor_kompetensis')
+            ->withPivot(['id', 'berlaku_mulai', 'berlaku_hingga'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Apakah asesor kompeten untuk skema tertentu.
+     * Tanpa lingkup sama sekali → asesor dianggap kompeten pada seluruh skema.
+     */
+    public function isKompetenForSkema(Skema $skema): bool
+    {
+        if ($this->kompetensis()->doesntExist()) {
+            return true;
+        }
+
+        return $this->kompetensis()->where('skema_id', $skema->id)->exists();
+    }
+
     public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class, 'province_code', 'code');

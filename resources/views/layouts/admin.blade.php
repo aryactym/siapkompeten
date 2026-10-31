@@ -80,12 +80,13 @@
                                 ['label' => 'Asesi', 'route' => 'admin.asesi.index', 'match' => ['admin.asesi.index', 'admin.asesi.show', 'admin.asesi.verify']],
                                 ['label' => 'Daftar Pendaftaran', 'route' => 'admin.pendaftaran.index', 'match' => 'admin.pendaftaran.*'],
                                 ['label' => 'Impor Asesi (Excel)', 'route' => 'admin.asesi.import.create', 'match' => 'admin.asesi.import.*'],
-                                ['label' => 'Verifikasi Dokumen', 'route' => 'admin.pendaftaran.index', 'match' => [], 'soon' => true],
+                                ['label' => 'Verifikasi Dokumen', 'route' => 'admin.pendaftaran.index', 'match' => ['admin.pendaftaran.index', 'admin.pendaftaran.show', 'admin.pendaftaran.dokumen.*', 'admin.pendaftaran.approve', 'admin.pendaftaran.reject', 'admin.pendaftaran.apl01', 'admin.pendaftaran.mak01', 'admin.pendaftaran.mak03'],
+                                    'extra' => ['?tab=perlu_verifikasi']],
                             ]],
                             ['label' => 'Asesor', 'icon' => 'ti-certificate', 'children' => [
                                 ['label' => 'Data Asesor', 'route' => 'admin.asesor.index', 'match' => ['admin.asesor.index', 'admin.asesor.create', 'admin.asesor.store', 'admin.asesor.edit', 'admin.asesor.update']],
-                                ['label' => 'Lingkup Kompetensi', 'route' => 'admin.asesor.skema.index', 'match' => 'admin.asesor.skema.*'],
-                                ['label' => 'Undang Keanggotaan', 'route' => 'admin.asesor.invite.index', 'match' => 'admin.asesor.invite.*'],
+                                ['label' => 'Lingkup Kompetensi', 'route' => 'admin.asesor.skema.index', 'match' => ['admin.asesor.skema.*']],
+                                ['label' => 'Undang Keanggotaan', 'route' => 'admin.asesor.invite.index', 'match' => ['admin.asesor.invite.*']],
                             ]],
                             ['label' => 'Penjadwalan', 'icon' => 'ti-calendar', 'children' => [
                                 ['label' => 'Jadwal Asesmen', 'route' => 'admin.jadwal.index', 'match' => 'admin.jadwal.*'],
@@ -93,11 +94,11 @@
                                 // planned: Bundle Sertifikat (luar BRD — keputusan tertunda)
                                 ['label' => 'Bundle Sertifikat', 'route' => 'admin.jadwal.bundle.create', 'match' => 'admin.jadwal.bundle.*', 'planned' => true],
                             ]],
-                            // planned: Sertifikat & TUG (luar BRD)
+                            // Sertifikat — sekarang aktif
                             ['label' => 'Sertifikat', 'icon' => 'ti-award', 'children' => [
-                                ['label' => 'Data Sertifikat', 'route' => 'admin.sertifikat.index', 'match' => 'admin.sertifikat.*', 'planned' => true],
+                                ['label' => 'Data Sertifikat', 'route' => 'admin.sertifikat.index', 'match' => ['admin.sertifikat.*']],
                                 ['label' => 'Template Presensi', 'route' => 'admin.template_presensi.index', 'match' => 'admin.template_presensi.*', 'planned' => true],
-                            ], 'planned' => true],
+                            ]],
                         ]],
 
                         ['title' => 'Keuangan', 'items' => [

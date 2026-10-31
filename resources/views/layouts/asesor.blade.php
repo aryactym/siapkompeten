@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Portal Asesor') · {{ config('app.name', 'SiapKompeten') }}</title>
+    <title>@yield('title', 'Portal Asesor') · {{ \App\Support\TenantContext::name() ?? config('app.name', 'SiapKompeten') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fonts
     <style>
@@ -27,6 +27,20 @@
             <div class="collapse navbar-collapse" id="navbar-menu">
                 <div class="navbar navbar-light bg-light border-bottom">
                     <div class="container-xl">
+                        @php
+                            $institution = \App\Support\TenantContext::institution();
+                            $logoPath = $institution?->logo_path;
+                        @endphp
+                        {{-- Branding LSP --}}
+                        <div class="navbar-brand d-flex align-items-center gap-2 me-3">
+                            @if ($logoPath)
+                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logoPath) }}"
+                                     alt="{{ $institution->name }}"
+                                     class="rounded"
+                                     style="height:32px;width:auto;max-width:120px;object-fit:contain;">
+                            @endif
+                            <span class="fw-semibold text-dark">{{ $institution?->name ?? config('app.name') }}</span>
+                        </div>
                         <ul class="navbar-nav">
                             <li class="nav-item {{ request()->routeIs('asesor.dashboard') || request()->routeIs('dashboard') ? 'active' : '' }}">
                                 <a class="nav-link" href="{{ route('dashboard') }}">
@@ -138,7 +152,7 @@
                 <div class="container-xl">
                     <div class="row text-center align-items-center flex-row-reverse">
                         <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                            <span class="text-secondary">&copy; {{ date('Y') }} {{ config('app.name', 'SiapKompeten') }} · Portal Asesor Kompetensi</span>
+                            <span class="text-secondary">&copy; {{ date('Y') }} {{ \App\Support\TenantContext::name() ?? config('app.name', 'SiapKompeten') }} · Portal Asesor Kompetensi</span>
                         </div>
                     </div>
                 </div>

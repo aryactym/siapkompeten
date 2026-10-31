@@ -78,6 +78,11 @@ class Pendaftaran extends Model
         return $this->hasMany(PendaftaranDokumen::class);
     }
 
+    public function sertifikat(): HasOne
+    {
+        return $this->hasOne(Sertifikat::class);
+    }
+
     public function pembayaran(): HasOne
     {
         return $this->hasOne(Pembayaran::class);

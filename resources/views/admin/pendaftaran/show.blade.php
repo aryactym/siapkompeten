@@ -209,6 +209,48 @@
             </x-tabler.card>
         @endif
 
+        @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_SELESAI && $pendaftaran->asesi?->status_kompetensi === 'kompeten')
+            @php($sudahAdaSertifikat = $pendaftaran->sertifikat()->exists())
+            @if ($sudahAdaSertifikat)
+                <x-tabler.card title="Sertifikat Kompetensi" class="mt-3">
+                    <div class="alert alert-success mb-3">
+                        <i class="ti ti-award me-1"></i>
+                        Sertifikat sudah diterbitkan.
+                    </div>
+                    <a href="{{ route('admin.sertifikat.show', $pendaftaran->sertifikat) }}"
+                       class="btn btn-outline-success w-100">
+                        <i class="ti ti-eye me-1"></i> Lihat Sertifikat
+                    </a>
+                </x-tabler.card>
+            @else
+                <x-tabler.card title="Terbitkan Sertifikat" class="mt-3">
+                    <p class="text-secondary small mb-3">
+                        Asesi dinyatakan <strong class="text-success">kompeten</strong>.
+                        Masukkan nomor seri blangko BNSP untuk menerbitkan sertifikat.
+                    </p>
+                    <form method="POST" action="{{ route('admin.sertifikat.store') }}">
+                        @csrf
+                        <input type="hidden" name="pendaftaran_id" value="{{ $pendaftaran->id }}">
+                        <div class="mb-3">
+                            <label class="form-label required">No. Seri Blangko BNSP</label>
+                            <input type="text" name="no_seri_blangko"
+                                   class="form-control font-monospace @error('no_seri_blangko') is-invalid @enderror"
+                                   value="{{ old('no_seri_blangko') }}"
+                                   placeholder="Contoh: LSP.TI.12345.2026"
+                                   required maxlength="100">
+                            <div class="form-hint">Format: BAGIAN1.BAGIAN2.NNNNN.TAHUN</div>
+                            @error('no_seri_blangko')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @error('pendaftaran_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <button type="submit" class="btn btn-success w-100"
+                                onclick="return confirm('Terbitkan sertifikat kompetensi ini?')">
+                            <i class="ti ti-award me-1"></i> Terbitkan Sertifikat
+                        </button>
+                    </form>
+                </x-tabler.card>
+            @endif
+        @endif
+
         @if ($pendaftaran->jadwal)
             <x-tabler.card title="Jadwal & Asesor" class="mt-3">
                 <div class="mb-2">
