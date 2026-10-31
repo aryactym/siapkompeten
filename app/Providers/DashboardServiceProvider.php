@@ -13,8 +13,7 @@ class DashboardServiceProvider extends ServiceProvider
         $this->app->singleton(DashboardRegistry::class, function () {
             $registry = new DashboardRegistry();
 
-            // Register widgets here as they are implemented.
-            // Example: $registry->register('stat_ringkas', \App\Domain\Dashboard\Widgets\StatRingkas::class);
+            $registry->register('stat_ringkas', \App\Domain\Dashboard\Widgets\StatRingkas::class);
 
             return $registry;
         });

@@ -8,14 +8,32 @@
     <a href="{{ route('admin.jadwal.create') }}" class="btn btn-primary d-none d-sm-inline-block">
         <i class="ti ti-plus me-1"></i> Buat Jadwal Uji
     </a>
-    <span class="btn btn-outline-primary d-none d-sm-inline-block disabled" aria-disabled="true">
+    <a href="{{ route('admin.skema.index') }}" class="btn btn-outline-primary d-none d-sm-inline-block">
         <i class="ti ti-certificate me-1"></i> Tambah Skema
-        <span class="badge bg-secondary-lt ms-1">Segera</span>
-    </span>
+    </a>
 @endsection
 
 @section('content')
-<div class="row row-deck row-cards mb-4">
+<div class="row row-cards mb-4">
+    <div class="col-12">
+        <div class="card" data-widget="stat_ringkas">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3 class="card-title mb-0">Ringkasan (Widget)</h3>
+                </div>
+                <div class="widget-skeleton">
+                    <div class="placeholder-glow">
+                        <span class="placeholder col-12"></span>
+                    </div>
+                </div>
+                <div class="widget-body d-none"></div>
+                <div class="widget-error d-none text-secondary small">
+                    Gagal memuat widget. <button type="button" class="btn btn-sm btn-link widget-retry">Coba lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <div class="col-sm-6 col-lg-3">
         <x-tabler.stat 
             title="Skema Sertifikasi"
