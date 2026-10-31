@@ -2,7 +2,7 @@
 
 @section('title', 'Input Hasil MAK-02')
 @section('pretitle', 'Hasil Asesmen')
-@section('page-title', 'MAK-02 · {{ $pendaftaran->no_pendaftaran }}')
+@section('page-title', 'MAK-02 · '.$pendaftaran->no_pendaftaran)
 
 @section('actions')
     <a href="{{ route('asesor.apl02.show', $pendaftaran) }}" class="btn btn-outline-secondary">

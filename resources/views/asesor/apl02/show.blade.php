@@ -2,7 +2,7 @@
 
 @section('title', 'Verifikasi APL-02')
 @section('pretitle', 'Penilaian Pra-Asesmen')
-@section('page-title', 'Verifikasi APL-02 · {{ $pendaftaran->no_pendaftaran }}')
+@section('page-title', 'Verifikasi APL-02 · '.$pendaftaran->no_pendaftaran)
 
 @section('actions')
     <a href="{{ route('asesor.mak02.show', $pendaftaran) }}" class="btn btn-outline-primary">
