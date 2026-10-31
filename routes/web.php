@@ -36,6 +36,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\WidgetController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -76,7 +77,7 @@ Route::middleware('auth')->group(function (): void {
 
 Route::middleware(['auth', 'tenant.context'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
-
+    Route::get('/dashboard/widgets/{key}', [WidgetController::class, 'show'])->name('dashboard.widget');
     Route::post('/tenant/switch', [DashboardController::class, 'switchInstitution'])
         ->name('tenant.switch');
 

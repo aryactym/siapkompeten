@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@tabler/core": "^1.7.3",
-        "@tabler/icons-webfont": "^3.50.0"
+        "@tabler/icons-webfont": "^3.50.0",
+        "apexcharts": "^8.6.0"
     }
 }
