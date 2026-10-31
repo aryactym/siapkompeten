@@ -7,12 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sesi Terkunci · {{ config('app.name', 'SiapKompeten') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        @import url('https://rsms.me/inter/inter.css');
-        :root {
-            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        }
-    </style>
+    @fonts
 </head>
 <body class="d-flex flex-column bg-light">
     <div class="page page-center">

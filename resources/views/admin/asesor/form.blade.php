@@ -75,10 +75,10 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Provinsi</label>
-                        <select name="provinsi_code" class="form-select">
+                        <select name="province_code" class="form-select" id="asesor-province-select">
                             <option value="">—</option>
                             @foreach ($provinces as $province)
-                                <option value="{{ $province->code }}" @selected(old('provinsi_code', $asesor->province_code) === $province->code)>
+                                <option value="{{ $province->code }}" @selected(old('province_code', $asesor->province_code) === $province->code)>
                                     {{ $province->name }}
                                 </option>
                             @endforeach
@@ -86,10 +86,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Kota / Kabupaten</label>
-                        <select name="kota_code" class="form-select">
+                        <select name="city_code" class="form-select" id="asesor-city-select">
                             <option value="">—</option>
                             @foreach ($cities as $city)
-                                <option value="{{ $city->code }}" @selected(old('kota_code', $asesor->city_code) === $city->code)>
+                                <option value="{{ $city->code }}" data-province="{{ $city->province_code }}"
+                                        @selected(old('city_code', $asesor->city_code) === $city->code)>
                                     {{ $city->name }}
                                 </option>
                             @endforeach
@@ -132,11 +133,29 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label">Pendidikan Terakhir</label>
-                        <input type="text" name="pendidikan_terakhir" class="form-control" value="{{ old('pendidikan_terakhir', $asesor->pendidikan_terakhir) }}" maxlength="100">
+                        <select name="pendidikan_terakhir" class="form-select">
+                            <option value="">-</option>
+                            @foreach (['SD', 'SMP', 'SMA/SMK', 'D1', 'D2', 'D3', 'D4/S1', 'S2', 'S3'] as $jenjang)
+                                <option value="{{ $jenjang }}" @selected(old('pendidikan_terakhir', $asesor->pendidikan_terakhir) === $jenjang)>{{ $jenjang }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-12">
                         <label class="form-label">Bidang Keahlian</label>
-                        <input type="text" name="bidang_keahlian" class="form-control" value="{{ old('bidang_keahlian', $asesor->bidang_keahlian) }}" maxlength="150">
+                        <input type="text" name="bidang_keahlian" class="form-control" list="bidang-keahlian-list"
+                               value="{{ old('bidang_keahlian', $asesor->bidang_keahlian) }}" maxlength="150">
+                        <datalist id="bidang-keahlian-list">
+                            <option value="Teknologi Informasi">
+                            <option value="Manajemen">
+                            <option value="Akuntansi & Keuangan">
+                            <option value="Konstruksi & Bangunan">
+                            <option value="Pariwisata & Perhotelan">
+                            <option value="Kesehatan">
+                            <option value="Pertanian & Perkebunan">
+                            <option value="Otomotif">
+                            <option value="Elektronika">
+                            <option value="Logistik & Transportasi">
+                        </datalist>
                     </div>
                     <div class="col-12">
                         <label class="form-label">Institusi Asal</label>
@@ -162,6 +181,40 @@
                     <a href="{{ route('admin.asesor.index') }}" class="btn btn-outline-secondary">Batal</a>
                 </div>
             </x-tabler.card>
+
+@push('scripts')
+<script>
+(function () {
+    if (window.__asesorCityFilter) return;
+    window.__asesorCityFilter = true;
+
+    function filterCities(scope) {
+        var provSelect = (scope || document).querySelector('#asesor-province-select');
+        var citySelect = (scope || document).querySelector('#asesor-city-select');
+        if (!provSelect || !citySelect) return;
+        var prov = provSelect.value;
+        Array.prototype.forEach.call(citySelect.options, function (opt) {
+            if (!opt.value) { opt.hidden = false; return; }
+            var p = opt.getAttribute('data-province');
+            opt.hidden = prov !== '' && p !== prov;
+        });
+        if (citySelect.selectedOptions.length && citySelect.selectedOptions[0].hidden) {
+            citySelect.value = '';
+        }
+    }
+
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.id === 'asesor-province-select') {
+            filterCities(e.target.closest('.modal') || e.target.closest('form') || document);
+        }
+    });
+
+    document.querySelectorAll('#asesor-province-select').forEach(function (ps) {
+        filterCities(ps.closest('.modal') || ps.closest('form') || document);
+    });
+})();
+</script>
+@endpush>
         </div>
     </div>
 </form>

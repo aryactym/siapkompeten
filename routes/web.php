@@ -1,5 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminCmsController;
+use App\Http\Controllers\Admin\AdminElemenKompetensiController;
+use App\Http\Controllers\Admin\AdminInstitutionController;
+use App\Http\Controllers\Admin\AdminKotaController;
+use App\Http\Controllers\Admin\AdminPelaporanController;
+use App\Http\Controllers\Admin\AdminProvinsiController;
+use App\Http\Controllers\Admin\AdminSkemaController;
+use App\Http\Controllers\Admin\AdminStkkniController;
+use App\Http\Controllers\Admin\AdminTukController;
+use App\Http\Controllers\Admin\AdminUnitKompetensiController;
+use App\Http\Controllers\Admin\AdminUnitMappingController;
+use App\Http\Controllers\Admin\AdminWilayahController;
 use App\Http\Controllers\Admin\AsesiController as AdminAsesiController;
 use App\Http\Controllers\Admin\AsesiImportController as AdminAsesiImportController;
 use App\Http\Controllers\Admin\AsesorController as AdminAsesorController;
@@ -23,6 +35,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +44,8 @@ Route::get('/', function () {
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 });
+
+Route::get('/beranda', [PublicController::class, 'index'])->name('beranda');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -81,12 +96,19 @@ Route::prefix('admin')
 
         // Master Standar (Fase 1)
         Route::resource('stkkni', AdminStkkniController::class)->except(['show']);
+        Route::get('stkkni/{stkkni}', [AdminStkkniController::class, 'show'])->name('stkkni.show');
         Route::resource('skema', AdminSkemaController::class)->except(['show']);
+        Route::get('skema/{skema}', [AdminSkemaController::class, 'show'])->name('skema.show');
         Route::get('skema/{skema}/persyaratan', [AdminSkemaController::class, 'persyaratan'])
             ->name('skema.persyaratan');
         Route::resource('unit', AdminUnitKompetensiController::class)->except(['show']);
+        Route::get('unit/{unit}', [AdminUnitKompetensiController::class, 'show'])->name('unit.show');
         Route::resource('unit-mappings', AdminUnitMappingController::class)->except(['show']);
         Route::resource('elemen', AdminElemenKompetensiController::class)->except(['show']);
+        Route::post('elemen/{elemen}/kuk', [AdminElemenKompetensiController::class, 'storeKuk'])
+            ->name('elemen.kuk.store');
+        Route::delete('kuk/{kuk}', [AdminElemenKompetensiController::class, 'destroyKuk'])
+            ->name('kuk.destroy');
         Route::resource('provinces', AdminProvinsiController::class)->except(['show']);
         Route::resource('cities', AdminKotaController::class)->except(['show']);
         Route::resource('wilayah', AdminWilayahController::class)->except(['show']);
@@ -136,16 +158,25 @@ Route::prefix('admin')
         Route::get('pendaftaran/dokumen/{dokumen}/unduh', [AdminPendaftaranController::class, 'downloadDokumen'])->name('pendaftaran.dokumen.download');
         Route::get('pendaftaran', [AdminPendaftaranController::class, 'index'])->name('pendaftaran.index');
         Route::get('pendaftaran/{pendaftaran}', [AdminPendaftaranController::class, 'show'])->name('pendaftaran.show');
+        Route::get('pendaftaran/{pendaftaran}/apl01', [AdminPendaftaranController::class, 'apl01'])->name('pendaftaran.apl01');
+        Route::get('pendaftaran/{pendaftaran}/mak01', [AdminPendaftaranController::class, 'mak01'])->name('pendaftaran.mak01');
+        Route::get('pendaftaran/{pendaftaran}/mak03', [AdminPendaftaranController::class, 'mak03'])->name('pendaftaran.mak03');
         Route::post('pendaftaran/{pendaftaran}/dokumen/{dokumen}/verifikasi', [AdminPendaftaranController::class, 'verifyDokumen'])->name('pendaftaran.dokumen.verify');
         Route::post('pendaftaran/{pendaftaran}/setujui', [AdminPendaftaranController::class, 'approve'])->name('pendaftaran.approve');
         Route::post('pendaftaran/{pendaftaran}/tolak', [AdminPendaftaranController::class, 'reject'])->name('pendaftaran.reject');
 
+        Route::get('pelaporan', [AdminPelaporanController::class, 'index'])->name('pelaporan.index');
+        Route::get('pelaporan/apl02', [AdminPelaporanController::class, 'apl02'])->name('pelaporan.apl02');
         Route::get('notifikasi/keluar', [AdminNotifikasiController::class, 'index'])->name('notifikasi.index');
         Route::post('notifikasi/{notifikasi}/kirim-ulang', [AdminNotifikasiController::class, 'retry'])->name('notifikasi.retry');
 
-        Route::resource('rekening-bank', AdminRekeningBankController::class)->except(['show']);
+        Route::resource('rekening-bank', AdminRekeningBankController::class)
+            ->except(['show', 'create', 'edit'])
+            ->names('rekening');
 
         Route::resource('biaya', AdminBiayaController::class)->except(['show']);
+
+        Route::resource('cms', AdminCmsController::class)->except(['show']);
 
         Route::resource('pembayaran', AdminPembayaranController::class)->except(['create', 'edit', 'store']);
         Route::post('pembayaran/{pembayaran}/putuskan', [AdminPembayaranController::class, 'putuskan'])

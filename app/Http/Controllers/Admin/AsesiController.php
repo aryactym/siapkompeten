@@ -17,6 +17,8 @@ class AsesiController extends Controller
         $tab = $request->string('tab')->toString() ?: 'semua';
         $provinsiCode = $request->string('provinsi_code')->toString();
         $kotaCode = $request->string('kota_code')->toString();
+        $dari = $request->string('dari')->toString() ?: now()->subYear()->toDateString();
+        $sampai = $request->string('sampai')->toString() ?: now()->toDateString();
 
         $asesis = Asesi::query()
             ->with(['user', 'province', 'city'])
@@ -32,6 +34,7 @@ class AsesiController extends Controller
             })
             ->when($provinsiCode !== '', fn ($query) => $query->where('provinsi_code', $provinsiCode))
             ->when($kotaCode !== '', fn ($query) => $query->where('kota_code', $kotaCode))
+            ->whereBetween('created_at', [$dari.' 00:00:00', $sampai.' 23:59:59'])
             ->when($tab === 'belum_terverifikasi', fn ($query) => $query->belumTerverifikasi())
             ->when($tab === 'terverifikasi', fn ($query) => $query->terverifikasi())
             ->when($tab === 'kompeten', fn ($query) => $query->where('status_kompetensi', 'kompeten'))
@@ -46,6 +49,8 @@ class AsesiController extends Controller
             'search' => $request->string('q')->toString(),
             'provinsiCode' => $provinsiCode,
             'kotaCode' => $kotaCode,
+            'dari' => $dari,
+            'sampai' => $sampai,
             'provinces' => Province::orderBy('name')->get(),
             'cities' => City::query()
                 ->when($provinsiCode !== '', fn ($query) => $query->where('province_code', $provinsiCode))

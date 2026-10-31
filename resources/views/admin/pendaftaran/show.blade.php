@@ -5,8 +5,18 @@
 @section('page-title', 'Pendaftaran '.$pendaftaran->no_pendaftaran)
 
 @section('content')
+<div class="mb-3">
+    <a href="{{ route('admin.pendaftaran.apl01', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
+        <i class="ti ti-file-text me-1"></i> Unduh APL-01 (PDF)
+    </a>
+    <a href="{{ route('admin.pendaftaran.mak01', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
+        <i class="ti ti-file-check me-1"></i> Unduh MAK-01 (PDF)
+    </a>
+    <a href="{{ route('admin.pendaftaran.mak03', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
+        <i class="ti ti-file-text me-1"></i> Unduh MAK-03 (PDF)
+    </a>
+</div>
 <div class="row row-cards">
-    <div class="col-lg-8">
         <x-tabler.card title="Data Pendaftar">
             <div class="row g-3">
                 <div class="col-md-6">

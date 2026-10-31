@@ -40,6 +40,12 @@
                 </select>
             </div>
             <div class="col-auto">
+                <input type="date" name="dari" value="{{ $dari }}" class="form-control form-control-sm" title="Dari">
+            </div>
+            <div class="col-auto">
+                <input type="date" name="sampai" value="{{ $sampai }}" class="form-control form-control-sm" title="Sampai">
+            </div>
+            <div class="col-auto">
                 <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="ti ti-search"></i></button>
             </div>
             <div class="col-auto">
@@ -54,7 +60,7 @@
         @foreach ($tabs as $key => $label)
             <li class="nav-item">
                 <a class="nav-link {{ $tab === $key ? 'active' : '' }}"
-                   href="{{ route('admin.asesi.index', array_filter(['tab' => $key, 'q' => $search, 'provinsi_code' => $provinsiCode, 'kota_code' => $kotaCode])) }}">
+                   href="{{ route('admin.asesi.index', array_filter(['tab' => $key, 'q' => $search, 'provinsi_code' => $provinsiCode, 'kota_code' => $kotaCode, 'dari' => $dari, 'sampai' => $sampai])) }}">
                     {{ $label }}
                 </a>
             </li>

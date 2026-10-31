@@ -5,7 +5,7 @@
 
 ## Status Ringkasan
 
-- **Fase Saat Ini**: Fase 0–5 selesai — berikutnya Fase 6 (Hasil & Laporan). 64/64 feature tests + 7/7 Dusk passing
+- **Fase Saat Ini**: Fase 0–5 selesai — berikutnya Fase 6 (Hasil & Laporan). 68/68 feature tests passing (Dusk tertunda: `laravel/dusk` belum terpasang di `vendor`)
 - **Status Overall**: In Progress
 - **Terakhir Diperbarui**: 31 Oktober 2026
 
@@ -178,3 +178,27 @@
   - **PDF**: `barryvdh/laravel-dompdf` dipakai untuk presensi, surat tugas, APL-02, dan MAK-02.
   - **Testing**: 64/64 feature tests (`PembayaranTest`, `AsesmenTest` termasuk); Dusk 7/7 (`NavigasiAdminTest`, `AlurFase4Dan5Test` — menu admin, upload bukti asesi, akses APL-02/MAK-02 asesor).
   - **Sisa lingkup**: PDF APL-01/MAK-01/MAK-03, monitoring APL-02 & rekap admin, CMS, area platform.
+
+- **31 Oktober 2026 — Sesi 5**
+  - **Standar runtime**: wajib **PHP 8.4 Laragon** (`D:\laragon\bin\php\php-8.4.23-Win32-vs17-x64\php.exe`); `php` di PATH masih 8.3.30 sehingga `php artisan` polos gagal di `composer/platform_check.php` (>= 8.4.1). Dicatat di `AGENTS.md` bagian "Standar Runtime PHP (Wajib)".
+  - **Sidebar admin dirapikan** (`resources/views/layouts/admin.blade.php`):
+    - Menu jadi satu sumber data (array `$adminMenu`) + komponen baru `x-menu-item` (`resources/views/components/menu-item.blade.php`); markup item tidak lagi duplikat 20+ kali.
+    - Item aktif via pola `request()->routeIs()`; grup berisi item aktif otomatis terbuka (`aria-expanded="true"` + `show`) — sebelumnya submenu aktif selalu tertutup.
+    - Route belum ada / halaman masih stub (501) dirender nonaktif `aria-disabled` + badge "Segera" (tanpa tautan mati `#`): Data Skema, TUG, Profil Lembaga, Lingkup Kompetensi, Undang Keanggotaan, Bundle, Sertifikat, Template Presensi, Data Laporan, SIUP User, Lampiran, Kategori Prestasi, Tim & Persetujuan.
+    - Diperbaiki: pola aktif salah (`admin.tuk.bundle.create,frame` ber- coma dalam satu string, daftar raksasa di "Tim & Persetujuan" yang ikut menyala di halaman lain, `admin.asesi.impor`/`admin.asesor.impor` yang tidak ada); ikon tidak tersedia di font Tabler (`ti-stamp`, `ti-presence`, `ti-file-compressed`, `ti-cloud-arrow-up` → `ti-certificate`, `ti-clipboard-check`, `ti-file-zip`, `ti-cloud-upload`); chevron/icon Dashboard yang memakai sprite SVG dari berkas `.woff2` (tidak valid) → `<i class="ti ti-*">`.
+    - Menu fitur yang sudah jadi tetapi hilang dari sidebar ditambahkan: grup **Biaya & Pembayaran** (Biaya Skema, Rekening Bank, Validasi Pembayaran) dan item **Outbox Notifikasi**.
+  - **Bug route kritis diperbaiki**: `routes/web.php` memakai 10 controller (`AdminSkemaController`, `AdminStkkniController`, `AdminTukController`, `AdminInstitutionController`, `AdminUnitKompetensiController`, `AdminUnitMappingController`, `AdminElemenKompetensiController`, `AdminProvinsiController`, `AdminKotaController`, `AdminWilayahController`) tanpa `use` → route-nya 500 dan `php artisan route:list` crash. 10 import ditambahkan; halaman tersebut sekarang konsisten 501 "Belum diimplementasi" (stub), bukan 500.
+  - **Testing**: `SidebarMenuTest` baru (tautan fitur siap, item "Segera" tanpa tautan mati, grup auto-expand); perbaikan typo `Dasboard` → `Dashboard Lembaga` (`dashboard/admin.blade.php`) dan asersi basi `Portal Administrator` → `Admin Portal` di `DashboardTest`. Total **67/67 feature tests lulus**, `pint --dirty` bersih.
+  - **Layout sidebar mengikuti Tabler vertical resmi** (https://preview.tabler.io/layout-vertical.html):
+    - `<html data-bs-navbar-position="vertical">` + `<aside class="navbar navbar-vertical navbar-expand-lg">` + `<nav class="collapse navbar-collapse" id="sidebar-menu">` + `<ul class="navbar-nav pt-lg-3">` dengan `<li class="nav-section-title">` (Ringkasan, Sertifikasi, Keuangan, Data & Integrasi, Sistem) dan grup `dropdown`/`dropdown-menu` sesuai demo Tabler.
+    - `x-menu-item` mendapat `variant` ('nav' untuk link berikon, 'dropdown' untuk item submenu tanpa ikon); item "Segera" dirender `dropdown-item disabled` + badge.
+    - `resources/css/app.css`: seluruh hack CSS lama dihapus (`.sidebar*`, `.nav-dropdown*`, `.page-wrapper{margin-left:...!important}` paksa) — sekaligus memperbaiki layout asesi/asesor yang bergeser 16rem karena aturan paksa itu; Tabler native `~ .page-wrapper{margin-inline-start}` yang menangani offset sidebar.
+    - Font: link CSS hardcoded `assets/fonts-<hash>.css` diganti directive `@fonts` (bawaan Laravel 13 + `laravel-vite-plugin/fonts`) sehingga hash tidak lagi dikunci manual; `npm run build` ulang (app-`B9bSszS0`.css).
+    - Test: `SidebarMenuTest` diperbarui ke markup dropdown + test baru `test_sidebar_follows_tabler_vertical_layout_structure`; **68/68 feature tests lulus**.
+  - **Ketahuan basi (belum dikerjakan)**: test Dusk `NavigasiAdminTest` & `AlurFase4Dan5Test` memakai selector menu lama (`a.dropdown-toggle[href="#sidebar-standar"]`, `#sidebar-komunikasi`, `#sidebar-lsp`, teks item yang tidak ada, variabel `$skema` belum didefinisikan) — perlu penulisan ulang; perlu penulisan ulang; shim `vendor/bin/dusk` juga tidak ada (paket `laravel/dusk` ada di vendor), sehingga suite Dusk tidak bisa dijalankan saat ini.
+
+- **31 Oktober 2026 — Sesi 5**
+  - **Perbaikan bug route Rekening Bank (RouteNotFoundException)**: resource route `rekening-bank` menghasilkan nama `admin.rekening-bank.*`, sedangkan view `admin/rekening/index.blade.php`, `RekeningBankController`, dan `PembayaranTest` memakai `admin.rekening.*`. Route diberi `->names('rekening')` (URI tetap `/admin/rekening-bank`) dan `->except(['show', 'create', 'edit'])` karena create/edit tidak dipakai (form via modal).
+  - **Route cache basi**: `bootstrap/cache/routes-v7.php` masih menyimpan nama lama dan action `AdminStkkniController` tanpa namespace; `php artisan route:clear` menghapus cache dan `route:list` kembali normal.
+  - **Testing**: `PembayaranTest` 5/5 lulus (18 assertion pada `test_admin_can_manage_rekening_bank`).
+  - **Kendala**: Dusk `AlurFase4Dan5Test` masih menargetkan menu `#sidebar-lsp` / tautan "Rekening Bank LSP" yang belum ada pada layout admin hasil revisi terbaru.

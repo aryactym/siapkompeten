@@ -2,7 +2,7 @@
 
 @section('title', 'Dashboard Administrator')
 @section('pretitle', 'Ringkasan & Metrik Operasional')
-@section('page-title', 'Dasboard Lembaga')
+@section('page-title', 'Dashboard Lembaga')
 
 @section('actions')
     <a href="{{ route('admin.jadwal.create') }}" class="btn btn-primary d-none d-sm-inline-block">

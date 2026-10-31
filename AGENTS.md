@@ -151,6 +151,20 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 Berlaku untuk seluruh sesi kerja AI agent maupun developer.
 
+## Standar Runtime PHP (Wajib)
+
+- **PHP 8.4 dari Laragon.** Composer `vendor/composer/platform_check.php` menuntut `PHP >= 8.4.1`.
+- `php` di PATH (bawaan Laragon) masih menunjuk **PHP 8.3.30** → `php artisan ...` polos akan gagal:
+  `Composer detected issues in your platform ... You are running 8.3.30.`
+- Selalu panggil binary PHP 8.4 secara eksplisit:
+  - Utama: `D:\laragon\bin\php\php-8.4.23-Win32-vs17-x64\php.exe`
+  - Cadangan (NTS): `D:\laragon\bin\php\php-8.4.23-nts-Win32-vs17-x64\php.exe`
+- Contoh perintah sesi kerja (PowerShell):
+  - `& 'D:\laragon\bin\php\php-8.4.23-Win32-vs17-x64\php.exe' artisan test --compact`
+  - `& 'D:\laragon\bin\php\php-8.4.23-Win32-vs17-x64\php.exe' vendor\bin\pint --dirty --format agent`
+  - `& 'D:\laragon\bin\php\php-8.4.23-Win32-vs17-x64\php.exe' artisan route:list`
+- Ganti path bila versi PHP Laragon diperbarui (folder `D:\laragon\bin\php\php-8.4.*`).
+
 ## Dokumen Wajib Dibaca di Awal Sesi
 
 1. Seluruh file Markdown di `docs/`.

@@ -38,7 +38,7 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($admin)->get('/dashboard');
 
         $response->assertStatus(200);
-        $response->assertSee('Portal Administrator');
+        $response->assertSee('Admin Portal');
         $response->assertSee('Dashboard Lembaga');
         $response->assertSee('Master Standar');
     }

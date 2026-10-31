@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ApprovePendaftaran;
 use App\Http\Controllers\Controller;
+use App\Models\HasilAsesmen;
 use App\Models\JadwalAsesmen;
 use App\Models\Pendaftaran;
 use App\Models\PendaftaranDokumen;
 use App\Services\NotificationOutbox;
 use App\Services\PendaftaranStorage;
 use App\Services\PendaftaranWorkflow;
+use App\Support\TenantContext;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -211,6 +215,90 @@ class PendaftaranController extends Controller
             $dokumen->file_path,
             $dokumen->persyaratan->nama_dokumen.'.'.pathinfo($dokumen->file_path, PATHINFO_EXTENSION),
         );
+    }
+
+    public function apl01(Pendaftaran $pendaftaran): Response
+    {
+        $this->authorize('view', $pendaftaran);
+
+        $pendaftaran->load([
+            'asesi.user',
+            'asesi.province',
+            'asesi.city',
+            'skema',
+            'jadwal.tuk',
+        ]);
+
+        activity('pendaftaran')
+            ->causedBy(request()->user())
+            ->performedOn($pendaftaran)
+            ->log('APL-01 dicetak sebagai PDF.');
+
+        return Pdf::loadView('pdf.apl01', [
+            'pendaftaran' => $pendaftaran,
+            'institution' => TenantContext::institution(),
+        ])
+            ->setPaper('a4', 'portrait')
+            ->stream(sprintf('FORM-APL-01-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
+    }
+
+    public function mak01(Pendaftaran $pendaftaran): Response
+    {
+        $this->authorize('view', $pendaftaran);
+
+        $pendaftaran->load([
+            'asesi.user',
+            'asesi.province',
+            'asesi.city',
+            'skema.persyaratans',
+            'dokumens.persyaratan',
+            'dokumens.verifikator',
+        ]);
+
+        activity('pendaftaran')
+            ->causedBy(request()->user())
+            ->performedOn($pendaftaran)
+            ->log('MAK-01 dicetak sebagai PDF.');
+
+        return Pdf::loadView('pdf.mak01', [
+            'pendaftaran' => $pendaftaran,
+            'institution' => TenantContext::institution(),
+        ])
+            ->setPaper('a4', 'portrait')
+            ->stream(sprintf('FORM-MAK-01-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
+    }
+
+    public function mak03(Pendaftaran $pendaftaran): Response
+    {
+        $this->authorize('view', $pendaftaran);
+
+        $pendaftaran->load([
+            'asesi.user',
+            'asesi.province',
+            'asesi.city',
+            'skema',
+            'jadwal.tuk',
+            'jadwal.asesors.asesor.user',
+        ]);
+
+        $hasil = HasilAsesmen::query()
+            ->where('pendaftaran_id', $pendaftaran->id)
+            ->with(['asesor.user', 'units'])
+            ->latest()
+            ->first();
+
+        activity('pendaftaran')
+            ->causedBy(request()->user())
+            ->performedOn($pendaftaran)
+            ->log('MAK-03 dicetak sebagai PDF.');
+
+        return Pdf::loadView('pdf.mak03', [
+            'pendaftaran' => $pendaftaran,
+            'hasil' => $hasil,
+            'institution' => TenantContext::institution(),
+        ])
+            ->setPaper('a4', 'portrait')
+            ->stream(sprintf('FORM-MAK-03-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
     }
 
     private function notifyStatusChange(Pendaftaran $pendaftaran, string $previousStatus): void

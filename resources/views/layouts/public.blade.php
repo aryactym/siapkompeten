@@ -8,11 +8,8 @@
     <meta name="description" content="@yield('meta_description', 'Sistem Informasi Lembaga Sertifikasi Profesi - Uji Kompetensi Berstandar BNSP')">
     <title>@yield('title', 'Beranda') · {{ config('app.name', 'SiapKompeten') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @fonts
     <style>
-        @import url('https://rsms.me/inter/inter.css');
-        :root {
-            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        }
         body {
             font-feature-settings: "cv03", "cv04", "cv11";
         }
