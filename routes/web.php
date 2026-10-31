@@ -37,6 +37,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\WidgetController;
+use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +48,11 @@ Route::get('/', function () {
 });
 
 Route::get('/beranda', [PublicController::class, 'index'])->name('beranda');
+
+// Wilayah — endpoint publik untuk dependent select kota/provinsi
+Route::get('/wilayah/provinsi/{code}/kota', [WilayahController::class, 'kotaByProvinsi'])
+    ->middleware('throttle:60,1')
+    ->name('wilayah.kota');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -70,7 +76,10 @@ Route::post('/aktivasi/{user}', [AsesiActivationController::class, 'store'])
     ->name('asesi.activate.store');
 
 Route::middleware('auth')->group(function (): void {
+    // GET /lock : tampilkan halaman lock (tetap ada untuk akses langsung via URL)
     Route::get('/lock', [LoginController::class, 'lock'])->name('lock');
+    // POST /lock/aktivasi : kunci layar via form POST (aman, tidak via GET)
+    Route::post('/lock/aktivasi', [LoginController::class, 'lock'])->name('lock.lock');
     Route::post('/lock', [LoginController::class, 'unlock'])->name('lock.unlock');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });
@@ -81,8 +90,6 @@ Route::middleware(['auth', 'tenant.context'])->group(function (): void {
     Route::post('/tenant/switch', [DashboardController::class, 'switchInstitution'])
         ->name('tenant.switch');
 
-    Route::post('/documents', [DocumentController::class, 'store'])
-        ->name('documents.store');
     Route::get('/documents/{document}', [DocumentController::class, 'show'])
         ->name('documents.show');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])
@@ -183,6 +190,10 @@ Route::prefix('admin')
         Route::post('pembayaran/{pembayaran}/putuskan', [AdminPembayaranController::class, 'putuskan'])
             ->middleware('throttle:30,1')
             ->name('pembayaran.putuskan');
+
+        // Dokumen Lembaga (dipindahkan dari route global untuk memastikan prefix /admin)
+        Route::post('documents', [DocumentController::class, 'store'])
+            ->name('documents.store');
     });
 
 Route::prefix('asesor')

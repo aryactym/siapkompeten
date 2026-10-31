@@ -13,39 +13,35 @@
 @section('content')
 <div class="row row-deck row-cards mb-4">
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Jadwal Penugasan"
+        <x-tabler.stat
+            label="Jadwal Penugasan"
             value="{{ $stats['total_jadwal'] ?? 0 }}"
-            icon="ti ti-calendar-event"
+            icon="calendar-event"
             color="primary"
-            description="Penugasan uji kompetensi aktif"
         />
     </div>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Verifikasi APL-02"
+        <x-tabler.stat
+            label="Verifikasi APL-02"
             value="{{ $stats['pending_apl02'] ?? 0 }}"
-            icon="ti ti-checklist"
+            icon="checklist"
             color="yellow"
-            description="Menunggu verifikasi bukti asesi"
         />
     </div>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Asesi Dinilai"
+        <x-tabler.stat
+            label="Asesi Dinilai"
             value="{{ $stats['asesi_dinilai'] ?? 0 }}"
-            icon="ti ti-user-check"
+            icon="user-check"
             color="green"
-            description="Total asesi yang telah dinilai"
         />
     </div>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Laporan MAK-02"
+        <x-tabler.stat
+            label="Laporan MAK-02"
             value="{{ $stats['laporan_mak02'] ?? 0 }}"
-            icon="ti ti-file-analytics"
+            icon="file-analytics"
             color="azure"
-            description="Berita acara & rekomendasi K/BK"
         />
     </div>
 </div>

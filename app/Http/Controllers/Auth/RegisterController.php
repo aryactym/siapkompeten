@@ -28,7 +28,6 @@ class RegisterController extends Controller
         return view('auth.register', [
             'institution' => $institution,
             'provinces' => Province::orderBy('name')->get(),
-            'cities' => City::orderBy('name')->get(),
         ]);
     }
 
@@ -67,7 +66,23 @@ class RegisterController extends Controller
             'tanggal_lahir' => ['required', 'date', 'before:today'],
             'alamat_rumah' => ['required', 'string', 'max:1000'],
             'provinsi_code' => ['required', 'string', 'max:2'],
-            'kota_code' => ['required', 'string', 'max:4'],
+            'kota_code' => [
+                'required',
+                'string',
+                'max:4',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                    $provinsiCode = $request->input('provinsi_code');
+                    if (blank($provinsiCode)) {
+                        return; // provinsi_code sudah divalidasi required di atasnya
+                    }
+                    $valid = City::where('code', (string) $value)
+                        ->where('province_code', (string) $provinsiCode)
+                        ->exists();
+                    if (! $valid) {
+                        $fail('Kota/kabupaten tidak sesuai dengan provinsi yang dipilih.');
+                    }
+                },
+            ],
             'pendidikan_terakhir' => ['required', 'string', 'max:100'],
             'consent' => ['accepted'],
         ]);

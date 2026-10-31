@@ -1,228 +1,144 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard Administrator')
+@section('title', 'Dashboard Lembaga')
 @section('pretitle', 'Ringkasan & Metrik Operasional')
 @section('page-title', 'Dashboard Lembaga')
 
 @section('actions')
-    <a href="{{ route('admin.jadwal.create') }}" class="btn btn-primary d-none d-sm-inline-block">
-        <i class="ti ti-plus me-1"></i> Buat Jadwal Uji
+    <a href="{{ route('admin.jadwal.create') }}"
+       class="btn btn-primary"
+       aria-label="Buat Jadwal Uji Kompetensi">
+        <i class="ti ti-plus me-1" aria-hidden="true"></i>
+        <span class="d-none d-sm-inline">Buat Jadwal Uji</span>
     </a>
-    <a href="{{ route('admin.skema.index') }}" class="btn btn-outline-primary d-none d-sm-inline-block">
-        <i class="ti ti-certificate me-1"></i> Tambah Skema
+    <a href="{{ route('admin.skema.create') }}"
+       class="btn btn-outline-primary"
+       aria-label="Tambah Skema Sertifikasi">
+        <i class="ti ti-certificate me-1" aria-hidden="true"></i>
+        <span class="d-none d-sm-inline">Tambah Skema</span>
     </a>
 @endsection
 
 @section('content')
-<div class="row row-cards mb-4">
-    <div class="col-12">
-        <div class="card" data-widget="stat_ringkas">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h3 class="card-title mb-0">Ringkasan (Widget)</h3>
-                </div>
-                <div class="widget-skeleton">
-                    <div class="placeholder-glow">
-                        <span class="placeholder col-12"></span>
-                    </div>
-                </div>
-                <div class="widget-body d-none"></div>
-                <div class="widget-error d-none text-secondary small">
-                    Gagal memuat widget. <button type="button" class="btn btn-sm btn-link widget-retry">Coba lagi</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+{{-- 1. Onboarding checklist (hilang otomatis bila semua selesai) --}}
+<x-dashboard.onboarding :steps="$onboardingSteps" />
+
+{{-- 2. Baris kartu statistik — 1 kolom mobile, 2 sm, 4 lg --}}
+<x-dashboard.stat-row>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Skema Sertifikasi"
-            value="{{ $stats['total_skema'] ?? 0 }}"
-            icon="ti ti-certificate"
+        <x-tabler.stat
+            label="Skema Sertifikasi"
+            :value="number_format($stats['total_skema'], 0, ',', '.')"
+            icon="certificate"
             color="primary"
-            description="Skema aktif berlisensi BNSP"
+            :href="route('admin.skema.index')"
+            :hint="$stats['skema_nonaktif'] > 0 ? $stats['skema_nonaktif'].' nonaktif' : null"
         />
     </div>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Total Asesi"
-            value="{{ $stats['total_asesi'] ?? 0 }}"
-            icon="ti ti-users"
+        <x-tabler.stat
+            label="Total Asesi"
+            :value="number_format($stats['total_asesi'], 0, ',', '.')"
+            icon="users"
             color="green"
-            description="Asesi terdaftar di sistem"
+            :href="route('admin.asesi.index')"
+            :hint="$stats['asesi_belum_verif'] > 0 ? $stats['asesi_belum_verif'].' belum terverifikasi' : null"
         />
     </div>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Jadwal Uji Aktif"
-            value="{{ $stats['total_jadwal'] ?? 0 }}"
-            icon="ti ti-calendar-event"
+        <x-tabler.stat
+            label="Jadwal Mendatang"
+            :value="number_format($stats['jadwal_mendatang'], 0, ',', '.')"
+            icon="calendar-event"
             color="yellow"
-            description="Event & batch asesmen"
+            :href="route('admin.jadwal.index')"
+            :hint="$stats['jadwal_mendatang_7hari'] > 0 ? $stats['jadwal_mendatang_7hari'].' dalam 7 hari' : null"
         />
     </div>
     <div class="col-sm-6 col-lg-3">
-        <x-tabler.stat 
-            title="Asesor Kompetensi"
-            value="{{ $stats['total_asesor'] ?? 0 }}"
-            icon="ti ti-user-check"
+        <x-tabler.stat
+            label="Asesor Aktif"
+            :value="number_format($stats['total_asesor'], 0, ',', '.')"
+            icon="user-check"
             color="azure"
-            description="Tersedia untuk penugasan"
+            :href="route('admin.asesor.index')"
+            :hint="$stats['asesor_aktif'] !== $stats['total_asesor'] ? ($stats['total_asesor'] - $stats['asesor_aktif']).' tidak aktif' : null"
         />
     </div>
-</div>
+</x-dashboard.stat-row>
 
-<div class="row row-cards">
-    <!-- Kolom Kiri: Ringkasan Lembaga Aktif & Dokumen -->
+{{-- 3. Konten utama: antrean + jadwal | kesehatan + dokumen --}}
+<div class="row row-cards mt-3">
     <div class="col-lg-8">
-        <x-tabler.card title="Dokumen & Portofolio Lembaga">
-            <x-slot:actions>
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-upload-doc">
-                    <i class="ti ti-upload me-1"></i> Unggah Dokumen
-                </button>
-            </x-slot:actions>
 
-            @if ($documents->isEmpty())
-                <x-tabler.empty 
-                    title="Belum ada dokumen lembaga"
-                    description="Unggah SK lisensi BNSP, surat keputusan TUK, atau panduan mutu lembaga Anda di sini."
-                    icon="ti ti-files"
-                />
-            @else
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Judul Dokumen</th>
-                                <th>Format & Ukuran</th>
-                                <th>Diunggah Oleh</th>
-                                <th>Waktu</th>
-                                <th class="w-1">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($documents as $document)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <i class="ti ti-file-text fs-2 text-primary me-2"></i>
-                                            <div>
-                                                <a href="{{ route('documents.show', $document) }}" class="text-reset fw-semibold">
-                                                    {{ $document->title }}
-                                                </a>
-                                                <div class="text-secondary small">{{ $document->original_name }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-blue-lt text-uppercase">{{ pathinfo($document->original_name, PATHINFO_EXTENSION) }}</span>
-                                        <span class="text-secondary small ms-1">{{ number_format($document->size / 1024, 1, ',', '.') }} KB</span>
-                                    </td>
-                                    <td class="text-secondary small">
-                                        {{ $document->uploader?->name ?? 'Sistem' }}
-                                    </td>
-                                    <td class="text-secondary small">
-                                        {{ $document->created_at?->diffForHumans() }}
-                                    </td>
-                                    <td>
-                                        <div class="btn-list flex-nowrap">
-                                            <a href="{{ route('documents.download', $document) }}" class="btn btn-sm btn-outline-secondary" title="Unduh">
-                                                <i class="ti ti-download"></i>
-                                            </a>
-                                            <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-primary" title="Detail">
-                                                <i class="ti ti-eye"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+        {{-- 3a. Antrean tindakan --}}
+        <x-dashboard.action-queue
+            title="Antrean Tindakan"
+            :items="$actionQueue"
+        />
 
-                <div class="card-footer d-flex align-items-center py-2">
-                    {{ $documents->links() }}
-                </div>
-            @endif
-        </x-tabler.card>
-    </div>
-
-    <!-- Kolom Kanan: Status Kepatuhan & Informasi Sistem -->
-    <div class="col-lg-4">
-        <x-tabler.card title="Status Keamanan & Kepatuhan">
-            <div class="divide-y">
-                <div class="py-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold">Standar Keamanan</div>
-                        <div class="text-secondary small">OWASP Top 10:2025</div>
-                    </div>
-                    <span class="badge bg-green-lt"><i class="ti ti-shield-check me-1"></i> Aktif</span>
-                </div>
-                <div class="py-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold">Isolasi Multitenant</div>
-                        <div class="text-secondary small">BelongsToTenant Fail-Closed</div>
-                    </div>
-                    <span class="badge bg-green-lt"><i class="ti ti-check me-1"></i> Terisolasi</span>
-                </div>
-                <div class="py-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold">Enkripsi NIK & Data Pribadi</div>
-                        <div class="text-secondary small">AES-256 + HMAC Blind Index</div>
-                    </div>
-                    <span class="badge bg-green-lt"><i class="ti ti-lock me-1"></i> Enkripsi DB</span>
-                </div>
-                <div class="py-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold">Format Formulir BNSP</div>
-                        <div class="text-secondary small">APL-01, APL-02, MAK-01..03</div>
-                    </div>
-                    <span class="badge bg-blue-lt">Resmi BNSP</span>
-                </div>
-            </div>
-        </x-tabler.card>
-
-        <div class="card mt-3 bg-primary-lt border-0 shadow-sm">
-            <div class="card-body">
-                <h3 class="card-title text-primary"><i class="ti ti-info-circle me-1"></i> Bantuan & Dokumentasi</h3>
-                <p class="text-secondary small mb-3">
-                    Pelajari panduan integrasi sistem sertifikasi e-LSP sesuai standar BNSP dan alur kerja verifikasi asesi.
-                </p>
-                <span class="btn btn-sm btn-primary w-100 disabled" aria-disabled="true">
-                    <i class="ti ti-book me-1"></i> Panduan Admin (Segera)
-                </span>
-            </div>
+        {{-- 3b. Jadwal 7 hari ke depan --}}
+        <div class="mt-3">
+            <x-dashboard.schedule-list
+                title="Jadwal 7 Hari ke Depan"
+                :items="$jadwal7Hari"
+                :emptyHref="route('admin.jadwal.create')"
+                emptyLabel="Buat Jadwal Uji"
+            />
         </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        {{-- 3c. Kesehatan sistem (pengecekan nyata, tanpa klaim statis) --}}
+        <x-dashboard.system-health
+            title="Kesehatan Sistem"
+            :checks="$systemHealth"
+        />
+
+        {{-- 3d. Ringkasan dokumen lembaga --}}
+        <div class="mt-3">
+            <x-tabler.card title="Dokumen Lembaga">
+                <x-slot:actions>
+                    <a href="{{ route('admin.institution.index') }}" class="btn btn-sm btn-outline-secondary">
+                        Kelola
+                    </a>
+                </x-slot:actions>
+
+                @if ($documents->isEmpty())
+                    <div class="text-center py-3 text-secondary small">
+                        <i class="ti ti-files fs-2 d-block mb-1" aria-hidden="true"></i>
+                        Belum ada dokumen.
+                        <a href="{{ route('admin.institution.index') }}">Unggah di Profil Lembaga.</a>
+                    </div>
+                @else
+                    <ul class="list-group list-group-flush -mx-3 -my-3">
+                        @foreach ($documents->take(5) as $doc)
+                            <li class="list-group-item px-3 py-2 d-flex align-items-center gap-2">
+                                <i class="ti ti-file-text text-secondary flex-shrink-0" aria-hidden="true"></i>
+                                <span class="flex-grow-1 text-truncate small">{{ $doc->title }}</span>
+                                <a href="{{ route('documents.download', $doc) }}"
+                                   class="btn btn-sm btn-ghost-secondary flex-shrink-0"
+                                   title="Unduh {{ $doc->title }}">
+                                    <i class="ti ti-download" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                    @if ($documents->count() > 5)
+                        <div class="card-footer text-center py-2">
+                            <a href="{{ route('admin.institution.index') }}" class="small text-secondary">
+                                Lihat semua {{ $documents->count() }} dokumen
+                            </a>
+                        </div>
+                    @endif
+                @endif
+            </x-tabler.card>
+        </div>
+
     </div>
 </div>
 
-<!-- Modal Unggah Dokumen -->
-<div class="modal modal-blur fade" id="modal-upload-doc" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="modal-content">
-            @csrf
-            <div class="modal-header">
-                <h5 class="modal-title">Unggah Dokumen Lembaga</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label required">Judul Dokumen</label>
-                    <input type="text" name="title" class="form-control" placeholder="Contoh: SK Lisensi BNSP 2026" required maxlength="200">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label required">Berkas (PDF, JPG, PNG)</label>
-                    <input type="file" name="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
-                    <small class="form-hint">Maksimal ukuran berkas 5 MB. Disimpan aman pada disk privat.</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary ms-auto">
-                    <i class="ti ti-upload me-1"></i> Simpan & Unggah
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 @endsection

@@ -76,8 +76,9 @@
                     <textarea name="alamat_rumah" class="form-control" rows="2" required maxlength="1000">{{ old('alamat_rumah') }}</textarea>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label required">Provinsi</label>
-                    <select name="provinsi_code" id="provinsi_code" class="form-select" required>
+                    <label class="form-label required" for="provinsi_code">Provinsi</label>
+                    <select name="provinsi_code" id="provinsi_code" class="form-select" required
+                            autocomplete="address-level1">
                         <option value="">Pilih provinsi</option>
                         @foreach ($provinces as $province)
                             <option value="{{ $province->code }}" @selected(old('provinsi_code') === $province->code)>
@@ -87,16 +88,20 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label required">Kota / Kabupaten</label>
-                    <select name="kota_code" id="kota_code" class="form-select" required>
-                        <option value="">Pilih kota/kabupaten</option>
-                        @foreach ($cities as $city)
-                            <option value="{{ $city->code }}" data-province="{{ $city->province_code }}"
-                                @selected(old('kota_code') === $city->code)>
-                                {{ $city->name }}
-                            </option>
-                        @endforeach
+                    <label class="form-label required" for="kota_code">Kota / Kabupaten</label>
+                    <select name="kota_code" id="kota_code" class="form-select" required
+                            autocomplete="address-level2" disabled>
+                        <option value="">Pilih provinsi terlebih dahulu</option>
+                        @if (old('kota_code'))
+                            {{-- Opsi lama dipertahankan agar re-submit tetap terisi --}}
+                            <option value="{{ old('kota_code') }}" selected>{{ old('kota_code') }}</option>
+                        @endif
                     </select>
+                    <div class="form-hint d-none" id="kota_loading">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Memuat daftar kota…
+                    </div>
+                    <div class="invalid-feedback" id="kota_error"></div>
                 </div>
                 <div class="col-12">
                     <label class="form-label required">Pendidikan Terakhir</label>
@@ -131,18 +136,76 @@
 
 @push('scripts')
 <script>
+(function () {
     const provinceSelect = document.getElementById('provinsi_code');
-    const citySelect = document.getElementById('kota_code');
-    const cityOptions = Array.from(citySelect.querySelectorAll('option[data-province]'));
+    const citySelect     = document.getElementById('kota_code');
+    const loadingHint    = document.getElementById('kota_loading');
+    const errorHint      = document.getElementById('kota_error');
 
-    function filterCities() {
-        const province = provinceSelect.value;
-        cityOptions.forEach((option) => {
-            option.hidden = province !== '' && option.dataset.province !== province;
-        });
+    // Nilai yang perlu dipra-pilih setelah kota dimuat (saat ada old() dari server)
+    const preselectedCity = @json(old('kota_code', ''));
+
+    function setLoading(isLoading) {
+        loadingHint.classList.toggle('d-none', !isLoading);
+        citySelect.disabled = isLoading;
     }
 
-    provinceSelect.addEventListener('change', filterCities);
-    filterCities();
+    function setError(message) {
+        errorHint.textContent = message;
+        citySelect.classList.toggle('is-invalid', message !== '');
+    }
+
+    async function loadCities(provinceCode) {
+        if (!provinceCode) {
+            citySelect.innerHTML = '<option value="">Pilih provinsi terlebih dahulu</option>';
+            citySelect.disabled = true;
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        try {
+            const url = '/wilayah/provinsi/' + encodeURIComponent(provinceCode) + '/kota';
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memuat daftar kota (HTTP ' + response.status + ').');
+            }
+
+            const cities = await response.json();
+
+            citySelect.innerHTML = '<option value="">Pilih kota/kabupaten</option>';
+            cities.forEach(function (city) {
+                const option = document.createElement('option');
+                option.value = city.code;
+                option.textContent = city.nama;
+                if (city.code === preselectedCity) {
+                    option.selected = true;
+                }
+                citySelect.appendChild(option);
+            });
+
+            citySelect.disabled = false;
+        } catch (err) {
+            citySelect.innerHTML = '<option value="">Pilih kota/kabupaten</option>';
+            citySelect.disabled = true;
+            setError(err.message || 'Gagal memuat kota. Coba lagi.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    provinceSelect.addEventListener('change', function () {
+        loadCities(this.value);
+    });
+
+    // Jika ada pilihan provinsi sebelumnya (old() setelah validasi gagal), langsung muat
+    if (provinceSelect.value) {
+        loadCities(provinceSelect.value);
+    }
+})();
 </script>
 @endpush
