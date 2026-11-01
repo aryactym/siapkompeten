@@ -6,6 +6,9 @@
 
 @section('actions')
     <div class="d-flex gap-2">
+        <a href="{{ route('admin.asesi.edit', $asesi) }}" class="btn btn-outline-secondary">
+            <i class="ti ti-pencil me-1"></i> Edit Data
+        </a>
         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modal-password">
             <i class="ti ti-key me-1"></i> Set Password
         </button>

@@ -174,6 +174,8 @@ Route::prefix('admin')
         Route::delete('asesi/impor/{batch}', [AdminAsesiImportController::class, 'destroy'])->name('asesi.import.destroy');
 
         Route::get('asesi/{asesi}', [AdminAsesiController::class, 'show'])->name('asesi.show');
+        Route::get('asesi/{asesi}/edit', [AdminAsesiController::class, 'edit'])->name('asesi.edit');
+        Route::put('asesi/{asesi}', [AdminAsesiController::class, 'update'])->name('asesi.update');
         Route::post('asesi/{asesi}/verifikasi', [AdminAsesiController::class, 'verify'])->name('asesi.verify');
         Route::post('asesi/{asesi}/pendaftaran', [AdminAsesiController::class, 'storePendaftaran'])->name('asesi.pendaftaran.store');
         Route::post('asesi/{asesi}/password', [AdminAsesiController::class, 'setPassword'])->name('asesi.password.set');

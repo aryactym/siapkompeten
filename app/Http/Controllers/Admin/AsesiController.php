@@ -153,6 +153,70 @@ class AsesiController extends Controller
         ]);
     }
 
+    public function edit(Asesi $asesi): View
+    {
+        $this->authorize('view', $asesi);
+
+        return view('admin.asesi.form', [
+            'asesi' => $asesi->load('user'),
+            'provinces' => Province::orderBy('name')->get(),
+            'cities' => City::orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Asesi $asesi): RedirectResponse
+    {
+        $this->authorize('view', $asesi);
+
+        $tenantId = (string) TenantContext::requireId();
+        $user = $asesi->user;
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'email' => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('users', 'email')
+                    ->where('institution_id', $tenantId)
+                    ->ignore($user->id),
+            ],
+            'phone' => ['required', 'string', 'max:20'],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
+            'tempat_lahir' => ['nullable', 'string', 'max:100'],
+            'tanggal_lahir' => ['nullable', 'date', 'before:today'],
+            'kebangsaan' => ['nullable', 'string', 'max:100'],
+            'alamat_rumah' => ['nullable', 'string', 'max:1000'],
+            'kelurahan' => ['nullable', 'string', 'max:100'],
+            'provinsi_code' => ['nullable', 'string', 'max:2'],
+            'kota_code' => ['nullable', 'string', 'max:4'],
+            'kode_pos' => ['nullable', 'string', 'max:10'],
+            'telp_rumah' => ['nullable', 'string', 'max:50'],
+            'pekerjaan_instansi' => ['nullable', 'string', 'max:200'],
+            'jabatan' => ['nullable', 'string', 'max:150'],
+            'alamat_kantor' => ['nullable', 'string', 'max:1000'],
+            'telp_kantor' => ['nullable', 'string', 'max:50'],
+            'pendidikan_terakhir' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+        ]);
+
+        $asesi->update(collect($validated)->except(['name', 'email', 'phone'])->all());
+
+        activity('asesi')
+            ->causedBy($request->user())
+            ->performedOn($asesi)
+            ->log('Admin memperbarui data asesi.');
+
+        return redirect()
+            ->route('admin.asesi.show', $asesi)
+            ->with('success', 'Data asesi berhasil diperbarui.');
+    }
+
     public function storePendaftaran(Request $request, Asesi $asesi): RedirectResponse
     {
         $this->authorize('view', $asesi);
