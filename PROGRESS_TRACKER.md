@@ -290,3 +290,19 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
     - Regression test: `assertSee('name="verifikasi[{kuk_id}][valid]"')` + `assertDontSee('name="verifikasi[{elemen_id}][valid]"')` — test sebelumnya pakai KUK-id langsung jadi bug lolos.
   - **Testing**: full Feature suite **91/91** lulus; `pint --dirty` bersih.
   - **Commit**: `c600bec`, `96b3c9b`, `089bb14`.
+
+
+  **Lanjutan Sesi 10 — MAK-02 & APL-02 asesi**
+  - **APL-02 asesi restore approval & bukti dari DB** (`63d2b5d`):
+    - Bug: radio `elemen_approval` tanpa `@checked` — selalu kosong saat load. Bukti pakai `->where('elemen_id', ...)` (field tidak ada, hanya `kuk_id`) — null.
+    - Fix: key per kuk_id pertama elemen, restore via `old()` → DB `jawaban_asesi`.
+  - **MAK-02 tombol Semua Tercapai** (`a5064ee`, `1a5797e`):
+    - Tombol di bawah form (dekat Simpan Draf) — centang semua radio `elemenTercapai[id] = "1"` (hanya centang, tidak submit).
+  - **MAK-02 Eloquent Collection `only()` bug** (`7bef2fd`):
+    - Root cause: `$hasil->kuks()->get()->keyBy('kuk_id')` = Eloquent Collection. Method `only()` di-override filter by **primary key `id` baris**, bukan array key `kuk_id` → `$hasilKuks->only($kukIds)` = 0 → semua elemen tampil "belum dinilai" padahal data ada.
+    - Bug nyata di DB real (tinker: `$hasilKuks->only(...)` = 0, `array_intersect` = 4).
+    - Fix: wrap jadi base Collection: `collect($hasil->kuks()->get()->keyBy('kuk_id')->all())`.
+    - Regression test + helper `extractInputTag()` menangkap radio "Semua tercapai" ter-check.
+  - **Testing**: full Feature **91/91** lulus, `pint` bersih.
+  - **Commits akhir sesi 10**: `63d2b5d`, `a5064ee`, `1a5797e`, `7bef2fd`.
+  - **Total sesi 10**: 8 commits, 3 bug fix utama (FK violation APL-02, APL-02 asesi restore, MAK-02 `only()` bug).
