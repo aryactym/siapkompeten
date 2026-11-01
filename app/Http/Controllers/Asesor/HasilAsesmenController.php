@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class HasilAsesmenController extends Controller
@@ -143,44 +144,40 @@ class HasilAsesmenController extends Controller
         // Load relasi apl02 untuk pengecekan status
         $pendaftaran->loadMissing('apl02');
 
-        abort_unless(
-            $pendaftaran->apl02?->status === Apl02Penilaian::STATUS_DIVERIFIKASI,
-            403,
-            'APL-02 harus diverifikasi sebelum FR.AK.02 difinalkan.'
-        );
+        // Validasi APL-02 harus diverifikasi
+        if (! $pendaftaran->apl02?->status === Apl02Penilaian::STATUS_DIVERIFIKASI) {
+            throw ValidationException::withMessages([
+                'hasil' => 'APL-02 harus diverifikasi sebelum FR.AK.02 difinalkan.',
+            ]);
+        }
 
         $validated = $request->validate([
             'rekomendasi' => ['required', Rule::in([
                 HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN,
                 HasilAsesmen::REKOMENDASI_TIDAK,
             ])],
-            // umpan_balik wajib dicentang (server-side accepted)
             'umpan_balik' => ['accepted'],
-            // konfirmasi: asesor menyatakan memahami penguncian laporan
             'konfirmasi' => ['accepted'],
         ]);
 
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
 
-        // Validasi: minimal satu metode harus dipilih sebelum finalisasi
+        // Validasi: minimal satu metode harus dipilih
         $metodeDefault = $hasil->metode_default ?? [];
-        $metodeTerpilih = array_values(array_filter(
-            $metodeDefault,
-            fn ($m) => ! empty($m)
-        ));
+        $metodeTerpilih = array_values(array_filter($metodeDefault, fn ($m) => ! empty($m)));
 
-        abort_unless(
-            ! empty($metodeTerpilih),
-            422,
-            'Minimal satu metode asesmen harus dipilih sebelum FR.AK.02 difinalkan.'
-        );
+        if (empty($metodeTerpilih)) {
+            throw ValidationException::withMessages([
+                'hasil' => 'Minimal satu metode asesmen harus dipilih sebelum FR.AK.02 difinalkan.',
+            ]);
+        }
 
         $this->asesmen->finalkan(
             $hasil,
             $pendaftaran,
             $request->user(),
             $validated['rekomendasi'],
-            true, // umpan_balik sudah divalidasi accepted di atas
+            true,
         );
 
         return redirect()

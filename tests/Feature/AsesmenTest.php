@@ -331,14 +331,14 @@ class AsesmenTest extends TestCase
             ->assertSee('Semua Tercapai')
             ->assertSee('semuaTercapai()');
 
-        // Finalisasi diblokir sampai APL-02 diverifikasi.
+        // Finalisasi diblokir sampai APL-02 diverifikasi — redirect dengan error di modal.
         $this->actingAs($this->asesorUser)
             ->from(route('asesor.mak02.show', $this->pendaftaran))
             ->post(route('asesor.mak02.final', $this->pendaftaran), [
                 'rekomendasi' => HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN,
                 'konfirmasi' => '1',
             ])
-            ->assertForbidden();
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran));
 
         $this->actingAs($this->asesorUser)
             ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
