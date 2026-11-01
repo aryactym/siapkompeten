@@ -12,8 +12,49 @@
 
 @section('content')
 <x-tabler.card title="Daftar Skema" subtitle="Skema sertifikasi (okupasi/klaster/KKNI) yang ditawarkan LSP.">
+    <x-slot:actions>
+        <form method="GET" action="{{ route('admin.skema.index') }}" class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="search" name="q" value="{{ $searchQuery }}"
+                   class="form-control form-control-sm" style="min-width:220px"
+                   placeholder="Cari kode / nama skema">
+            <select name="jenis" class="form-select form-select-sm" style="min-width:150px">
+                <option value="">— Semua Jenis —</option>
+                <option value="kkni"     @selected($selectedJenis === 'kkni')>KKNI</option>
+                <option value="okupasi"  @selected($selectedJenis === 'okupasi')>Okupasi</option>
+                <option value="klaster"  @selected($selectedJenis === 'klaster')>Klaster</option>
+            </select>
+            @if ($kategoriSkemas->isNotEmpty())
+                <select name="kategori" class="form-select form-select-sm" style="min-width:180px">
+                    <option value="">— Semua Kategori —</option>
+                    @foreach ($kategoriSkemas as $kategori)
+                        <option value="{{ $kategori }}" @selected($selectedKategori === $kategori)>
+                            {{ $kategori }}
+                        </option>
+                    @endforeach
+                </select>
+            @endif
+            <select name="status" class="form-select form-select-sm" style="min-width:140px">
+                <option value="">— Semua Status —</option>
+                <option value="aktif"    @selected($selectedStatus === 'aktif')>Aktif</option>
+                <option value="nonaktif" @selected($selectedStatus === 'nonaktif')>Nonaktif</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="ti ti-search"></i>
+            </button>
+            @if ($searchQuery !== '' || $selectedJenis !== '' || $selectedKategori !== '' || $selectedStatus !== '')
+                <a href="{{ route('admin.skema.index') }}" class="btn btn-sm btn-ghost-secondary" title="Reset filter">
+                    <i class="ti ti-x"></i>
+                </a>
+            @endif
+        </form>
+    </x-slot:actions>
+
     @if ($skemas->isEmpty())
-        <x-tabler.empty title="Belum ada skema" description="Tambahkan skema sertifikasi." icon="ti ti-certificate" />
+        @if ($searchQuery !== '' || $selectedJenis !== '' || $selectedKategori !== '' || $selectedStatus !== '')
+            <x-tabler.empty title="Tidak ada hasil" description="Tidak ditemukan skema yang cocok dengan filter." icon="ti ti-search-off" />
+        @else
+            <x-tabler.empty title="Belum ada skema" description="Tambahkan skema sertifikasi." icon="ti ti-certificate" />
+        @endif
     @else
         <div class="table-responsive">
             <table class="table table-vcenter card-table">

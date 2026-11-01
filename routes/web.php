@@ -101,8 +101,6 @@ Route::middleware('auth')->group(function (): void {
 Route::middleware(['auth', 'tenant.context'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/dashboard/widgets/{key}', [WidgetController::class, 'show'])->name('dashboard.widget');
-    Route::post('/tenant/switch', [DashboardController::class, 'switchInstitution'])
-        ->name('tenant.switch');
 
     Route::get('/documents/{document}', [DocumentController::class, 'show'])
         ->name('documents.show');

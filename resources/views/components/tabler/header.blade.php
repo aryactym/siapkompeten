@@ -4,8 +4,6 @@
 
     $user = auth()->user();
     $activeInstitution = TenantContext::institution();
-    $accessibleInstitutions = $user ? $user->accessibleInstitutions() : collect();
-    $hasMultipleTenants = $accessibleInstitutions->count() > 1;
     $activeInstitutionName = $activeInstitution?->name ?? config('app.name');
     $availablePortals = $user ? ActivePortal::availablePortals($user) : [];
     $activePortal = $user ? ActivePortal::get(request()) : null;
@@ -23,8 +21,8 @@
 
     Tidak memuat brand (brand hanya di sidebar, via x-brand).
     Tidak memuat hamburger yang menarget #navbar-menu (tidak ada).
-    Berisi: tenant switcher (multi-tenant), menu pengguna.
-    Tenant switcher hanya muncul bila pengguna punya akses > 1 lembaga.
+    Berisi: menu pengguna (portal switcher hanya jika multi-portal).
+    Branch `single`: tenant switcher dihapus (satu LSP per instalasi).
 --}}
 <header class="navbar navbar-expand-md d-print-none border-bottom">
     <div class="container-xl">
@@ -32,37 +30,6 @@
         <div class="flex-grow-1"></div>
 
         <div class="navbar-nav flex-row order-md-last align-items-center gap-2">
-
-            {{-- Tenant Switcher: hanya jika user punya > 1 lembaga --}}
-            @if ($hasMultipleTenants)
-                <div class="nav-item dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
-                            data-bs-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                            aria-label="Pilih lembaga aktif: {{ $activeInstitutionName }}">
-                        <i class="ti ti-building" aria-hidden="true"></i>
-                        <span class="d-none d-sm-inline text-truncate" style="max-width: 160px;">{{ $activeInstitutionName }}</span>
-                        <i class="ti ti-chevron-down" aria-hidden="true"></i>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <div class="dropdown-header">Pilih Lembaga Aktif</div>
-                        @foreach ($accessibleInstitutions as $inst)
-                            <form method="POST" action="{{ route('tenant.switch') }}" class="d-block">
-                                @csrf
-                                <input type="hidden" name="institution_id" value="{{ $inst->id }}">
-                                <button type="submit"
-                                        class="dropdown-item d-flex align-items-center justify-content-between {{ $activeInstitution && $activeInstitution->id === $inst->id ? 'active fw-bold' : '' }}">
-                                    <span>{{ $inst->name }}</span>
-                                    @if ($activeInstitution && $activeInstitution->id === $inst->id)
-                                        <i class="ti ti-check ms-2 text-success" aria-hidden="true"></i>
-                                    @endif
-                                </button>
-                            </form>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
 
             {{-- Menu Pengguna --}}
             @if ($user)

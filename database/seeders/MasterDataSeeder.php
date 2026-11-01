@@ -50,8 +50,8 @@ class MasterDataSeeder extends Seeder
                 'telepon' => '021-87654322',
                 'email' => 'tuk-jakarta@siapkompeten.id',
                 'alamat' => 'Jl. TB Simatupang No. 12, Jakarta Selatan',
-                'province_code' => '31',
-                'city_code' => '3171',
+                'province_code' => null,
+                'city_code' => null,
                 'is_verified' => true,
                 'is_active' => true,
             ]
@@ -66,8 +66,8 @@ class MasterDataSeeder extends Seeder
                 'telepon' => '021-87654323',
                 'email' => 'tuk-lab-b@siapkompeten.id',
                 'alamat' => 'Kawasan Industri Sentul, Kab. Bogor',
-                'province_code' => '32',
-                'city_code' => '3201',
+                'province_code' => null,
+                'city_code' => null,
                 'is_verified' => true,
                 'is_active' => true,
             ]
@@ -285,8 +285,8 @@ class MasterDataSeeder extends Seeder
                     'telepon' => '031-76543211',
                     'email' => 'tuk-surabaya@mitranusantara.id',
                     'alamat' => 'Jl. Pemuda No. 45, Kota Surabaya',
-                    'province_code' => '35',
-                    'city_code' => '3578',
+                    'province_code' => null,
+                    'city_code' => null,
                     'is_verified' => true,
                     'is_active' => true,
                 ]

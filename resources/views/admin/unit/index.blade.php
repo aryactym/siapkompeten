@@ -12,8 +12,36 @@
 
 @section('content')
 <x-tabler.card title="Daftar Unit Kompetensi" subtitle="Unit kompetensi (mandiri, dapat dibagi antar skema).">
+    <x-slot:actions>
+        <form method="GET" action="{{ route('admin.unit.index') }}" class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="search" name="q" value="{{ $searchQuery }}"
+                   class="form-control form-control-sm" style="min-width:220px"
+                   placeholder="Cari kode / judul unit">
+            <select name="kategori" class="form-select form-select-sm" style="min-width:180px">
+                <option value="">— Semua Kategori —</option>
+                @foreach ($kategoriSkemas as $kategori)
+                    <option value="{{ $kategori }}" @selected($selectedKategori === $kategori)>
+                        {{ $kategori }}
+                    </option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="ti ti-search"></i>
+            </button>
+            @if ($searchQuery !== '' || $selectedKategori !== '')
+                <a href="{{ route('admin.unit.index') }}" class="btn btn-sm btn-ghost-secondary" title="Reset filter">
+                    <i class="ti ti-x"></i>
+                </a>
+            @endif
+        </form>
+    </x-slot:actions>
+
     @if ($units->isEmpty())
-        <x-tabler.empty title="Belum ada unit kompetensi" description="Tambahkan unit kompetensi." icon="ti ti-list-check" />
+        @if ($searchQuery !== '' || $selectedKategori !== '')
+            <x-tabler.empty title="Tidak ada hasil" description="Tidak ditemukan unit kompetensi yang cocok dengan filter." icon="ti ti-search-off" />
+        @else
+            <x-tabler.empty title="Belum ada unit kompetensi" description="Tambahkan unit kompetensi." icon="ti ti-list-check" />
+        @endif
     @else
         <div class="table-responsive">
             <table class="table table-vcenter card-table">

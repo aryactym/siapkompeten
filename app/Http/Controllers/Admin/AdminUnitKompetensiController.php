@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Skema;
 use App\Models\Skkni;
 use App\Models\UnitKompetensi;
 use App\Support\TenantContext;
@@ -13,14 +14,40 @@ use Illuminate\View\View;
 
 class AdminUnitKompetensiController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $units = UnitKompetensi::query()->with('skkni')->orderBy('kode_unit')->get();
+        $searchQuery = $request->string('q')->trim()->toString();
+        $selectedKategori = $request->string('kategori')->trim()->toString();
+
+        $units = UnitKompetensi::query()
+            ->with('skkni')
+            ->when($searchQuery !== '', function ($query) use ($searchQuery): void {
+                $like = '%'.$searchQuery.'%';
+                $query->where(function ($query) use ($like): void {
+                    $query->where('kode_unit', 'like', $like)
+                        ->orWhere('judul_unit', 'like', $like);
+                });
+            })
+            ->when($selectedKategori !== '', function ($query) use ($selectedKategori): void {
+                $query->whereHas('skemas', fn ($skemaQuery) => $skemaQuery->where('kategori', $selectedKategori));
+            })
+            ->orderBy('kode_unit')
+            ->get();
+
+        $kategoriSkemas = Skema::query()
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->distinct()
+            ->orderBy('kategori')
+            ->pluck('kategori');
 
         return view('admin.unit.index', [
             'units' => $units,
             'skknis' => Skkni::query()->where('is_active', true)->orderBy('judul')->get(),
             'newUnit' => new UnitKompetensi(['is_active' => true]),
+            'searchQuery' => $searchQuery,
+            'selectedKategori' => $selectedKategori,
+            'kategoriSkemas' => $kategoriSkemas,
         ]);
     }
 

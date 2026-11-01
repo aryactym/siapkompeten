@@ -361,6 +361,100 @@ class AsesmenTest extends TestCase
             ->assertSessionHasErrors('hasil');
     }
 
+    public function test_asesor_simpan_mak02_metode_tidak_digunakan(): void
+    {
+        $payload = [
+            'units' => [
+                $this->unit->id => [
+                    'keputusan' => 'kompeten',
+                    'catatan' => null,
+                    'metode' => [
+                        'observasi' => [
+                            'digunakan' => '0',
+                            'bukti_langsung' => '0',
+                            'bukti_tidak_langsung' => '0',
+                            'bukti_tambahan' => '0',
+                            'keputusan' => null,
+                            'catatan' => null,
+                        ],
+                    ],
+                ],
+            ],
+            'kuks' => [
+                $this->kuk1->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
+                $this->kuk2->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
+        ];
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHas('success');
+
+        $hasil = HasilAsesmen::where('pendaftaran_id', $this->pendaftaran->id)->firstOrFail();
+        $hasilUnit = $hasil->units()->first();
+        $this->assertSame('kompeten', $hasilUnit->keputusan);
+        $this->assertCount(1, $hasilUnit->metodes);
+        $this->assertFalse($hasilUnit->metodes->first()->digunakan);
+    }
+
+    public function test_asesor_finalisasi_mak02_gagal_validasi_field_wajib(): void
+    {
+        $payload = [
+            'units' => [
+                $this->unit->id => [
+                    'keputusan' => 'kompeten',
+                    'catatan' => null,
+                    'metode' => [
+                        'observasi' => [
+                            'digunakan' => '1',
+                            'bukti_langsung' => '1',
+                            'bukti_tidak_langsung' => '0',
+                            'bukti_tambahan' => '0',
+                            'keputusan' => 'kompeten',
+                            'catatan' => null,
+                        ],
+                    ],
+                ],
+            ],
+            'kuks' => [
+                $this->kuk1->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
+                $this->kuk2->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
+        ];
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHas('success');
+
+        // APL-02 diverifikasi lebih dulu.
+        $this->actingAs($this->asesiUser)
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->jawabanPayload())
+            ->assertSessionHas('success');
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.apl02.verifikasi', $this->pendaftaran), [
+                'verifikasi' => [
+                    $this->kuk1->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+                    $this->kuk2->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+                ],
+                'bukti' => [],
+            ])
+            ->assertSessionHas('success');
+
+        // Finalisasi tanpa field wajib → validasi gagal, error di-flash.
+        $this->actingAs($this->asesorUser)
+            ->from(route('asesor.mak02.show', $this->pendaftaran))
+            ->post(route('asesor.mak02.final', $this->pendaftaran), [])
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHasErrors(['rekomendasi', 'umpan_balik', 'konfirmasi']);
+
+        // Hasil belum jadi final.
+        $hasil = HasilAsesmen::where('pendaftaran_id', $this->pendaftaran->id)->firstOrFail();
+        $this->assertNotSame(HasilAsesmen::STATUS_FINAL, $hasil->status);
+    }
+
     public function test_apl02_and_mak02_can_be_printed_as_pdf(): void
     {
         $this->actingAs($this->asesiUser)

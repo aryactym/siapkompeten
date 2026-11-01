@@ -135,6 +135,30 @@
 <form method="POST" action="{{ route('asesor.mak02.store', $pendaftaran) }}" id="form-mak02">
     @csrf
 
+    {{-- Validasi error (tangkap nested fields units.* / kuks.*) --}}
+    @if ($errors->hasAny(['units.*', 'kuks.*', 'hasil', 'kuks', 'units']))
+        <div class="alert alert-danger mb-3">
+            <div class="fw-semibold mb-1"><i class="ti ti-alert-triangle me-1"></i> Perbaiki kesalahan berikut:</div>
+            <ul class="mb-0 ps-3 small">
+                @foreach ($errors->get('units.*') ?? [] as $message)
+                    <li>{{ $message }}</li>
+                @endforeach
+                @foreach ($errors->get('kuks.*') ?? [] as $message)
+                    <li>{{ $message }}</li>
+                @endforeach
+                @error('hasil')
+                    <li>{{ $message }}</li>
+                @enderror
+                @error('kuks')
+                    <li>{{ $message }}</li>
+                @enderror
+                @error('units')
+                    <li>{{ $message }}</li>
+                @enderror
+            </ul>
+        </div>
+    @endif
+
     {{-- ACCORDION UNIT --}}
     <div class="accordion mb-3" id="accordion-units">
         @foreach ($units as $unitIdx => $unit)
@@ -227,9 +251,6 @@
                                                 </label>
                                             </td>
                                             <td class="text-center">
-                                                <input type="hidden"
-                                                       name="units[{{ $unit->id }}][metode][{{ $metode }}][digunakan]"
-                                                       value="0">
                                                 <input type="checkbox"
                                                        id="digunakan-{{ $mId }}"
                                                        class="form-check-input mt-0 metode-digunakan"
@@ -241,9 +262,6 @@
                                             </td>
                                             @foreach (['bukti_langsung' => 'BL', 'bukti_tidak_langsung' => 'BTL', 'bukti_tambahan' => 'BT'] as $bField => $bLabel)
                                                 <td class="text-center">
-                                                    <input type="hidden"
-                                                           name="units[{{ $unit->id }}][metode][{{ $metode }}][{{ $bField }}]"
-                                                           value="0">
                                                     <input type="checkbox"
                                                            class="form-check-input mt-0 metode-bukti"
                                                            name="units[{{ $unit->id }}][metode][{{ $metode }}][{{ $bField }}]"
@@ -575,16 +593,6 @@
                         <i class="ti ti-lock me-1"></i> Finalkan FR.AK.02
                     </button>
                 </div>
-
-                @error('hasil')
-                    <div class="text-danger small mt-2">{{ $message }}</div>
-                @enderror
-                @error('kuks')
-                    <div class="text-danger small mt-2">{{ $message }}</div>
-                @enderror
-                @error('units')
-                    <div class="text-danger small mt-2">{{ $message }}</div>
-                @enderror
             @endif
         </div>
     </div>
@@ -596,6 +604,23 @@
     <x-tabler.modal id="modal-finalisasi" title="Konfirmasi Finalisasi FR.AK.02" size="lg">
         <form method="POST" action="{{ route('asesor.mak02.final', $pendaftaran) }}" id="form-finalisasi">
             @csrf
+
+            {{-- Error dari validasi server (tampil di dalam modal) --}}
+            @error('rekomendasi')
+                <div class="alert alert-danger small mb-3">{{ $message }}</div>
+            @enderror
+            @error('umpan_balik')
+                <div class="alert alert-danger small mb-3">{{ $message }}</div>
+            @enderror
+            @error('konfirmasi')
+                <div class="alert alert-danger small mb-3">{{ $message }}</div>
+            @enderror
+            @error('hasil')
+                <div class="alert alert-danger small mb-3">{{ $message }}</div>
+            @enderror
+            @error('kuks')
+                <div class="alert alert-danger small mb-3">{{ $message }}</div>
+            @enderror
 
             {{-- Ringkasan keputusan per unit --}}
             <div class="mb-3">
@@ -659,6 +684,9 @@
                         Tidak Direkomendasikan
                     </option>
                 </select>
+                @error('rekomendasi')
+                    <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
+                @enderror
             </div>
 
             {{-- Umpan Balik --}}
@@ -709,7 +737,7 @@
  * Buka ulang modal finalisasi jika server mengembalikan error
  * dari field yang ada di modal (rekomendasi, umpan_balik, konfirmasi).
  */
-@if ($errors->hasAny(['rekomendasi', 'umpan_balik', 'konfirmasi']))
+@if ($errors->hasAny(['rekomendasi', 'umpan_balik', 'konfirmasi', 'hasil', 'kuks']))
 document.addEventListener('DOMContentLoaded', function () {
     var el = document.getElementById('modal-finalisasi');
     if (el) { new bootstrap.Modal(el).show(); }

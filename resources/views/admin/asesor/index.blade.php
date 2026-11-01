@@ -13,21 +13,51 @@
 @section('content')
 <x-tabler.card title="Asesor Terdaftar">
     <x-slot:actions>
-        <form method="GET" action="{{ route('admin.asesor.index') }}" class="d-flex gap-2">
-            <input type="search" name="q" value="{{ $search }}" class="form-control form-control-sm"
-                   placeholder="Cari nama / no. register">
+        <form method="GET" action="{{ route('admin.asesor.index') }}" class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="search" name="q" value="{{ $searchQuery }}"
+                   class="form-control form-control-sm" style="min-width:220px"
+                   placeholder="Cari nama / no. register / keahlian">
+            <select name="status" class="form-select form-select-sm" style="min-width:140px">
+                <option value="">— Semua Status —</option>
+                <option value="aktif"    @selected($selectedStatus === 'aktif')>Aktif</option>
+                <option value="nonaktif" @selected($selectedStatus === 'nonaktif')>Nonaktif</option>
+            </select>
+            <select name="jenis_kelamin" class="form-select form-select-sm" style="min-width:130px">
+                <option value="">— Semua JK —</option>
+                <option value="L" @selected($selectedJenisKelamin === 'L')>Laki-laki</option>
+                <option value="P" @selected($selectedJenisKelamin === 'P')>Perempuan</option>
+            </select>
+            @if ($skemas->isNotEmpty())
+                <select name="skema" class="form-select form-select-sm" style="min-width:200px">
+                    <option value="">— Semua Skema —</option>
+                    @foreach ($skemas as $skema)
+                        <option value="{{ $skema->id }}" @selected($selectedSkema === $skema->id)>
+                            {{ $skema->kode_skema }} — {{ $skema->nama_skema }}
+                        </option>
+                    @endforeach
+                </select>
+            @endif
             <button type="submit" class="btn btn-sm btn-outline-secondary">
                 <i class="ti ti-search"></i>
             </button>
+            @if ($searchQuery !== '' || $selectedStatus !== '' || $selectedJenisKelamin !== '' || $selectedSkema !== '')
+                <a href="{{ route('admin.asesor.index') }}" class="btn btn-sm btn-ghost-secondary" title="Reset filter">
+                    <i class="ti ti-x"></i>
+                </a>
+            @endif
         </form>
     </x-slot:actions>
 
     @if ($asesors->isEmpty())
-        <x-tabler.empty
-            title="Belum ada profil asesor"
-            description="Daftarkan pengguna berperan asesor ke dalam profil asesor kompetensi lembaga."
-            icon="ti ti-user-plus"
-        />
+        @if ($searchQuery !== '' || $selectedStatus !== '' || $selectedJenisKelamin !== '' || $selectedSkema !== '')
+            <x-tabler.empty title="Tidak ada hasil" description="Tidak ditemukan asesor yang cocok dengan filter." icon="ti ti-search-off" />
+        @else
+            <x-tabler.empty
+                title="Belum ada profil asesor"
+                description="Daftarkan pengguna berperan asesor ke dalam profil asesor kompetensi lembaga."
+                icon="ti ti-user-plus"
+            />
+        @endif
     @else
         <div class="table-responsive">
             <table class="table table-vcenter card-table">

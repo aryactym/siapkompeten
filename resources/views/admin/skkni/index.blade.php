@@ -12,8 +12,43 @@
 
 @section('content')
 <x-tabler.card title="Daftar SKKNI" subtitle="Payung hukum/standar kompetensi yang menaungi unit kompetensi.">
+    <x-slot:actions>
+        <form method="GET" action="{{ route('admin.stkkni.index') }}" class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="search" name="q" value="{{ $searchQuery }}"
+                   class="form-control form-control-sm" style="min-width:220px"
+                   placeholder="Cari kode / judul SKKNI">
+            @if ($tahunList->isNotEmpty())
+                <select name="tahun" class="form-select form-select-sm" style="min-width:120px">
+                    <option value="">— Semua Tahun —</option>
+                    @foreach ($tahunList as $tahun)
+                        <option value="{{ $tahun }}" @selected($selectedTahun === (string) $tahun)>
+                            {{ $tahun }}
+                        </option>
+                    @endforeach
+                </select>
+            @endif
+            <select name="status" class="form-select form-select-sm" style="min-width:140px">
+                <option value="">— Semua Status —</option>
+                <option value="aktif"    @selected($selectedStatus === 'aktif')>Aktif</option>
+                <option value="nonaktif" @selected($selectedStatus === 'nonaktif')>Nonaktif</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="ti ti-search"></i>
+            </button>
+            @if ($searchQuery !== '' || $selectedTahun !== '' || $selectedStatus !== '')
+                <a href="{{ route('admin.stkkni.index') }}" class="btn btn-sm btn-ghost-secondary" title="Reset filter">
+                    <i class="ti ti-x"></i>
+                </a>
+            @endif
+        </form>
+    </x-slot:actions>
+
     @if ($skknis->isEmpty())
-        <x-tabler.empty title="Belum ada SKKNI" description="Tambahkan SKKNI sebagai induk unit kompetensi." icon="ti ti-certificate" />
+        @if ($searchQuery !== '' || $selectedTahun !== '' || $selectedStatus !== '')
+            <x-tabler.empty title="Tidak ada hasil" description="Tidak ditemukan SKKNI yang cocok dengan filter." icon="ti ti-search-off" />
+        @else
+            <x-tabler.empty title="Belum ada SKKNI" description="Tambahkan SKKNI sebagai induk unit kompetensi." icon="ti ti-certificate" />
+        @endif
     @else
         <div class="table-responsive">
             <table class="table table-vcenter card-table">

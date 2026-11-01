@@ -13,14 +13,44 @@ use Illuminate\View\View;
 
 class AdminSkemaController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $skemas = Skema::query()->orderBy('nama_skema')->get();
+        $searchQuery = $request->string('q')->trim()->toString();
+        $selectedJenis = $request->string('jenis')->trim()->toString();
+        $selectedKategori = $request->string('kategori')->trim()->toString();
+        $selectedStatus = $request->string('status')->trim()->toString();
+
+        $skemas = Skema::query()
+            ->when($searchQuery !== '', function ($query) use ($searchQuery): void {
+                $like = '%'.$searchQuery.'%';
+                $query->where(function ($query) use ($like): void {
+                    $query->where('kode_skema', 'like', $like)
+                        ->orWhere('nama_skema', 'like', $like);
+                });
+            })
+            ->when($selectedJenis !== '', fn ($query) => $query->where('jenis', $selectedJenis))
+            ->when($selectedKategori !== '', fn ($query) => $query->where('kategori', $selectedKategori))
+            ->when($selectedStatus === 'aktif', fn ($query) => $query->where('is_active', true))
+            ->when($selectedStatus === 'nonaktif', fn ($query) => $query->where('is_active', false))
+            ->orderBy('nama_skema')
+            ->get();
+
+        $kategoriSkemas = Skema::query()
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->distinct()
+            ->orderBy('kategori')
+            ->pluck('kategori');
 
         return view('admin.skema.index', [
             'skemas' => $skemas,
             'skknis' => Skkni::query()->where('is_active', true)->orderBy('judul')->get(),
             'newSkema' => new Skema(['jenis' => 'okupasi', 'is_active' => true]),
+            'searchQuery' => $searchQuery,
+            'selectedJenis' => $selectedJenis,
+            'selectedKategori' => $selectedKategori,
+            'selectedStatus' => $selectedStatus,
+            'kategoriSkemas' => $kategoriSkemas,
         ]);
     }
 

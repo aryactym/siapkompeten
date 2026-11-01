@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asesor;
+use App\Models\Skema;
 use App\Models\User;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
@@ -17,24 +18,43 @@ class AsesorController extends Controller
 {
     public function index(Request $request): View
     {
+        $searchQuery = $request->string('q')->trim()->toString();
+        $selectedStatus = $request->string('status')->trim()->toString();
+        $selectedJenisKelamin = $request->string('jenis_kelamin')->trim()->toString();
+        $selectedSkema = $request->string('skema')->trim()->toString();
+
         $asesors = Asesor::query()
             ->with(['user', 'city'])
             ->withCount('penugasan')
-            ->when($request->filled('q'), function ($query) use ($request): void {
-                $search = '%'.$request->string('q')->trim().'%';
-                $query->where(function ($query) use ($search): void {
-                    $query->where('no_register', 'like', $search)
-                        ->orWhere('bidang_keahlian', 'like', $search)
-                        ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', $search));
+            ->when($searchQuery !== '', function ($query) use ($searchQuery): void {
+                $like = '%'.$searchQuery.'%';
+                $query->where(function ($query) use ($like): void {
+                    $query->where('no_register', 'like', $like)
+                        ->orWhere('bidang_keahlian', 'like', $like)
+                        ->orWhereHas('user', fn ($q) => $q->where('name', 'like', $like));
                 });
+            })
+            ->when($selectedStatus !== '', fn ($query) => $query->where('status', $selectedStatus))
+            ->when($selectedJenisKelamin !== '', fn ($query) => $query->where('jenis_kelamin', $selectedJenisKelamin))
+            ->when($selectedSkema !== '', function ($query) use ($selectedSkema): void {
+                $query->whereHas(
+                    'kompetensis',
+                    fn ($q) => $q->where('skema_id', $selectedSkema)
+                );
             })
             ->orderBy('no_register')
             ->paginate(15)
             ->withQueryString();
 
+        $skemas = Skema::query()->orderBy('nama_skema')->get(['id', 'kode_skema', 'nama_skema']);
+
         return view('admin.asesor.index', [
             'asesors' => $asesors,
-            'search' => $request->string('q')->toString(),
+            'searchQuery' => $searchQuery,
+            'selectedStatus' => $selectedStatus,
+            'selectedJenisKelamin' => $selectedJenisKelamin,
+            'selectedSkema' => $selectedSkema,
+            'skemas' => $skemas,
         ]);
     }
 

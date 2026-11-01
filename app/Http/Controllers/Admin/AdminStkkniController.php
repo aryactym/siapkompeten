@@ -12,13 +12,38 @@ use Illuminate\View\View;
 
 class AdminStkkniController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $skknis = Skkni::query()->orderBy('kode')->get();
+        $searchQuery = $request->string('q')->trim()->toString();
+        $selectedTahun = $request->string('tahun')->trim()->toString();
+        $selectedStatus = $request->string('status')->trim()->toString();
+
+        $skknis = Skkni::query()
+            ->when($searchQuery !== '', function ($query) use ($searchQuery): void {
+                $like = '%'.$searchQuery.'%';
+                $query->where(function ($query) use ($like): void {
+                    $query->where('kode', 'like', $like)
+                        ->orWhere('judul', 'like', $like);
+                });
+            })
+            ->when($selectedTahun !== '', fn ($query) => $query->where('tahun', (int) $selectedTahun))
+            ->when($selectedStatus === 'aktif', fn ($query) => $query->where('is_active', true))
+            ->when($selectedStatus === 'nonaktif', fn ($query) => $query->where('is_active', false))
+            ->orderBy('kode')
+            ->get();
+
+        $tahunList = Skkni::query()
+            ->distinct()
+            ->orderBy('tahun')
+            ->pluck('tahun');
 
         return view('admin.skkni.index', [
             'skknis' => $skknis,
             'newSkkni' => new Skkni(['is_active' => true]),
+            'searchQuery' => $searchQuery,
+            'selectedTahun' => $selectedTahun,
+            'selectedStatus' => $selectedStatus,
+            'tahunList' => $tahunList,
         ]);
     }
 
