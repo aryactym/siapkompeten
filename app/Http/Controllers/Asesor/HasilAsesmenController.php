@@ -157,6 +157,19 @@ class HasilAsesmenController extends Controller
 
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
 
+        // Validasi: minimal satu metode harus dipilih sebelum finalisasi
+        $metodeDefault = $hasil->metode_default ?? [];
+        $metodeTerpilih = array_values(array_filter(
+            $metodeDefault,
+            fn ($m) => !empty($m)
+        ));
+
+        abort_unless(
+            !empty($metodeTerpilih),
+            422,
+            'Minimal satu metode asesmen harus dipilih sebelum FR.AK.02 difinalkan.'
+        );
+
         $this->asesmen->finalkan(
             $hasil,
             $pendaftaran,
