@@ -707,7 +707,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var successAlert = document.querySelector('.alert-success');
     var modal = document.getElementById('modal-finalisasi');
     if (successAlert && modal) {
-        var bsModal = bootstrap.Modal.getInstance(modal);
+        // Cek apakah modal sedang terbuka, tutup jika ada
+        var bsModal = bootstrap.Modal.getOrCreateInstance(modal);
         if (bsModal) { bsModal.hide(); }
     }
 });
