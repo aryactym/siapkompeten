@@ -278,6 +278,12 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
   - **Commit**: `a3f3baf` fix: refresh MAK-02 simpan draf + UI sederhana.
 
 - **1 November 2026 — Sesi 10 (Branch: `single`)**
+  - **FK violation APL-02 verifikasi fixed** (`f934074`): form key `verifikasi[{kukId}]` sesuai backend `updateOrCreate(['kuk_id'])`. View pakai `$elemenJawaban->kuk_id` (first KUK per elemen).
+  - **Modal finalisasi pindah ke atas** (`f3d7b61`): struktur view MAK-02 = modal finalisasi → form utama (sebelumnya form → modal di akhir).
+  - **Testing**: full Feature suite **91/91** lulus; `pint --dirty` bersih.
+  - **Commits**: `f934074`, `f3d7b61`.
+
+- **1 November 2026 — Sesi 10 (Branch: `single`)**
   - **Validasi final FR.AK.02: metode tidak digunakan wajib tanpa keputusan/catatan** (`AsesmenService::finalkan()`):
     - Sebelum commit `c600bec`, `final()` menolak final bila metode asesmen `digunakan = false` tapi `keputusan`/`catatan` terisi.
     - Test baru `test_asesor_finalisasi_mak02_ditolak_metode_tidak_digunakan` — lolos.
