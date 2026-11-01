@@ -276,3 +276,17 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
     - Test baru `test_asesor_mak02_refresh_shows_tercapai_terpilih`: setelah store + GET, radio elemen "Semua tercapai" (value="1" + checked) harus muncul → **refresh state terkonfirmasi**.
   - **Testing**: `AsesmenTest` 8/8; full Feature suite **90/90** lulus; `pint --dirty` bersih.
   - **Commit**: `a3f3baf` fix: refresh MAK-02 simpan draf + UI sederhana.
+
+- **1 November 2026 — Sesi 10 (Branch: `single`)**
+  - **Validasi final FR.AK.02: metode tidak digunakan wajib tanpa keputusan/catatan** (`AsesmenService::finalkan()`):
+    - Sebelum commit `c600bec`, `final()` menolak final bila metode asesmen `digunakan = false` tapi `keputusan`/`catatan` terisi.
+    - Test baru `test_asesor_finalisasi_mak02_ditolak_metode_tidak_digunakan` — lolos.
+  - **Revert APL-02 view**: perubahan per-KUK checkbox + tombol "Cek Semua Valid" di `asesor/apl02/show.blade.php` dibalikkan ke versi per-elemen (user request). Service & test tetap.
+  - **Tombol "Cek Semua Valid" APL-02** (`96b3c9b`): tombol di bagian bawah form (dekat Simpan) — JS `cekSemuaValid()` centang semua checkbox 4C semua elemen sekaligus.
+  - **GET route `/apl02/verifikasi`**: sempat ditambah lalu **di-revert** (keputusan: tidak usah — 405 adalah perilaku jujur; GET misleading di URL verifikasi).
+  - **FIX FK violation verifikasi APL-02** (`089bb14`):
+    - Bug: view kirim `verifikasi[{elemen_id}]`, backend `AsesmenService::verifikasiApl02` lakukan `updateOrCreate(['penilaian_id','kuk_id'] => $elemen_id)` → `kuk_id` bukan KUK valid → FK `apl02_jawabans_kuk_id_foreign` gagal (1452).
+    - Fix: view tampilan tetap per-elemen, tapi key form (`name`, `old()`) pakai **kuk_id pertama elemen** (`$kukVerifikasi = $elemen->kriteriaUnjukKerjas->first()`). Tombol "Cek Semua Valid" tetap (JS `input[name^="verifikasi["]`).
+    - Regression test: `assertSee('name="verifikasi[{kuk_id}][valid]"')` + `assertDontSee('name="verifikasi[{elemen_id}][valid]"')` — test sebelumnya pakai KUK-id langsung jadi bug lolos.
+  - **Testing**: full Feature suite **91/91** lulus; `pint --dirty` bersih.
+  - **Commit**: `c600bec`, `96b3c9b`, `089bb14`.
