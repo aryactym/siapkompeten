@@ -721,7 +721,7 @@ document.querySelectorAll('input[name="rekomendasi"]').forEach(function (radio) 
 });
 
 /**
- * Set semua radio elemenTercapai ke "Semua tercapai" (value="1") — 1 klik.
+ * Set semua radio elemenTercapai ke "Semua tercapai" (value="1") — hanya centang, tidak submit.
  */
 function semuaTercapai() {
     document.querySelectorAll('input[name^="elemenTercapai["][value="1"]').forEach(function (el) {
