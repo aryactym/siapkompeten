@@ -502,25 +502,6 @@
                     @enderror
                 </fieldset>
 
-                {{-- UMPAN BALIK --}}
-                <fieldset class="mb-3">
-                    <legend class="form-label fw-semibold required">Umpan Balik</legend>
-                    <label class="form-check" for="umpan-balik">
-                        <input type="checkbox"
-                               id="umpan-balik"
-                               class="form-check-input"
-                               name="umpan_balik"
-                               value="1"
-                               @checked(old('umpan_balik'))>
-                        <span class="form-check-label">
-                            Umpan balik dan penjelasan hasil asesmen telah disampaikan kepada asesi
-                        </span>
-                    </label>
-                    @error('umpan_balik')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
-                </fieldset>
-
                 {{-- PRASYARAT FINALISASI --}}
                 @php
                     $unitTanpaKeputusan = $hasilUnits->filter(fn ($u) => blank($u->keputusan))->count();
