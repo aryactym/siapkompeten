@@ -6,7 +6,7 @@
 
 @section('actions')
     <a href="{{ route('asesor.mak02.show', $pendaftaran) }}" class="btn btn-outline-primary">
-        <i class="ti ti-file-analytics me-1"></i> Input MAK-02
+        <i class="ti ti-file-analytics me-1"></i> Input FR.AK.02
     </a>
 @endsection
 

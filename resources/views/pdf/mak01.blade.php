@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>MAK-01 · {{ $pendaftaran->no_pendaftaran }}</title>
+    <title>FR.AK.01 · {{ $pendaftaran->no_pendaftaran }}</title>
     <style>
         @page { margin: 14mm 12mm; }
         * { box-sizing: border-box; }
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Formulir MAK-01 · Checklist Verifikasi Portofolio</h1>
+    <h1>FR.AK.01 · Checklist Verifikasi Portofolio</h1>
     <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
 
     @php $a = $pendaftaran->asesi; $u = $a->user; @endphp

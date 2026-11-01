@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ElemenKompetensi;
 use App\Models\KriteriaUnjukKerja;
+use App\Models\Skema;
 use App\Models\UnitKompetensi;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
@@ -16,18 +17,57 @@ class AdminElemenKompetensiController extends Controller
 {
     public function index(Request $request): View
     {
-        $unitId = $request->query('unit');
+        $skemaId = $request->query('skema', '');
+        $unitId = $request->query('unit', '');
+
+        // Unit yang ditampilkan di dropdown: bila skema dipilih, hanya unit yang
+        // terpetakan ke skema tersebut; bila tidak, semua unit aktif.
+        $unitsQuery = UnitKompetensi::query()->where('is_active', true)->orderBy('kode_unit');
+
+        if ($skemaId !== '' && $skemaId !== null) {
+            $unitsQuery->whereHas('skemas', fn ($q) => $q->where('skemas.id', $skemaId));
+        }
+
+        $units = $unitsQuery->get();
+
+        // Jika filter unit tidak cocok dengan skema yang dipilih, reset unit.
+        if ($unitId !== '' && $skemaId !== '' && ! $units->contains('id', $unitId)) {
+            $unitId = '';
+        }
 
         $elemens = ElemenKompetensi::query()
             ->with(['unitKompetensi', 'kriteriaUnjukKerjas'])
-            ->when($unitId, fn ($q) => $q->where('unit_kompetensi_id', $unitId))
+            ->when($unitId !== '' && $unitId !== null, fn ($q) => $q->where('unit_kompetensi_id', $unitId))
+            ->when($unitId === '' && $skemaId !== '' && $skemaId !== null, fn ($q) => $q->whereHas(
+                'unitKompetensi.skemas', fn ($sq) => $sq->where('skemas.id', $skemaId)
+            ))
             ->orderBy('urutan')
             ->get();
 
+        $skemas = Skema::query()->aktif()->orderBy('nama_skema')
+            ->with(['unitKompetensis' => fn ($q) => $q->where('is_active', true)->orderBy('kode_unit')])
+            ->get(['id', 'kode_skema', 'nama_skema']);
+
+        // Map skema_id → daftar unit untuk dependent select JS.
+        $skemaUnitsMap = $skemas->mapWithKeys(function ($skema) {
+            return [
+                $skema->id => $skema->unitKompetensis->map(fn ($u) => [
+                    'id' => $u->id,
+                    'kode_unit' => $u->kode_unit,
+                    'judul_unit' => $u->judul_unit,
+                ])->values(),
+            ];
+        });
+
         return view('admin.elemen.index', [
             'elemens' => $elemens,
-            'units' => UnitKompetensi::query()->where('is_active', true)->orderBy('kode_unit')->get(),
-            'unitTerpilih' => $unitId ? UnitKompetensi::find($unitId) : null,
+            'units' => $units,
+            'allUnits' => UnitKompetensi::query()->where('is_active', true)->orderBy('kode_unit')->get(),
+            'unitTerpilih' => ($unitId !== '' && $unitId !== null) ? UnitKompetensi::find($unitId) : null,
+            'skemas' => $skemas,
+            'skemaUnitsMap' => $skemaUnitsMap,
+            'skemaId' => $skemaId,
+            'unitId' => $unitId,
             'newElemen' => new ElemenKompetensi(['urutan' => 1]),
         ]);
     }

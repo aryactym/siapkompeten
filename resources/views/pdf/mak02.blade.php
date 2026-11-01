@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>MAK-02 · {{ $pendaftaran->no_pendaftaran }}</title>
+    <title>FR.AK.02 · {{ $pendaftaran->no_pendaftaran }}</title>
     <style>
         @page { margin: 16mm 14mm; }
         * { box-sizing: border-box; }
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Laporan Hasil Asesmen MAK-02</h1>
+    <h1>FR.AK.02 — Rekaman Asesmen Kompetensi</h1>
     <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
 
     <table class="meta">
@@ -58,7 +58,7 @@
                 @foreach (\App\Models\HasilAsesmenMetode::METODES as $metode)
                     @php $hasilMetode = $hasilUnit?->metodes->firstWhere('metode', $metode); @endphp
                     <tr>
-                        <td>{{ ['observasi' => 'Observasi', 'tes_lisan' => 'Tes Lisan', 'tes_tertulis' => 'Tes Tertulis'][$metode] }}</td>
+                        <td>{{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}</td>
                         <td>{{ $hasilMetode?->digunakan ? 'Ya' : '—' }}</td>
                         <td class="muted">
                             {{ $hasilMetode?->bukti_langsung ? 'Langsung' : '' }}

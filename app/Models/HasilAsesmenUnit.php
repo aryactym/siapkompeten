@@ -18,7 +18,9 @@ class HasilAsesmenUnit extends Model
         'hasil_id',
         'unit_id',
         'keputusan',
-        'pencapaian',
+        'catatan',    // wajib bila keputusan berbeda dari saran otomatis
+        // === Deprecated ===
+        'pencapaian', // boolean — kini indikator hitung otomatis, bukan input
     ];
 
     protected function casts(): array
@@ -26,6 +28,29 @@ class HasilAsesmenUnit extends Model
         return [
             'pencapaian' => 'boolean',
         ];
+    }
+
+    /**
+     * Hitung saran keputusan berdasarkan KUK yang dinilai.
+     * Semua tercapai → kompeten; ada tidak → belum_kompeten; ada null → belum lengkap.
+     */
+    public function saranKeputusan(): ?string
+    {
+        $kuks = $this->hasil->kuks()->whereHas('kuk', fn ($q) => $q->whereHas(
+            'elemenKompetensi', fn ($q2) => $q2->where('unit_kompetensi_id', $this->unit_id)
+        ))->get();
+
+        if ($kuks->isEmpty()) {
+            return null;
+        }
+
+        if ($kuks->contains(fn ($k) => $k->tercapai === null)) {
+            return null; // masih ada yang belum dinilai
+        }
+
+        return $kuks->every(fn ($k) => $k->tercapai === true)
+            ? 'kompeten'
+            : 'belum_kompeten';
     }
 
     public function hasil(): BelongsTo

@@ -73,11 +73,11 @@ class HasilAsesmenController extends Controller
 
         activity('asesmen')
             ->causedBy($request->user())
-            ->performedOn($pendaftaran)->log('Asesor menyimpan draf MAK-02.');
+            ->performedOn($pendaftaran)->log('Asesor menyimpan draf FR.AK.02.');
 
         return redirect()
             ->route('asesor.mak02.show', $pendaftaran)
-            ->with('success', 'Draf MAK-02 berhasil disimpan.');
+            ->with('success', 'Draf FR.AK.02 berhasil disimpan.');
     }
 
     /**
@@ -99,7 +99,7 @@ class HasilAsesmenController extends Controller
         abort_unless(
             $pendaftaran->apl02?->status === Apl02Penilaian::STATUS_DIVERIFIKASI,
             403,
-            'APL-02 harus diverifikasi sebelum MAK-02 difinalkan.'
+            'APL-02 harus diverifikasi sebelum FR.AK.02 difinalkan.'
         );
 
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
@@ -115,7 +115,7 @@ class HasilAsesmenController extends Controller
         return redirect()
             ->route('asesor.mak02.show', $pendaftaran)
             ->with('success', sprintf(
-                'MAK-02 difinalkan. Asesi dinyatakan %d%% %s.',
+                'FR.AK.02 difinalkan. Asesi dinyatakan %d%% %s.',
                 (int) $hasil->fresh()->persen_kompeten,
                 $validated['rekomendasi'] === HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN ? 'KOMPETEN' : 'BELUM KOMPETEN'
             ));
@@ -137,6 +137,6 @@ class HasilAsesmenController extends Controller
             'kuks' => $this->asesmen->kukItems($pendaftaran->skema),
             'hasilUnits' => $hasil->units()->with('metodes')->get()->keyBy('unit_id'),
             'hasilKuks' => $hasil->kuks()->get()->keyBy('kuk_id'),
-        ])->stream(sprintf('mak02-%s.pdf', $pendaftaran->no_pendaftaran));
+        ])->stream(sprintf('frak02-%s.pdf', $pendaftaran->no_pendaftaran));
     }
 }

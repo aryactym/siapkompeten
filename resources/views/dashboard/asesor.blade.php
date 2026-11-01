@@ -38,7 +38,7 @@
     </div>
     <div class="col-sm-6 col-lg-3">
         <x-tabler.stat
-            label="Laporan MAK-02"
+            label="FR.AK.02 Diselesaikan"
             value="{{ $stats['laporan_mak02'] ?? 0 }}"
             icon="file-analytics"
             color="azure"
@@ -103,20 +103,20 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="p-3 border rounded-3 bg-light">
-                            <div class="fw-bold text-dark mb-1"><i class="ti ti-file-check me-1 text-primary"></i> FR.MAK.01</div>
-                            <div class="text-secondary small">Ceklis Persetujuan & Bukti Asesmen sebelum uji dilaksanakan.</div>
+                            <div class="fw-bold text-dark mb-1"><i class="ti ti-file-check me-1 text-primary"></i> FR.AK.01</div>
+                            <div class="text-secondary small">Persetujuan Asesmen & Kerahasiaan sebelum uji dilaksanakan.</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 border rounded-3 bg-light">
-                            <div class="fw-bold text-dark mb-1"><i class="ti ti-file-text me-1 text-success"></i> FR.MAK.02</div>
-                            <div class="text-secondary small">Formulir Rekomendasi & Catatan Hasil Asesmen (Kompeten / Belum Kompeten).</div>
+                            <div class="fw-bold text-dark mb-1"><i class="ti ti-file-text me-1 text-success"></i> FR.AK.02</div>
+                            <div class="text-secondary small">Rekaman Asesmen Kompetensi (Kompeten / Belum Kompeten).</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 border rounded-3 bg-light">
-                            <div class="fw-bold text-dark mb-1"><i class="ti ti-message-report me-1 text-warning"></i> FR.MAK.03</div>
-                            <div class="text-secondary small">Banding Asesmen jika asesi mengajukan sanggahan hasil.</div>
+                            <div class="fw-bold text-dark mb-1"><i class="ti ti-message-report me-1 text-warning"></i> FR.AK.04</div>
+                            <div class="text-secondary small">Formulir Banding Asesmen jika asesi mengajukan sanggahan hasil.</div>
                         </div>
                     </div>
                 </div>

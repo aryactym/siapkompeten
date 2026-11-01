@@ -12,7 +12,35 @@ class HasilAsesmenMetode extends Model
 {
     use BelongsToTenant, HasFactory, HasUuids;
 
-    public const METODES = ['observasi', 'tes_lisan', 'tes_tertulis'];
+    /**
+     * Daftar metode yang didukung.
+     * Urutan tampilan mengikuti urutan array ini.
+     * Update nilai ini HARUS disertai migrasi ENUM di database.
+     *
+     * @var list<string>
+     */
+    public const METODES = [
+        'observasi',
+        'demonstrasi',
+        'tes_lisan',
+        'tes_tertulis',
+        'wawancara',
+        'portofolio',
+    ];
+
+    /**
+     * Label Indonesia untuk setiap metode.
+     *
+     * @var array<string,string>
+     */
+    public const METODE_LABELS = [
+        'observasi' => 'Observasi',
+        'demonstrasi' => 'Demonstrasi / Simulasi',
+        'tes_lisan' => 'Tes Lisan',
+        'tes_tertulis' => 'Tes Tertulis',
+        'wawancara' => 'Wawancara',
+        'portofolio' => 'Portofolio',
+    ];
 
     protected $fillable = [
         'institution_id',
@@ -22,8 +50,10 @@ class HasilAsesmenMetode extends Model
         'bukti_langsung',
         'bukti_tidak_langsung',
         'bukti_tambahan',
-        'pencapaian',
         'keputusan',
+        'catatan',
+        // === Deprecated ===
+        'pencapaian', // boolean — digantikan oleh `keputusan` enum
     ];
 
     protected function casts(): array

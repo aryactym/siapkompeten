@@ -57,7 +57,7 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Portal Asesor');
         $response->assertSee('Penugasan Uji Kompetensi Terdekat');
-        $response->assertSee('FR.MAK.02');
+        $response->assertSee('FR.AK.02');
     }
 
     public function test_asesi_sees_asesi_dashboard_with_phase_gating_and_guide(): void

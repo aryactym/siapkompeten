@@ -16,20 +16,26 @@ class HasilAsesmenKuk extends Model
         'institution_id',
         'hasil_id',
         'kuk_id',
-        'pencapaian',
-        'bukti_no',
+        // === Kolom aktif (refactor baru) ===
+        'tercapai',   // boolean nullable: null=belum dinilai, true=ya, false=tidak
+        'catatan',    // text nullable: catatan asesor per KUK
+        // === VATM (Valid/Asli/Terkini/Memadai) — masih aktif per KUK ===
         'valid',
-        'autentik',
+        'asli',       // sebelumnya: autentik (rename via migration)
         'terkini',
         'memadai',
+        // === Deprecated (dipertahankan untuk backward compat) ===
+        'pencapaian', // → gunakan `tercapai`
+        'bukti_no',   // → tidak diisi lagi oleh UI baru
     ];
 
     protected function casts(): array
     {
         return [
+            'tercapai' => 'boolean',
             'pencapaian' => 'boolean',
             'valid' => 'boolean',
-            'autentik' => 'boolean',
+            'asli' => 'boolean',
             'terkini' => 'boolean',
             'memadai' => 'boolean',
         ];

@@ -10,10 +10,10 @@
         <i class="ti ti-file-text me-1"></i> Unduh APL-01 (PDF)
     </a>
     <a href="{{ route('admin.pendaftaran.mak01', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
-        <i class="ti ti-file-check me-1"></i> Unduh MAK-01 (PDF)
+        <i class="ti ti-file-check me-1"></i> Unduh FR.AK.01 (PDF)
     </a>
     <a href="{{ route('admin.pendaftaran.mak03', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
-        <i class="ti ti-file-text me-1"></i> Unduh MAK-03 (PDF)
+        <i class="ti ti-file-text me-1"></i> Unduh FR.AK.04 (PDF)
     </a>
 </div>
 <div class="row row-cards">

@@ -82,7 +82,7 @@
                                         <i class="ti ti-list-check"></i>
                                     </a>
                                     <a href="{{ route('asesor.mak02.show', $pendaftaran) }}"
-                                       class="btn btn-sm btn-outline-primary" title="Input MAK-02">
+                                       class="btn btn-sm btn-outline-primary" title="Input FR.AK.02">
                                         <i class="ti ti-file-analytics"></i>
                                     </a>
                                 </div>

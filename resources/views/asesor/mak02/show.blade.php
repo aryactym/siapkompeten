@@ -1,8 +1,8 @@
 @extends('layouts.asesor')
 
-@section('title', 'Input Hasil MAK-02')
+@section('title', 'Input Hasil FR.AK.02')
 @section('pretitle', 'Hasil Asesmen')
-@section('page-title', 'MAK-02 · '.$pendaftaran->no_pendaftaran)
+@section('page-title', 'FR.AK.02 · '.$pendaftaran->no_pendaftaran)
 
 @section('actions')
     <a href="{{ route('asesor.apl02.show', $pendaftaran) }}" class="btn btn-outline-secondary">
@@ -23,7 +23,7 @@
         <div class="d-flex">
             <div><i class="ti ti-certificate alert-icon fs-2 me-2"></i></div>
             <div>
-                <div class="alert-title fw-semibold">MAK-02 Final</div>
+                <div class="alert-title fw-semibold">FR.AK.02 Final</div>
                 <div class="text-secondary">
                     Asesi dinyatakan {{ number_format($hasil->persen_kompeten, 0, ',', '.') }}%
                     {{ $hasil->rekomendasi === \App\Models\HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN ? 'KOMPETEN' : 'BELUM KOMPETEN' }}
@@ -37,7 +37,7 @@
 @if (! $apl02Terverifikasi && ! $sudahFinal)
     <div class="alert alert-warning">
         <i class="ti ti-alert-triangle me-1"></i>
-        APL-02 belum diverifikasi. Draf dapat disimpan, tetapi finalisasi MAK-02 diblokir sampai APL-02 diverifikasi.
+        APL-02 belum diverifikasi. Draf dapat disimpan, tetapi finalisasi FR.AK.02 diblokir sampai APL-02 diverifikasi.
     </div>
 @endif
 
@@ -45,7 +45,7 @@
     @csrf
 
     @foreach ($units as $unit)
-        <x-tabler.card title="{{ $unit->kode_unit }} · {{ $unit->judul_unit }}" class="mb-3">
+        <x-tabler.card :title="$unit->kode_unit . ' · ' . $unit->judul_unit" class="mb-3">
             @php $hasilUnit = $hasilUnits->get($unit->id); @endphp
 
             <div class="row g-3 align-items-end mb-3">
@@ -88,7 +88,7 @@
                             @php $hasilMetode = $hasilUnit?->metodes->firstWhere('metode', $metode); @endphp
                             <tr>
                                 <td class="fw-semibold">
-                                    {{ ['observasi' => 'Observasi', 'tes_lisan' => 'Tes Lisan', 'tes_tertulis' => 'Tes Tertulis'][$metode] }}
+                                    {{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}
                                 </td>
                                 @foreach (['digunakan', 'bukti_langsung', 'bukti_tidak_langsung', 'bukti_tambahan', 'pencapaian'] as $flag)
                                     <td class="text-center">
@@ -207,7 +207,7 @@
                 <input type="checkbox" class="form-check-input" name="konfirmasi" value="1"
                        @checked(old('konfirmasi'))>
                 <span class="form-check-label">
-                    Saya memahami laporan MAK-02 terkunci setelah difinalkan dan perubahan berikutnya wajib diaudit admin.
+                    Saya memahami laporan FR.AK.02 terkunci setelah difinalkan dan perubahan berikutnya wajib diaudit admin.
                 </span>
             </label>
             @error('konfirmasi')
@@ -222,8 +222,8 @@
                 </button>
                 <button type="submit" formaction="{{ route('asesor.mak02.final', $pendaftaran) }}"
                         class="btn btn-primary"
-                        onclick="return confirm('Finalkan MAK-02? Data terkunci.')">
-                    <i class="ti ti-lock me-1"></i> Finalkan MAK-02
+                        onclick="return confirm('Finalkan FR.AK.02? Data terkunci.')">
+                    <i class="ti ti-lock me-1"></i> Finalkan FR.AK.02
                 </button>
             @endunless
 
