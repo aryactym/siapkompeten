@@ -47,6 +47,8 @@ class AsesmenTest extends TestCase
 
     private KriteriaUnjukKerja $kuk2;
 
+    private ElemenKompetensi $elemen;
+
     private Pendaftaran $pendaftaran;
 
     protected function setUp(): void
@@ -137,6 +139,7 @@ class AsesmenTest extends TestCase
             'urutan' => 1,
             'nama_elemen' => 'Elemen Pengujian',
         ]);
+        $this->elemen = $elemen;
 
         $this->kuk1 = KriteriaUnjukKerja::create([
             'elemen_kompetensi_id' => $elemen->id,
@@ -185,11 +188,11 @@ class AsesmenTest extends TestCase
         ]);
     }
 
-    private function jawabanPayload(): array
+    private function elemenPayload(): array
     {
         return [
-            'jawaban' => [$this->kuk1->id => '1', $this->kuk2->id => '1'],
-            'bukti' => [$this->kuk1->id => 'Sertifikat pelatihan', $this->kuk2->id => 'Portofolio proyek'],
+            'elemen_approval' => [$this->elemen->id => '1'],
+            'bukti' => [$this->elemen->id => 'Sertifikat pelatihan'],
         ];
     }
 
@@ -200,18 +203,9 @@ class AsesmenTest extends TestCase
             ->assertOk()
             ->assertSee('Mampu menyusun rencana uji');
 
-        // Penyerahan gagal jika ada KUK yang belum dijawab.
+        // Penyimpanan draf lalu penyerahan (per elemen: approval elemen menyatakan seluruh KUK).
         $this->actingAs($this->asesiUser)
-            ->from(route('asesi.apl02.show', $this->pendaftaran))
-            ->post(route('asesi.apl02.serah', $this->pendaftaran), [
-                'jawaban' => [$this->kuk1->id => '1'],
-                'bukti' => [],
-            ])
-            ->assertRedirect(route('asesi.apl02.show', $this->pendaftaran))
-            ->assertSessionHasErrors('apl02');
-
-        $this->actingAs($this->asesiUser)
-            ->post(route('asesi.apl02.store', $this->pendaftaran), $this->jawabanPayload())
+            ->post(route('asesi.apl02.store', $this->pendaftaran), $this->elemenPayload())
             ->assertRedirect(route('asesi.apl02.show', $this->pendaftaran))
             ->assertSessionHas('success');
 
@@ -221,7 +215,7 @@ class AsesmenTest extends TestCase
         $this->assertTrue($penilaian->jawabans()->first()->jawaban_asesi);
 
         $this->actingAs($this->asesiUser)
-            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->jawabanPayload())
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
             ->assertRedirect(route('asesi.apl02.show', $this->pendaftaran))
             ->assertSessionHas('success');
 
@@ -231,7 +225,7 @@ class AsesmenTest extends TestCase
     public function test_asesor_verifies_apl02_and_role_is_restricted(): void
     {
         $this->actingAs($this->asesiUser)
-            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->jawabanPayload())
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
             ->assertSessionHas('success');
 
         // Asesor lain yang tidak ditugaskan ditolak.
@@ -277,6 +271,12 @@ class AsesmenTest extends TestCase
     public function test_asesor_inputs_and_finalizes_mak02(): void
     {
         $payload = [
+            'metode_default' => ['observasi'],
+            'elemenTercapai' => [$this->elemen->id => '1'],
+            'elemenCatatan' => [$this->elemen->id => null],
+            'elemen4C' => [
+                $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
             'units' => [
                 $this->unit->id => [
                     'keputusan' => 'kompeten',
@@ -292,10 +292,6 @@ class AsesmenTest extends TestCase
                         ],
                     ],
                 ],
-            ],
-            'kuks' => [
-                $this->kuk1->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
-                $this->kuk2->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
             ],
         ];
 
@@ -325,7 +321,7 @@ class AsesmenTest extends TestCase
 
         // APL-02 diverifikasi lebih dulu sebelum MAK-02 dapat difinalkan.
         $this->actingAs($this->asesiUser)
-            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->jawabanPayload())
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
             ->assertSessionHas('success');
 
         $this->actingAs($this->asesorUser)
@@ -364,6 +360,12 @@ class AsesmenTest extends TestCase
     public function test_asesor_simpan_mak02_metode_tidak_digunakan(): void
     {
         $payload = [
+            'metode_default' => ['observasi'],
+            'elemenTercapai' => [$this->elemen->id => '1'],
+            'elemenCatatan' => [$this->elemen->id => null],
+            'elemen4C' => [
+                $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
             'units' => [
                 $this->unit->id => [
                     'keputusan' => 'kompeten',
@@ -379,10 +381,6 @@ class AsesmenTest extends TestCase
                         ],
                     ],
                 ],
-            ],
-            'kuks' => [
-                $this->kuk1->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
-                $this->kuk2->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
             ],
         ];
 
@@ -401,6 +399,12 @@ class AsesmenTest extends TestCase
     public function test_asesor_finalisasi_mak02_gagal_validasi_field_wajib(): void
     {
         $payload = [
+            'metode_default' => ['observasi'],
+            'elemenTercapai' => [$this->elemen->id => '1'],
+            'elemenCatatan' => [$this->elemen->id => null],
+            'elemen4C' => [
+                $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
             'units' => [
                 $this->unit->id => [
                     'keputusan' => 'kompeten',
@@ -417,10 +421,6 @@ class AsesmenTest extends TestCase
                     ],
                 ],
             ],
-            'kuks' => [
-                $this->kuk1->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
-                $this->kuk2->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
-            ],
         ];
 
         $this->actingAs($this->asesorUser)
@@ -430,7 +430,7 @@ class AsesmenTest extends TestCase
 
         // APL-02 diverifikasi lebih dulu.
         $this->actingAs($this->asesiUser)
-            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->jawabanPayload())
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
             ->assertSessionHas('success');
 
         $this->actingAs($this->asesorUser)
@@ -458,7 +458,7 @@ class AsesmenTest extends TestCase
     public function test_apl02_and_mak02_can_be_printed_as_pdf(): void
     {
         $this->actingAs($this->asesiUser)
-            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->jawabanPayload())
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
             ->assertSessionHas('success');
 
         $responseApl02 = $this->actingAs($this->asesiUser)->get(route('asesi.apl02.pdf', $this->pendaftaran));

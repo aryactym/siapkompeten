@@ -31,6 +31,7 @@ class HasilAsesmen extends Model
         'status',
         'finalized_at',
         'finalized_by',
+        'metode_default',
     ];
 
     protected function casts(): array
@@ -71,7 +72,7 @@ class HasilAsesmen extends Model
     /**
      * Set default metode untuk semua unit.
      *
-     * @param array<int, string> $metodes
+     * @param  array<int, string>  $metodes
      */
     public function setDefaultMetodes(array $metodes): void
     {

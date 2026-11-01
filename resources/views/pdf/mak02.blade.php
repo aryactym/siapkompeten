@@ -57,11 +57,14 @@
                 @php $hasilUnit = $hasilUnits->get($unit->id); @endphp
                 @foreach (\App\Models\HasilAsesmenMetode::METODES as $metode)
                     @php $hasilMetode = $hasilUnit?->metodes->firstWhere('metode', $metode); @endphp
-                    @php $digunakan = false; @endphp
-                    @if (!empty($metodeDefault))
-                        @foreach ($metodeDefault as $m) { if ($m === $metode) { $digunakan = true; break; } }
-                    @else
-                        @php $digunakan = (bool) ($hasilMetode?->digunakan ?? false); @endphp
+                    @php
+                        $digunakan = false;
+                        if (!empty($metodeDefault)) {
+                            foreach ($metodeDefault as $m) {
+                                if ($m === $metode) { $digunakan = true; break; }
+                            }
+                        }
+                    @endphp
                     <tr>
                         <td>{{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}</td>
                         <td>{{ $digunakan ? 'Ya' : '—' }}</td>
