@@ -46,27 +46,6 @@
     </div>
 @endif
 
-{{-- ===== BANNER STATUS FINAL ===== --}}
-@if ($sudahFinal)
-    <div class="alert alert-success mb-3">
-        <div class="d-flex align-items-start gap-3">
-            <i class="ti ti-certificate fs-2"></i>
-            <div>
-                <div class="fw-semibold fs-5">FR.AK.02 Final</div>
-                <div>
-                    Asesi dinyatakan
-                    <strong>{{ $hasil->rekomendasi === HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN ? 'KOMPETEN' : 'BELUM KOMPETEN' }}</strong>
-                    ({{ number_format($hasil->persen_kompeten, 1, ',', '.') }}% KUK tercapai)
-                </div>
-                <div class="text-secondary small">
-                    Difinalkan oleh {{ $hasil->asesor?->nama_lengkap ?? '—' }}
-                    · {{ $hasil->finalized_at?->translatedFormat('d F Y H:i') }}
-                </div>
-            </div>
-        </div>
-    </div>
-@endif
-
 @if (! $apl02Terverifikasi && ! $sudahFinal)
     <div class="alert alert-warning mb-3">
         <div class="d-flex align-items-center gap-2">
