@@ -665,23 +665,28 @@
             <label class="form-check mb-3" for="modal-umpan-balik">
                 <input type="checkbox" id="modal-umpan-balik" class="form-check-input"
                        name="umpan_balik" value="1"
-                       @checked(old('umpan_balik'))
-                       required>
+                       @checked(old('umpan_balik'))>
                 <span class="form-check-label">
                     Umpan balik dan penjelasan hasil asesmen telah disampaikan kepada asesi
                 </span>
             </label>
+            @error('umpan_balik')
+                <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
+            @enderror
 
             {{-- Konfirmasi penguncian --}}
             <label class="form-check mb-4" for="modal-konfirmasi">
                 <input type="checkbox" id="modal-konfirmasi" class="form-check-input"
                        name="konfirmasi" value="1"
-                       required>
+                       @checked(old('konfirmasi'))>
                 <span class="form-check-label">
                     Saya memahami laporan FR.AK.02 <strong>terkunci permanen</strong> setelah difinalkan.
                     Perubahan berikutnya wajib melalui admin LSP dan tercatat di audit log.
                 </span>
             </label>
+            @error('konfirmasi')
+                <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
+            @enderror
 
             {{-- Tombol di dalam form (bukan di footer slot) --}}
             <div class="d-flex justify-content-end gap-2">
@@ -701,6 +706,17 @@
 @push('scripts')
 <script>
 /**
+ * Buka ulang modal finalisasi jika server mengembalikan error
+ * dari field yang ada di modal (rekomendasi, umpan_balik, konfirmasi).
+ */
+@if ($errors->hasAny(['rekomendasi', 'umpan_balik', 'konfirmasi']))
+document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('modal-finalisasi');
+    if (el) { new bootstrap.Modal(el).show(); }
+});
+@endif
+
+/**
  * Metode asesmen: toggle disabled state untuk input bukti + keputusan
  * saat checkbox "Digunakan" berubah.
  */
@@ -716,8 +732,7 @@ function toggleMetodeRow(rowId, enabled) {
         if (!enabled) {
             if (el.type === 'checkbox') { el.checked = false; }
             else if (el.tagName === 'SELECT') { el.value = ''; }
-            else if (el.tagName === 'INPUT') { el.value = ''; }
-            else if (el.tagName === 'TEXTAREA') { el.value = ''; }
+            else { el.value = ''; }
         }
     });
 }

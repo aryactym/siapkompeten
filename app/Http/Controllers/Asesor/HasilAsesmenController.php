@@ -122,6 +122,9 @@ class HasilAsesmenController extends Controller
     {
         $this->authorize('inputMak02', $pendaftaran);
 
+        // Load relasi apl02 untuk pengecekan status
+        $pendaftaran->loadMissing('apl02');
+
         abort_unless(
             $pendaftaran->apl02?->status === Apl02Penilaian::STATUS_DIVERIFIKASI,
             403,
