@@ -47,7 +47,7 @@
 <div class="row g-2">
     <div class="col-md-6 mb-3">
         <label class="form-label">Provinsi</label>
-        <select name="province_code" id="tuk-province-select" class="form-select @error('province_code') is-invalid @enderror">
+        <select name="province_code" class="tuk-province-select form-select @error('province_code') is-invalid @enderror">
             <option value="">-</option>
             @foreach ($provinces as $province)
                 <option value="{{ $province->code }}" @selected(old('province_code', $tuk->province_code) === $province->code)>
@@ -59,7 +59,7 @@
     </div>
     <div class="col-md-6 mb-3">
         <label class="form-label">Kota/Kabupaten</label>
-        <select name="city_code" id="tuk-city-select" class="form-select @error('city_code') is-invalid @enderror">
+        <select name="city_code" class="tuk-city-select form-select @error('city_code') is-invalid @enderror">
             <option value="">-</option>
             @foreach ($cities as $city)
                 <option value="{{ $city->code }}" data-province="{{ $city->province_code }}"
@@ -74,27 +74,35 @@
 
 <script>
 (function () {
-    if (window.__tukCityFilter) return;
-    window.__tukCityFilter = true;
+    if (window.__tukCityFilterInit) return;
+    window.__tukCityFilterInit = true;
 
-    const provinceSelect = document.getElementById('tuk-province-select');
-    const citySelect = document.getElementById('tuk-city-select');
-    if (!provinceSelect || !citySelect) return;
-
-    function filterCities() {
-        const province = provinceSelect.value;
-        Array.from(citySelect.options).forEach((option) => {
-            if (!option.value) { option.hidden = false; return; }
-            const p = option.getAttribute('data-province');
-            option.hidden = province !== '' && p !== province;
-        });
-        if (citySelect.selectedOptions[0]?.hidden) {
-            citySelect.value = '';
+    function setupCityFilter(provinceSelect, citySelect) {
+        function filterCities() {
+            const province = provinceSelect.value;
+            Array.from(citySelect.options).forEach((option) => {
+                if (!option.value) { option.hidden = false; return; }
+                const p = option.getAttribute('data-province');
+                option.hidden = province !== '' && p !== province;
+            });
+            if (citySelect.selectedOptions[0]?.hidden) {
+                citySelect.value = '';
+            }
         }
+
+        provinceSelect.addEventListener('change', filterCities);
+        filterCities();
     }
 
-    provinceSelect.addEventListener('change', filterCities);
-    filterCities();
+    // Setup untuk semua modal
+    document.addEventListener('shown.bs.modal', function (e) {
+        const modal = e.target;
+        const provinceSelect = modal.querySelector('.tuk-province-select');
+        const citySelect = modal.querySelector('.tuk-city-select');
+        if (provinceSelect && citySelect) {
+            setupCityFilter(provinceSelect, citySelect);
+        }
+    });
 })();
 </script>
 <div class="mb-3">
