@@ -35,8 +35,11 @@ class HasilAsesmenController extends Controller
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
 
         $units = $this->asesmen->unitItems($pendaftaran->skema);
-        $hasilKuksCollection = $hasil->kuks()->get()->keyBy('kuk_id');
-        $hasilUnitsCollection = $hasil->units()->with('metodes')->get()->keyBy('unit_id');
+        // collect() konversi Eloquent Collection → base Collection: method only() di Eloquent
+        // di-override filter by primary key (id baris), bukan array key (kuk_id) — menyebabkan
+        // $hasilKuks->only($kukIds) selalu kosong (semua elemen tampil "belum dinilai").
+        $hasilKuksCollection = collect($hasil->kuks()->get()->keyBy('kuk_id')->all());
+        $hasilUnitsCollection = collect($hasil->units()->with('metodes')->get()->keyBy('unit_id')->all());
 
         // Bukti dari APL-02 per KUK — untuk pemilih bukti di UI
         $apl02Jawabans = $pendaftaran->apl02?->jawabans

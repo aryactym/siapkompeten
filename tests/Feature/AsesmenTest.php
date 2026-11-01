@@ -196,6 +196,24 @@ class AsesmenTest extends TestCase
         ];
     }
 
+    /**
+     * Extract tag <input> yang mengandung atribut id tertentu, dari '<input' sampai '>' pertama.
+     * Mencegah false-positive cek 'checked' dari elemen lain.
+     */
+    private function extractInputTag(string $html, string $id): string
+    {
+        // Cari atribut id="..." milik <input> (bukan for="..." pada <label>).
+        $needle = 'id="'.$id.'"';
+        $pos = strpos($html, $needle);
+        $this->assertNotFalse($pos, "Input dengan atribut {$needle} tidak ditemukan di HTML");
+
+        // Cari '<input' sebelum atribut id, lalu '>' sesudahnya.
+        $start = strrpos(substr($html, 0, $pos), '<input');
+        $end = strpos($html, '>', $pos);
+
+        return substr($html, $start, $end - $start + 1);
+    }
+
     public function test_asesi_fills_and_submits_apl02(): void
     {
         $this->actingAs($this->asesiUser)
@@ -288,8 +306,7 @@ class AsesmenTest extends TestCase
             'elemenCatatan' => [$this->elemen->id => null],
             'elemen4C' => [
                 $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
-            ],
-            'units' => [
+            ],            'units' => [
                 $this->unit->id => [
                     'keputusan' => 'kompeten',
                     'catatan' => null,
@@ -332,6 +349,17 @@ class AsesmenTest extends TestCase
         $this->assertSame(2, $hasil->kuks()->count());
         $this->assertSame(1, $hasil->units()->count());
         $this->assertSame(1, $hasil->units()->first()->metodes()->count());
+
+        // Regression: GET segar harus restore radio "Semua tercapai" (value=1) dari DB.
+        // Bug keyBy+only() Eloquent Collection menyebabkan semua elemen tampil "belum dinilai".
+        // Extract tag input spesifik (id=elemen-ya-...) sampai '>' pertama — jangan pakai
+        // substring lebar karena radio "belum dinilai" (value="") memang default checked.
+        $html = $this->actingAs($this->asesorUser)
+            ->get(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertOk()
+            ->getContent();
+        $tagYa = $this->extractInputTag($html, 'elemen-ya-'.$this->elemen->id);
+        $this->assertStringContainsString('checked', $tagYa, 'Radio "Semua tercapai" (value=1) harus ter-check dari DB');
 
         // APL-02 diverifikasi lebih dulu sebelum MAK-02 dapat difinalkan.
         $this->actingAs($this->asesiUser)
