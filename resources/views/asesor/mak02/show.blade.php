@@ -700,6 +700,19 @@
 @push('scripts')
 <script>
 /**
+ * Auto-close modal finalisasi saat page load jika ada success message.
+ * Indikasi finalisasi berhasil.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    var successAlert = document.querySelector('.alert-success');
+    var modal = document.getElementById('modal-finalisasi');
+    if (successAlert && modal) {
+        var bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) { bsModal.hide(); }
+    }
+});
+
+/**
  * Buka ulang modal finalisasi jika server mengembalikan error
  * dari field yang ada di modal (rekomendasi, umpan_balik, konfirmasi).
  */
