@@ -88,37 +88,35 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No.</th>
-                    <th style="width: 55%;">Kriteria Unjuk Kerja</th>
+                    <th style="width: 55%;">Elemen Kompetensi</th>
                     <th style="width: 12%;">Tercapai</th>
-                    <th style="width: 14%;">No. Bukti</th>
+                    <th style="width: 14%;">—</th>
                     <th style="width: 14%;">4C</th>
                 </tr>
             </thead>
             <tbody>
                 @php $no = 0; @endphp
                 @foreach ($unit->elemenKompetensis as $elemen)
-                    @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
-                        @php
-                            $hasilKuk = $hasilKuks->get($kuk->id);
-                            $no++;
-                        @endphp
-                        <tr>
-                            <td>{{ $no }}</td>
-                            <td>
-                                <span class="muted">{{ $elemen->nama_elemen }} —</span>
-                                {{ $kuk->pernyataan_kuk }}
-                            </td>
-                            <td>{{ $hasilKuk?->pencapaian ? 'Ya' : 'Tidak' }}</td>
-                            <td>{{ $hasilKuk?->bukti_no ?: '—' }}</td>
-                            <td class="muted">
-                                @if ($hasilKuk)
-                                    {{ $hasilKuk->valid ? 'V' : '-' }}{{ $hasilKuk->autentik ? 'A' : '-' }}{{ $hasilKuk->terkini ? 'T' : '-' }}{{ $hasilKuk->memadai ? 'M' : '-' }}
-                                @else
-                                    —
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
+                    @php
+                        $kukElemen = $elemen->kriteriaUnjukKerjas->pluck('id');
+                        $hasilKukElemen = $hasilKuks->only($kukElemen->all());
+                        $tercapaiCount = $hasilKukElemen->filter(fn ($k) => $k->tercapai === true)->count();
+                        $elemenTercapai = $tercapaiCount === $kukElemen->count() && $kukElemen->count() > 0;
+                        $no++;
+                    @endphp
+                    <tr>
+                        <td>{{ $no }}</td>
+                        <td>{{ $elemen->nama_elemen }}</td>
+                        <td>{{ $elemenTercapai ? 'Ya' : 'Tidak' }}</td>
+                        <td>—</td>
+                        <td class="muted">
+                            @if ($hasilKukElemen->count() > 0)
+                                {{ $hasilKukElemen->first()?->valid ? 'V' : '-' }}{{ $hasilKukElemen->first()?->autentik ? 'A' : '-' }}{{ $hasilKukElemen->first()?->terkini ? 'T' : '-' }}{{ $hasilKukElemen->first()?->memadai ? 'M' : '-' }}
+                            @else
+                                —
+                            @endif
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
