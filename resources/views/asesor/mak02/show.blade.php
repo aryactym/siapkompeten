@@ -570,133 +570,140 @@
 
 </form>
 
-{{-- ===== MODAL KONFIRMASI FINALISASI ===== --}}
-<x-tabler.modal id="modal-finalisasi" title="Konfirmasi Finalisasi FR.AK.02" size="md">
-    <form method="POST" action="{{ route('asesor.mak02.final', $pendaftaran) }}" id="form-finalisasi">
-        @csrf
-
-        {{-- Error dari validasi server (tampil di dalam modal) --}}
-        @error('rekomendasi')
-            <div class="alert alert-danger small mb-3">{{ $message }}</div>
-        @enderror
-        @error('umpan_balik')
-            <div class="alert alert-danger small mb-3">{{ $message }}</div>
-        @enderror
-        @error('konfirmasi')
-            <div class="alert alert-danger small mb-3">{{ $message }}</div>
-        @enderror
-        @error('hasil')
-            <div class="alert alert-danger small mb-3">{{ $message }}</div>
-        @enderror
-        @error('kuks')
-            <div class="alert alert-danger small mb-3">{{ $message }}</div>
-        @enderror
-
-        {{-- Ringkasan keputusan per unit --}}
-        <div class="mb-3">
-            <div class="fw-semibold mb-2">Ringkasan Keputusan Per Unit</div>
-            <div class="table-responsive">
-                <table class="table table-sm table-vcenter">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Unit Kompetensi</th>
-                            <th>KUK</th>
-                            <th>Keputusan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($units as $unit)
-                            @php
-                                $hu = $hasilUnits->get($unit->id);
-                                $kukIds = $unit->elemenKompetensis
-                                    ->flatMap(fn ($e) => $e->kriteriaUnjukKerjas)
-                                    ->pluck('id');
-                                $yaCount = $hasilKuks->only($kukIds->all())
-                                    ->filter(fn ($k) => $k->tercapai === true)->count();
-                            @endphp
-                            <tr>
-                                <td>
-                                    <div class="fw-medium small">{{ $unit->kode_unit }}</div>
-                                    <div class="text-secondary" style="font-size:.8rem">{{ Str::limit($unit->judul_unit, 50) }}</div>
-                                </td>
-                                <td class="small">{{ $yaCount }}/{{ $kukIds->count() }} tercapai</td>
-                                <td>
-                                    @if ($hu && filled($hu->keputusan))
-                                        <span class="badge {{ match($hu->keputusan) {
-                                            'kompeten' => 'bg-success-lt text-success',
-                                            'belum_kompeten' => 'bg-danger-lt text-danger',
-                                            default => 'bg-warning-lt text-warning'
-                                        } }}">
-                                            {{ $keputusanLabels[$hu->keputusan] ?? $hu->keputusan }}
-                                        </span>
-                                    @else
-                                        <span class="badge bg-secondary-lt text-secondary">Belum diputuskan</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+{{-- ===== MODAL KONFIRMASI FINALISASI (Vanilla Bootstrap) ===== --}}
+<div class="modal fade" id="modal-finalisasi" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Finalisasi FR.AK.02</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form method="POST" action="{{ route('asesor.mak02.final', $pendaftaran) }}" id="form-finalisasi">
+                @csrf
+                <div class="modal-body">
+                    {{-- Error dari validasi server (tampil di dalam modal) --}}
+                    @error('rekomendasi')
+                        <div class="alert alert-danger small mb-3">{{ $message }}</div>
+                    @enderror
+                    @error('umpan_balik')
+                        <div class="alert alert-danger small mb-3">{{ $message }}</div>
+                    @enderror
+                    @error('konfirmasi')
+                        <div class="alert alert-danger small mb-3">{{ $message }}</div>
+                    @enderror
+                    @error('hasil')
+                        <div class="alert alert-danger small mb-3">{{ $message }}</div>
+                    @enderror
+                    @error('kuks')
+                        <div class="alert alert-danger small mb-3">{{ $message }}</div>
+                    @enderror
+
+                    {{-- Ringkasan keputusan per unit --}}
+                    <div class="mb-3">
+                        <div class="fw-semibold mb-2">Ringkasan Keputusan Per Unit</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-vcenter">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Unit Kompetensi</th>
+                                        <th>KUK</th>
+                                        <th>Keputusan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($units as $unit)
+                                        @php
+                                            $hu = $hasilUnits->get($unit->id);
+                                            $kukIds = $unit->elemenKompetensis
+                                                ->flatMap(fn ($e) => $e->kriteriaUnjukKerjas)
+                                                ->pluck('id');
+                                            $yaCount = $hasilKuks->only($kukIds->all())
+                                                ->filter(fn ($k) => $k->tercapai === true)->count();
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium small">{{ $unit->kode_unit }}</div>
+                                                <div class="text-secondary" style="font-size:.8rem">{{ Str::limit($unit->judul_unit, 50) }}</div>
+                                            </td>
+                                            <td class="small">{{ $yaCount }}/{{ $kukIds->count() }} tercapai</td>
+                                            <td>
+                                                @if ($hu && filled($hu->keputusan))
+                                                    <span class="badge {{ match($hu->keputusan) {
+                                                        'kompeten' => 'bg-success-lt text-success',
+                                                        'belum_kompeten' => 'bg-danger-lt text-danger',
+                                                        default => 'bg-warning-lt text-warning'
+                                                    } }}">
+                                                        {{ $keputusanLabels[$hu->keputusan] ?? $hu->keputusan }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary-lt text-secondary">Belum diputuskan</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- Rekomendasi --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold required" for="modal-rekomendasi">Rekomendasi</label>
+                        <select id="modal-rekomendasi" name="rekomendasi" class="form-select" required>
+                            <option value="">— Pilih —</option>
+                            <option value="{{ HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN }}"
+                                @selected(old('rekomendasi', $rekomendasiSaran) === HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN)>
+                                Direkomendasikan (Kompeten)
+                            </option>
+                            <option value="{{ HasilAsesmen::REKOMENDASI_TIDAK }}"
+                                @selected(old('rekomendasi', $rekomendasiSaran) === HasilAsesmen::REKOMENDASI_TIDAK)>
+                                Tidak Direkomendasikan
+                            </option>
+                        </select>
+                        @error('rekomendasi')
+                            <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Umpan Balik --}}
+                    <label class="form-check mb-3" for="modal-umpan-balik">
+                        <input type="checkbox" id="modal-umpan-balik" class="form-check-input"
+                               name="umpan_balik" value="1"
+                               @checked(old('umpan_balik'))>
+                        <span class="form-check-label">
+                            Umpan balik dan penjelasan hasil asesmen telah disampaikan kepada asesi
+                        </span>
+                    </label>
+                    @error('umpan_balik')
+                        <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
+                    @enderror
+
+                    {{-- Konfirmasi penguncian --}}
+                    <label class="form-check mb-4" for="modal-konfirmasi">
+                        <input type="checkbox" id="modal-konfirmasi" class="form-check-input"
+                               name="konfirmasi" value="1"
+                               @checked(old('konfirmasi'))>
+                        <span class="form-check-label">
+                            Saya memahami laporan FR.AK.02 <strong>terkunci permanen</strong> setelah difinalkan.
+                            Perubahan berikutnya wajib melalui admin LSP dan tercatat di audit log.
+                        </span>
+                    </label>
+                    @error('konfirmasi')
+                        <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-lock me-1"></i> Ya, Finalkan Sekarang
+                    </button>
+                </div>
+            </form>
         </div>
-
-        {{-- Rekomendasi --}}
-        <div class="mb-3">
-            <label class="form-label fw-semibold required" for="modal-rekomendasi">Rekomendasi</label>
-            <select id="modal-rekomendasi" name="rekomendasi" class="form-select" required>
-                <option value="">— Pilih —</option>
-                <option value="{{ HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN }}"
-                    @selected(old('rekomendasi', $rekomendasiSaran) === HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN)>
-                    Direkomendasikan (Kompeten)
-                </option>
-                <option value="{{ HasilAsesmen::REKOMENDASI_TIDAK }}"
-                    @selected(old('rekomendasi', $rekomendasiSaran) === HasilAsesmen::REKOMENDASI_TIDAK)>
-                    Tidak Direkomendasikan
-                </option>
-            </select>
-            @error('rekomendasi')
-                <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
-            @enderror
-        </div>
-
-        {{-- Umpan Balik --}}
-        <label class="form-check mb-3" for="modal-umpan-balik">
-            <input type="checkbox" id="modal-umpan-balik" class="form-check-input"
-                   name="umpan_balik" value="1"
-                   @checked(old('umpan_balik'))>
-            <span class="form-check-label">
-                Umpan balik dan penjelasan hasil asesmen telah disampaikan kepada asesi
-            </span>
-        </label>
-        @error('umpan_balik')
-            <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
-        @enderror
-
-        {{-- Konfirmasi penguncian --}}
-        <label class="form-check mb-4" for="modal-konfirmasi">
-            <input type="checkbox" id="modal-konfirmasi" class="form-check-input"
-                   name="konfirmasi" value="1"
-                   @checked(old('konfirmasi'))>
-            <span class="form-check-label">
-                Saya memahami laporan FR.AK.02 <strong>terkunci permanen</strong> setelah difinalkan.
-                Perubahan berikutnya wajib melalui admin LSP dan tercatat di audit log.
-            </span>
-        </label>
-        @error('konfirmasi')
-            <div class="text-danger small mt-n2 mb-2"><i class="ti ti-alert-circle me-1"></i>{{ $message }}</div>
-        @enderror
-
-        {{-- Tombol --}}
-        <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
-                Batal
-            </button>
-            <button type="submit" class="btn btn-primary">
-                <i class="ti ti-lock me-1"></i> Ya, Finalkan Sekarang
-            </button>
-        </div>
-    </form>
-</x-tabler.modal>
+    </div>
+</div>
 
 @endsection
 
