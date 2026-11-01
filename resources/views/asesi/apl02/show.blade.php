@@ -45,6 +45,18 @@
             <p class="text-secondary mb-3">{{ $unit->deskripsi }}</p>
 
             @foreach ($unit->elemenKompetensis as $elemen)
+                @php
+                    // Kunci per kuk_id pertama elemen — semua KUK inherit approval elemen (lihat mapPayloadPerElemen).
+                    $kukUtama = $elemen->kriteriaUnjukKerjas->first();
+                    $jawabanElemen = $kukUtama ? $jawabans->get($kukUtama->id) : null;
+                    $approvalTersimpan = $jawabanElemen?->jawaban_asesi;
+                    // old() menang saatPostBack gagal validasi; selain itu restore dari DB.
+                    $pilihan = old('elemen_approval.'.$elemen->id, match (true) {
+                        $approvalTersimpan === true => '1',
+                        $approvalTersimpan === false => '0',
+                        default => null,
+                    });
+                @endphp
                 <div class="card mb-3 border-primary">
                     <div class="card-header bg-primary-lt">
                         <h3 class="h5 m-0">{{ $elemen->nama_elemen }}</h3>
@@ -58,6 +70,7 @@
                                     <input type="radio" name="elemen_approval[{{ $elemen->id }}]" value="1"
                                            class="form-selectgroup-input elemen-approval"
                                            data-elemen="{{ $elemen->id }}"
+                                           @checked($pilihan === '1')
                                            @disabled(! $dapatDiisi)>
                                     <span class="form-selectgroup-label">Ya, mampu semua</span>
                                 </label>
@@ -65,6 +78,7 @@
                                     <input type="radio" name="elemen_approval[{{ $elemen->id }}]" value="0"
                                            class="form-selectgroup-input elemen-approval"
                                            data-elemen="{{ $elemen->id }}"
+                                           @checked($pilihan === '0')
                                            @disabled(! $dapatDiisi)>
                                     <span class="form-selectgroup-label">Belum mampu semua</span>
                                 </label>
@@ -87,7 +101,7 @@
                             <textarea name="bukti[{{ $elemen->id }}]" rows="3" class="form-control"
                                       maxlength="1000"
                                       @disabled(! $dapatDiisi)
-                                      placeholder="Contoh: sertifikat pelatihan, portofolio, pengalaman kerja, deskripsi kompetensi">{{ old('bukti.'.$elemen->id, $jawabans->where('elemen_id', $elemen->id)->first()?->bukti_asesi) }}</textarea>
+                                      placeholder="Contoh: sertifikat pelatihan, portofolio, pengalaman kerja, deskripsi kompetensi">{{ old('bukti.'.$elemen->id, $jawabanElemen?->bukti_asesi) }}</textarea>
                         </div>
                     </div>
                 </div>

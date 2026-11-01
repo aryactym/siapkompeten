@@ -214,6 +214,15 @@ class AsesmenTest extends TestCase
         $this->assertSame(2, $penilaian->jawabans()->count());
         $this->assertTrue($penilaian->jawabans()->first()->jawaban_asesi);
 
+        // Regression: setelah simpan draf, GET segar harus restore radio "Ya, mampu semua" dari DB.
+        $html = $this->actingAs($this->asesiUser)
+            ->get(route('asesi.apl02.show', $this->pendaftaran))
+            ->assertOk()
+            ->getContent();
+        $pos = strpos($html, 'name="elemen_approval['.$this->elemen->id.']" value="1"');
+        $this->assertNotFalse($pos, 'Radio elemen_approval harus dirender');
+        $this->assertStringContainsString('checked', substr($html, $pos, 400), 'Radio "Ya, mampu semua" harus ter-check dari DB');
+
         $this->actingAs($this->asesiUser)
             ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
             ->assertRedirect(route('asesi.apl02.show', $this->pendaftaran))
