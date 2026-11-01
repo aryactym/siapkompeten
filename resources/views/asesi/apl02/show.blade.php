@@ -45,44 +45,52 @@
             <p class="text-secondary mb-3">{{ $unit->deskripsi }}</p>
 
             @foreach ($unit->elemenKompetensis as $elemen)
-                <h3 class="h5 mt-3">{{ $elemen->nama_elemen }}</h3>
-
-                @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
-                    @php $jawaban = $jawabans->get($kuk->id); @endphp
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <div class="fw-semibold">{{ $kuk->pernyataan_kuk }}</div>
-
-                            <div class="mt-2">
-                                <div class="text-secondary small mb-1">Saya menyatakan mampu memenuhi KUK ini:</div>
-                                <div class="form-selectgroup form-selectgroup-pills">
-                                    <label class="form-selectgroup-item">
-                                        <input type="radio" name="jawaban[{{ $kuk->id }}]" value="1"
-                                               class="form-selectgroup-input"
-                                               @checked(old('jawaban.'.$kuk->id, $jawaban?->jawaban_asesi))
-                                               @disabled(! $dapatDiisi)>
-                                        <span class="form-selectgroup-label">Ya, mampu</span>
-                                    </label>
-                                    <label class="form-selectgroup-item">
-                                        <input type="radio" name="jawaban[{{ $kuk->id }}]" value="0"
-                                               class="form-selectgroup-input"
-                                               @checked(old('jawaban.'.$kuk->id, $jawaban !== null && ! $jawaban->jawaban_asesi))
-                                               @disabled(! $dapatDiisi)>
-                                        <span class="form-selectgroup-label">Belum mampu</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="mt-2">
-                                <label class="form-label">Bukti / penjelasan singkat</label>
-                                <textarea name="bukti[{{ $kuk->id }}]" rows="2" class="form-control"
-                                          maxlength="1000"
-                                          @disabled(! $dapatDiisi)
-                                          placeholder="Contoh: sertifikat pelatihan, portofolio, pengalaman kerja">{{ old('bukti.'.$kuk->id, $jawaban?->bukti_asesi) }}</textarea>
+                <div class="card mb-3 border-primary">
+                    <div class="card-header bg-primary-lt">
+                        <h3 class="h5 m-0">{{ $elemen->nama_elemen }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {{-- Persetujuan per elemen --}}
+                        <div class="mb-3">
+                            <div class="text-secondary small mb-2">Saya menyatakan mampu memenuhi semua KUK elemen ini:</div>
+                            <div class="form-selectgroup form-selectgroup-pills">
+                                <label class="form-selectgroup-item">
+                                    <input type="radio" name="elemen_approval[{{ $elemen->id }}]" value="1"
+                                           class="form-selectgroup-input elemen-approval"
+                                           data-elemen="{{ $elemen->id }}"
+                                           @disabled(! $dapatDiisi)>
+                                    <span class="form-selectgroup-label">Ya, mampu semua</span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="radio" name="elemen_approval[{{ $elemen->id }}]" value="0"
+                                           class="form-selectgroup-input elemen-approval"
+                                           data-elemen="{{ $elemen->id }}"
+                                           @disabled(! $dapatDiisi)>
+                                    <span class="form-selectgroup-label">Belum mampu semua</span>
+                                </label>
                             </div>
                         </div>
+
+                        {{-- Detail KUK (read-only display) --}}
+                        <div class="text-secondary small">
+                            <strong>Kriteria Unjuk Kerja:</strong>
+                            <ul class="mb-0 ps-3">
+                                @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
+                                    <li>{{ $kuk->pernyataan_kuk }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                        {{-- Bukti per elemen --}}
+                        <div class="mt-3">
+                            <label class="form-label">Bukti / penjelasan singkat untuk elemen ini</label>
+                            <textarea name="bukti[{{ $elemen->id }}]" rows="3" class="form-control"
+                                      maxlength="1000"
+                                      @disabled(! $dapatDiisi)
+                                      placeholder="Contoh: sertifikat pelatihan, portofolio, pengalaman kerja, deskripsi kompetensi">{{ old('bukti.'.$elemen->id, $jawabans->where('elemen_id', $elemen->id)->first()?->bukti_asesi) }}</textarea>
+                        </div>
                     </div>
-                @endforeach
+                </div>
             @endforeach
         </x-tabler.card>
     @endforeach

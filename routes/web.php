@@ -123,6 +123,8 @@ Route::prefix('admin')
             ->name('skema.persyaratan');
         Route::post('skema/{skema}/persyaratan', [AdminSkemaController::class, 'storePersyaratan'])
             ->name('skema.persyaratan.store');
+        Route::get('skema/{skema}/persyaratan/{persyaratan}/edit', [AdminSkemaController::class, 'editPersyaratan'])
+            ->name('skema.persyaratan.edit');
         Route::put('skema/{skema}/persyaratan/{persyaratan}', [AdminSkemaController::class, 'updatePersyaratan'])
             ->name('skema.persyaratan.update');
         Route::delete('skema/{skema}/persyaratan/{persyaratan}', [AdminSkemaController::class, 'destroyPersyaratan'])

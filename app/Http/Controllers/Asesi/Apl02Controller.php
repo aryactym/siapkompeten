@@ -49,13 +49,13 @@ class Apl02Controller extends Controller
         abort_unless($penilaian->dapatDiisiAsesi(), 403, 'APL-02 sudah diserahkan.');
 
         $validated = $request->validate([
-            'jawaban' => ['required', 'array'],
-            'jawaban.*' => ['nullable', 'boolean'],
+            'elemen_approval' => ['required', 'array'],
+            'elemen_approval.*' => ['nullable', 'boolean'],
             'bukti' => ['nullable', 'array'],
             'bukti.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->asesmen->simpanJawabanAsesi($penilaian, $this->mapPayload($validated));
+        $this->asesmen->simpanJawabanAsesi($penilaian, $this->mapPayloadPerElemen($validated, $pendaftaran->skema));
 
         activity('apl02')
             ->causedBy($request->user())
@@ -79,13 +79,13 @@ class Apl02Controller extends Controller
         abort_unless($penilaian->dapatDiisiAsesi(), 403, 'APL-02 sudah diserahkan.');
 
         $validated = $request->validate([
-            'jawaban' => ['required', 'array'],
-            'jawaban.*' => ['nullable', 'boolean'],
+            'elemen_approval' => ['required', 'array'],
+            'elemen_approval.*' => ['nullable', 'boolean'],
             'bukti' => ['nullable', 'array'],
             'bukti.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->asesmen->simpanJawabanAsesi($penilaian, $this->mapPayload($validated));
+        $this->asesmen->simpanJawabanAsesi($penilaian, $this->mapPayloadPerElemen($validated, $pendaftaran->skema));
         $this->asesmen->serahkanApl02($penilaian, $this->asesmen->kukItems($pendaftaran->skema));
 
         activity('apl02')
@@ -117,19 +117,32 @@ class Apl02Controller extends Controller
     }
 
     /**
-     * Gabungkan payload `jawaban` dan `bukti` menjadi per KUK.
+     * Map payload per elemen ke per KUK.
+     * Setiap KUK inherit approval dari elemen parent-nya.
      *
      * @return array<string, array{jawaban: bool, bukti: string|null}>
      */
-    private function mapPayload(array $validated): array
+    private function mapPayloadPerElemen(array $validated, $skema): array
     {
         $result = [];
+        
+        // Load semua elemen dengan KUK
+        $elemenIds = array_keys($validated['elemen_approval'] ?? []);
+        $elemenKompetensis = \App\Models\ElemenKompetensi::whereIn('id', $elemenIds)
+            ->with('kriteriaUnjukKerjas')
+            ->get();
 
-        foreach ($validated['jawaban'] as $kukId => $value) {
-            $result[$kukId] = [
-                'jawaban' => (bool) $value,
-                'bukti' => $validated['bukti'][$kukId] ?? null,
-            ];
+        foreach ($elemenKompetensis as $elemen) {
+            $elemenApproval = (bool) ($validated['elemen_approval'][$elemen->id] ?? false);
+            $elemenBukti = $validated['bukti'][$elemen->id] ?? null;
+
+            // Setiap KUK dalam elemen ini inherit approval elemen
+            foreach ($elemen->kriteriaUnjukKerjas as $kuk) {
+                $result[$kuk->id] = [
+                    'jawaban' => $elemenApproval,
+                    'bukti' => $elemenBukti,
+                ];
+            }
         }
 
         return $result;

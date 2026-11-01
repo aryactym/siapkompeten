@@ -56,3 +56,26 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+Server berjalan. Branch single sekarang siap:
+✅ Perubahan yang sudah dilakukan:
+
+1. Hapus institution switcher dari header
+2. Hapus route tenant.switch
+3. Seeder hanya 1 LSP (siap-kompeten)
+4. Fix MasterDataSeeder province_code = null
+5. Fix tombol Finalkan FR.AK.02 (commit ba446b8)
+   ✅ Database: siapkompeten_singlebranch siap, user terikat 1 institution
+   Demo akun:
+
+- Asesor: asesorhendra / password
+- Asesi: budipratama / password
+- Admin: adminlsp / password
+  Next steps:
+
+1. Login ke http://siapkompeten.test/asesor/login
+2. Lihat daftar pendaftaran
+3. Akses MAK-02 → test tombol Finalkan FR.AK.02
+4. Cek tidak ada pilihan switch institusi di header

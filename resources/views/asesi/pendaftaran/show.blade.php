@@ -8,6 +8,22 @@
     $stage = $pendaftaran->currentStage();
     $canUpload = $pendaftaran->canUploadDocuments();
     $missing = $pendaftaran->missingRequiredDocuments();
+    
+    // Mapping status ke step untuk stepper
+    $statusToStep = [
+        \App\Models\Pendaftaran::STATUS_DRAF => 1,
+        \App\Models\Pendaftaran::STATUS_DOKUMEN_DIAJUKAN => 2,
+        \App\Models\Pendaftaran::STATUS_DOKUMEN_DITOLAK => 1,
+        \App\Models\Pendaftaran::STATUS_MENUNGGU_PEMBAYARAN => 3,
+        \App\Models\Pendaftaran::STATUS_PEMBAYARAN_DIAJUKAN => 3,
+        \App\Models\Pendaftaran::STATUS_MENUNGGU_JADWAL => 4,
+        \App\Models\Pendaftaran::STATUS_TERJADWAL => 5,
+        \App\Models\Pendaftaran::STATUS_ASESMEN_BERJALAN => 6,
+        \App\Models\Pendaftaran::STATUS_SELESAI => 7,
+        \App\Models\Pendaftaran::STATUS_DITOLAK => 0,
+        \App\Models\Pendaftaran::STATUS_DIBATALKAN => 0,
+    ];
+    
     $steps = [
         1 => 'APL-01 & Berkas',
         2 => 'Verifikasi Admin',
@@ -17,6 +33,8 @@
         6 => 'Asesmen',
         7 => 'Selesai',
     ];
+    
+    $currentStep = $statusToStep[$pendaftaran->status] ?? 1;
 @endphp
 
 @section('actions')
@@ -29,9 +47,8 @@
 <x-tabler.card class="mb-3">
     <ul class="steps steps-counter steps-primary mb-0">
         @foreach ($steps as $number => $label)
-            <li class="step-item {{ $stage['step'] === $number ? 'active' : ($stage['step'] > $number ? 'active' : '') }}">
-                <div class="h4 m-0">{{ $number }}</div>
-                <div class="text-secondary small">{{ $label }}</div>
+            <li class="step-item {{ $currentStep === $number ? 'active' : ($currentStep > $number ? 'done' : '') }}">
+                <div class="text-secondary small" style="margin-top: 10px;">{{ $label }}</div>
             </li>
         @endforeach
     </ul>

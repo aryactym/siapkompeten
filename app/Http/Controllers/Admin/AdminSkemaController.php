@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Skema;
-use App\Models\SkmaPersyaratan;
+use App\Models\SkemaPersyaratan;
 use App\Models\Skkni;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
@@ -116,20 +116,30 @@ class AdminSkemaController extends Controller
         ]);
     }
 
+    public function editPersyaratan(Skema $skema, SkemaPersyaratan $persyaratan): View
+    {
+        $this->authorize('update', $skema);
+
+        return view('admin.skema.persyaratan-edit', [
+            'skema' => $skema,
+            'persyaratan' => $persyaratan,
+        ]);
+    }
+
     public function storePersyaratan(Request $request, Skema $skema): RedirectResponse
     {
         $this->authorize('update', $skema);
 
         $validated = $request->validate([
             'nama_dokumen' => ['required', 'string', 'max:200'],
-            'deskripsi' => ['nullable', 'string', 'max:500'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
             'is_required' => ['nullable', 'boolean'],
         ]);
 
         $skema->persyaratans()->create([
             'institution_id' => TenantContext::requireId(),
             'nama_dokumen' => $validated['nama_dokumen'],
-            'deskripsi' => $validated['deskripsi'],
+            'keterangan' => $validated['keterangan'],
             'is_required' => (bool) ($validated['is_required'] ?? false),
             'urutan' => $skema->persyaratans()->max('urutan') + 1,
         ]);
@@ -139,19 +149,19 @@ class AdminSkemaController extends Controller
             ->with('success', 'Persyaratan dokumen berhasil ditambahkan.');
     }
 
-    public function updatePersyaratan(Request $request, Skema $skema, SkmaPersyaratan $persyaratan): RedirectResponse
+    public function updatePersyaratan(Request $request, Skema $skema, SkemaPersyaratan $persyaratan): RedirectResponse
     {
         $this->authorize('update', $skema);
 
         $validated = $request->validate([
             'nama_dokumen' => ['required', 'string', 'max:200'],
-            'deskripsi' => ['nullable', 'string', 'max:500'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
             'is_required' => ['nullable', 'boolean'],
         ]);
 
         $persyaratan->update([
             'nama_dokumen' => $validated['nama_dokumen'],
-            'deskripsi' => $validated['deskripsi'],
+            'keterangan' => $validated['keterangan'],
             'is_required' => (bool) ($validated['is_required'] ?? false),
         ]);
 
@@ -160,7 +170,7 @@ class AdminSkemaController extends Controller
             ->with('success', 'Persyaratan dokumen berhasil diperbarui.');
     }
 
-    public function destroyPersyaratan(Request $request, Skema $skema, SkmaPersyaratan $persyaratan): RedirectResponse
+    public function destroyPersyaratan(Request $request, Skema $skema, SkemaPersyaratan $persyaratan): RedirectResponse
     {
         $this->authorize('update', $skema);
 

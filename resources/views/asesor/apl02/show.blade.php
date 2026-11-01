@@ -37,57 +37,69 @@
     @foreach ($units as $unit)
         <x-tabler.card title="{{ $unit->kode_unit }} · {{ $unit->judul_unit }}" class="mb-3">
             @foreach ($unit->elemenKompetensis as $elemen)
-                <h3 class="h5 mt-3">{{ $elemen->nama_elemen }}</h3>
+                <div class="card mb-3 border-primary">
+                    <div class="card-header bg-primary-lt">
+                        <h3 class="h5 m-0">{{ $elemen->nama_elemen }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {{-- KUK list display --}}
+                        <div class="text-secondary small mb-3">
+                            <strong>Kriteria Unjuk Kerja:</strong>
+                            <ul class="mb-0 ps-3">
+                                @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
+                                    <li>{{ $kuk->pernyataan_kuk }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
 
-                @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
-                    @php $jawaban = $jawabans->get($kuk->id); @endphp
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <div class="fw-semibold">{{ $kuk->pernyataan_kuk }}</div>
-
-                            <div class="mt-2 row g-3">
-                                <div class="col-md-6">
-                                    <div class="text-secondary small">Jawaban asesi</div>
-                                    <div class="fw-semibold">
-                                        @if ($jawaban?->jawaban_asesi)
-                                            <span class="badge bg-success-lt text-success">Ya, mampu</span>
-                                        @elseif ($jawaban)
-                                            <span class="badge bg-danger-lt text-danger">Belum mampu</span>
-                                        @else
-                                            <span class="badge bg-secondary-lt">Belum dijawab</span>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-secondary small">Bukti asesi</div>
-                                    <div>{{ $jawaban?->bukti_asesi ?: '—' }}</div>
+                        {{-- Jawaban asesi per elemen --}}
+                        @php 
+                            $firstKuk = $elemen->kriteriaUnjukKerjas->first();
+                            $elemenJawaban = $firstKuk ? $jawabans->get($firstKuk->id) : null;
+                        @endphp
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="text-secondary small">Pernyataan Asesi</div>
+                                <div class="fw-semibold">
+                                    @if ($elemenJawaban?->jawaban_asesi)
+                                        <span class="badge bg-success-lt text-success">Ya, mampu semua</span>
+                                    @elseif ($elemenJawaban)
+                                        <span class="badge bg-danger-lt text-danger">Belum mampu semua</span>
+                                    @else
+                                        <span class="badge bg-secondary-lt">Belum dijawab</span>
+                                    @endif
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="text-secondary small">Bukti Asesi</div>
+                                <div class="text-break">{{ $elemenJawaban?->bukti_asesi ?: '—' }}</div>
+                            </div>
+                        </div>
 
-                            <hr>
+                        <hr>
 
-                            <label class="form-label">Bukti dari asesor</label>
-                            <textarea name="bukti[{{ $kuk->id }}]" rows="2" class="form-control" maxlength="1000"
-                                      @disabled(! $dapatDiverifikasi)
-                                      placeholder="Catatan pemeriksaan bukti">{{ old('bukti.'.$kuk->id, $jawaban?->bukti_asesor) }}</textarea>
+                        {{-- Verifikasi per elemen --}}
+                        <label class="form-label">Catatan Verifikasi Asesor untuk Elemen Ini</label>
+                        <textarea name="bukti[{{ $elemen->id }}]" rows="3" class="form-control" maxlength="1000"
+                                  @disabled(! $dapatDiverifikasi)
+                                  placeholder="Catatan pemeriksaan bukti kompetensi untuk elemen ini">{{ old('bukti.'.$elemen->id, $elemenJawaban?->bukti_asesor) }}</textarea>
 
-                            <div class="mt-3">
-                                <div class="text-secondary small mb-1">Empat bukti kompetensi (4C)</div>
-                                <div class="d-flex flex-wrap gap-3">
-                                    @foreach (['valid' => 'Valid', 'autentik' => 'Autentik', 'terkini' => 'Terkini', 'memadai' => 'Memadai'] as $key => $label)
-                                        <label class="form-check">
-                                            <input type="checkbox" class="form-check-input"
-                                                   name="verifikasi[{{ $kuk->id }}][{{ $key }}]" value="1"
-                                                   @checked(old('verifikasi.'.$kuk->id.'.'.$key, $jawaban?->{$key}))
-                                                   @disabled(! $dapatDiverifikasi)>
-                                            <span class="form-check-label">{{ $label }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
+                        <div class="mt-3">
+                            <div class="text-secondary small mb-2">Empat Bukti Kompetensi (4C) untuk Elemen Ini</div>
+                            <div class="d-flex flex-wrap gap-3">
+                                @foreach (['valid' => 'Valid', 'autentik' => 'Autentik', 'terkini' => 'Terkini', 'memadai' => 'Memadai'] as $key => $label)
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input"
+                                               name="verifikasi[{{ $elemen->id }}][{{ $key }}]" value="1"
+                                               @checked(old('verifikasi.'.$elemen->id.'.'.$key, $elemenJawaban?->{$key}))
+                                               @disabled(! $dapatDiverifikasi)>
+                                        <span class="form-check-label">{{ $label }}</span>
+                                    </label>
+                                @endforeach
                             </div>
                         </div>
                     </div>
-                @endforeach
+                </div>
             @endforeach
         </x-tabler.card>
     @endforeach

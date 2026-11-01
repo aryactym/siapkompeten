@@ -35,7 +35,7 @@
                         <tr>
                             <td>{{ $idx + 1 }}</td>
                             <td class="fw-semibold">{{ $persyaratan->nama_dokumen }}</td>
-                            <td>{{ $persyaratan->deskripsi ?? '-' }}</td>
+                            <td>{{ $persyaratan->keterangan ?? '-' }}</td>
                             <td class="text-center">
                                 @if ($persyaratan->is_required)
                                     <span class="badge bg-red-lt text-red">Ya</span>
@@ -45,10 +45,9 @@
                             </td>
                             <td>
                                 <div class="btn-list flex-nowrap">
-                                    <button type="button" class="btn btn-sm btn-outline-primary"
-                                            data-bs-toggle="modal" data-bs-target="#modal-edit-{{ $persyaratan->id }}">
+                                    <a href="{{ route('admin.skema.persyaratan.edit', [$skema, $persyaratan]) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="ti ti-edit"></i>
-                                    </button>
+                                    </a>
                                     <form method="POST" action="{{ route('admin.skema.persyaratan.destroy', [$skema, $persyaratan]) }}"
                                           onsubmit="return confirm('Hapus persyaratan ini?')">
                                         @csrf
@@ -91,10 +90,10 @@
                     @error('nama_dokumen')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Deskripsi</label>
-                    <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror"
-                              rows="3" maxlength="500">{{ old('deskripsi') }}</textarea>
-                    @error('deskripsi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <label class="form-label">Keterangan</label>
+                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror"
+                              rows="3" maxlength="500">{{ old('keterangan') }}</textarea>
+                    @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-check">
@@ -113,48 +112,5 @@
         </form>
     </div>
 </div>
-
-{{-- Modal Edit Persyaratan --}}
-@foreach ($skema->persyaratans as $persyaratan)
-    <div class="modal modal-blur fade" id="modal-edit-{{ $persyaratan->id }}" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <form method="POST" action="{{ route('admin.skema.persyaratan.update', [$skema, $persyaratan]) }}" class="modal-content">
-                @csrf
-                @method('PUT')
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Persyaratan Dokumen</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label required">Nama Dokumen</label>
-                        <input type="text" name="nama_dokumen" class="form-control @error('nama_dokumen') is-invalid @enderror"
-                               value="{{ old('nama_dokumen', $persyaratan->nama_dokumen) }}" required maxlength="200">
-                        @error('nama_dokumen')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror"
-                                  rows="3" maxlength="500">{{ old('deskripsi', $persyaratan->deskripsi) }}</textarea>
-                        @error('deskripsi')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-check">
-                            <input type="checkbox" name="is_required" value="1" class="form-check-input"
-                                   @checked(old('is_required', $persyaratan->is_required))>
-                            <span class="form-check-label">Dokumen wajib diunggah</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary ms-auto">
-                        <i class="ti ti-device-floppy me-1"></i> Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-@endforeach
 
 @endsection
