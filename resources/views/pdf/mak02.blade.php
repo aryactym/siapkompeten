@@ -99,7 +99,7 @@
                 @foreach ($unit->elemenKompetensis as $elemen)
                     @php
                         $kukElemen = $elemen->kriteriaUnjukKerjas->pluck('id');
-                        $hasilKukElemen = $hasilKuks->only($kukElemen->all());
+                        $hasilKukElemen = $hasilKuks->filter(fn ($hk) => in_array($hk->kuk_id, $kukElemen->all()));
                         $tercapaiCount = $hasilKukElemen->filter(fn ($k) => $k->tercapai === true)->count();
                         $elemenTercapai = $tercapaiCount === $kukElemen->count() && $kukElemen->count() > 0;
                         $no++;
