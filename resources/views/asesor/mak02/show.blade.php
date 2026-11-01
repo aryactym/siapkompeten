@@ -579,13 +579,15 @@
 @push('modals')
 @unless ($sudahFinal)
 <div class="modal fade" id="modal-finalisasi" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Konfirmasi Finalisasi FR.AK.02</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ route('asesor.mak02.final', $pendaftaran) }}" id="form-finalisasi">
+            <form method="POST" action="{{ route('asesor.mak02.final', $pendaftaran) }}" id="form-finalisasi"
+                  class="d-flex flex-column flex-grow-1 overflow-hidden"
+                  style="min-height: 0;">
                 @csrf
                 <div class="modal-body">
                     {{-- Error dari validasi server (tampil di dalam modal) --}}
@@ -608,9 +610,9 @@
                     {{-- Ringkasan keputusan per unit --}}
                     <div class="mb-3">
                         <div class="fw-semibold mb-2">Ringkasan Keputusan Per Unit</div>
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
                             <table class="table table-sm table-vcenter">
-                                <thead class="table-light">
+                                <thead class="table-light sticky-top">
                                     <tr>
                                         <th>Unit Kompetensi</th>
                                         <th>KUK</th>
@@ -630,9 +632,9 @@
                                         <tr>
                                             <td>
                                                 <div class="fw-medium small">{{ $unit->kode_unit }}</div>
-                                                <div class="text-secondary" style="font-size:.8rem">{{ Str::limit($unit->judul_unit, 50) }}</div>
+                                                <div class="text-secondary" style="font-size:.8rem">{{ Str::limit($unit->judul_unit, 40) }}</div>
                                             </td>
-                                            <td class="small">{{ $yaCount }}/{{ $kukIds->count() }} tercapai</td>
+                                            <td class="small text-nowrap">{{ $yaCount }}/{{ $kukIds->count() }}</td>
                                             <td>
                                                 @if ($hu && filled($hu->keputusan))
                                                     <span class="badge {{ match($hu->keputusan) {
@@ -643,7 +645,7 @@
                                                         {{ $keputusanLabels[$hu->keputusan] ?? $hu->keputusan }}
                                                     </span>
                                                 @else
-                                                    <span class="badge bg-secondary-lt text-secondary">Belum diputuskan</span>
+                                                    <span class="badge bg-secondary-lt text-secondary">—</span>
                                                 @endif
                                             </td>
                                         </tr>
