@@ -301,7 +301,9 @@ class AsesmenTest extends TestCase
         $this->actingAs($this->asesorUser)
             ->get(route('asesor.mak02.show', $this->pendaftaran))
             ->assertOk()
-            ->assertSee('Melakukan Pengujian');
+            ->assertSee('Melakukan Pengujian')
+            ->assertSee('Semua Tercapai')
+            ->assertSee('semuaTercapai()');
 
         // Finalisasi diblokir sampai APL-02 diverifikasi.
         $this->actingAs($this->asesorUser)

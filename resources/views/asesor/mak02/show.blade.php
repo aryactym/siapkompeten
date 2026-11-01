@@ -543,6 +543,10 @@
 
                 {{-- TOMBOL --}}
                 <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-success"
+                            onclick="semuaTercapai()">
+                        <i class="ti ti-check-all me-1"></i> Semua Tercapai
+                    </button>
                     <button type="submit" form="form-mak02" class="btn btn-outline-primary">
                         <i class="ti ti-device-floppy me-1"></i> Simpan Draf
                     </button>
@@ -715,5 +719,14 @@ document.querySelectorAll('input[name="rekomendasi"]').forEach(function (radio) 
         if (modalSelect) { modalSelect.value = this.value; }
     });
 });
+
+/**
+ * Set semua radio elemenTercapai ke "Semua tercapai" (value="1") — 1 klik.
+ */
+function semuaTercapai() {
+    document.querySelectorAll('input[name^="elemenTercapai["][value="1"]').forEach(function (el) {
+        if (!el.disabled) { el.checked = true; }
+    });
+}
 </script>
 @endpush
