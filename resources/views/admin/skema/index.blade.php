@@ -89,6 +89,9 @@
                                     <a href="{{ route('admin.skema.show', $skema) }}" class="btn btn-sm btn-outline-secondary" title="Detail">
                                         <i class="ti ti-eye"></i>
                                     </a>
+                                    <a href="{{ route('admin.skema.persyaratan', $skema) }}" class="btn btn-sm btn-outline-info" title="Persyaratan">
+                                        <i class="ti ti-file-check"></i>
+                                    </a>
                                     <button type="button" class="btn btn-sm btn-outline-primary"
                                             data-bs-toggle="modal" data-bs-target="#modal-skema-{{ $skema->id }}">
                                         <i class="ti ti-edit"></i>
