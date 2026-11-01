@@ -5,8 +5,8 @@
     'footer' => null,
 ])
 
-<div class="modal modal-blur fade" id="{{ $id }}" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-{{ $size }} modal-dialog-centered modal-dialog-scrollable" role="document">
+<div class="modal modal-blur fade" id="{{ $id }}" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-{{ $size }} modal-dialog-centered modal-dialog-scrollable" role="document" style="z-index: 1061;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ $title }}</h5>
