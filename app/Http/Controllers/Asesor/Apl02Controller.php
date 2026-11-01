@@ -70,7 +70,7 @@ class Apl02Controller extends Controller
             ];
         }
 
-        $this->asesmen->verifikasiApl02($penilaian, $verifikasi, $asesor->id);
+        $this->asesmen->verifikasiApl02($penilaian, $verifikasi, $asesor->id, $pendaftaran);
 
         activity('apl02')
             ->causedBy($request->user())

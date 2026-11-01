@@ -107,10 +107,29 @@ class AsesmenService
      *
      * @param  array<string, array{bukti: string|null, valid: bool, autentik: bool, terkini: bool, memadai: bool}>  $verifikasi
      */
-    public function verifikasiApl02(Apl02Penilaian $penilaian, array $verifikasi, string $asesorId): void
+    public function verifikasiApl02(Apl02Penilaian $penilaian, array $verifikasi, string $asesorId, Pendaftaran $pendaftaran): void
     {
-        DB::transaction(function () use ($penilaian, $verifikasi, $asesorId): void {
+        DB::transaction(function () use ($penilaian, $verifikasi, $asesorId, $pendaftaran): void {
+            // Map elemen-id → [KUK-id list] dari skema.
+            $elemenToKuks = [];
+            foreach ($pendaftaran->skema->unitKompetensis as $unit) {
+                foreach ($unit->elemenKompetensis as $elemen) {
+                    $elemenToKuks[$elemen->id] = $elemen->kriteriaUnjukKerjas->pluck('id')->all();
+                }
+            }
+
+            // Iterasi verifikasi per KUK; cari elemen yg memiliki KUK, ambil bukti dari elemen tsb.
             foreach ($verifikasi as $kukId => $item) {
+                // Cari elemen-id yg punya KUK-id ini.
+                $elemenId = null;
+                foreach ($elemenToKuks as $elemId => $kukIds) {
+                    if (in_array($kukId, $kukIds)) {
+                        $elemenId = $elemId;
+                        break;
+                    }
+                }
+
+                // Bukti form pakai key KUK-id (view fixed line 85).
                 Apl02Jawaban::updateOrCreate(
                     ['penilaian_id' => $penilaian->id, 'kuk_id' => $kukId],
                     [
