@@ -278,27 +278,12 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
   - **Commit**: `a3f3baf` fix: refresh MAK-02 simpan draf + UI sederhana.
 
 - **1 November 2026 — Sesi 10 (Branch: `single`)**
-  - **FK violation APL-02 verifikasi fixed** (`f934074`): form key `verifikasi[{kukId}]` sesuai backend `updateOrCreate(['kuk_id'])`. View pakai `$elemenJawaban->kuk_id` (first KUK per elemen).
-  - **Modal finalisasi pindah ke atas** (`f3d7b61`): struktur view MAK-02 = modal finalisasi → form utama (sebelumnya form → modal di akhir).
-  - **Testing**: full Feature suite **91/91** lulus; `pint --dirty` bersih.
-  - **Commits**: `f934074`, `f3d7b61`.
+  - **FK violation APL-02 verifikasi fixed** (`f934074`): form key `verifikasi[{kukId}]` sesuai backend. View pakai `$elemenJawaban->kuk_id` (first KUK per elemen).
+  - **Modal finalisasi rapih** (`b547336`): pindah dari `@section('content')` → `@push('modals')` di luar `.page`. Layout asesor tambah `@stack('modals')`. Blok `@php` ($keputusanLabels, $rekomendasiSaran) pindah ke atas file. Modal render hanya jika `! $sudahFinal`.
+  - **Testing**: 9/9 APL-02 lulus, full Feature 91/91 hijau.
+  - **Commits**: `f934074` (FK fix), `f3d7b61` (modal awal reorder), `a937e29` (PROGRESS), `b547336` (modal rapih).
 
-- **1 November 2026 — Sesi 10 (Branch: `single`)**
-  - **Validasi final FR.AK.02: metode tidak digunakan wajib tanpa keputusan/catatan** (`AsesmenService::finalkan()`):
-    - Sebelum commit `c600bec`, `final()` menolak final bila metode asesmen `digunakan = false` tapi `keputusan`/`catatan` terisi.
-    - Test baru `test_asesor_finalisasi_mak02_ditolak_metode_tidak_digunakan` — lolos.
-  - **Revert APL-02 view**: perubahan per-KUK checkbox + tombol "Cek Semua Valid" di `asesor/apl02/show.blade.php` dibalikkan ke versi per-elemen (user request). Service & test tetap.
-  - **Tombol "Cek Semua Valid" APL-02** (`96b3c9b`): tombol di bagian bawah form (dekat Simpan) — JS `cekSemuaValid()` centang semua checkbox 4C semua elemen sekaligus.
-  - **GET route `/apl02/verifikasi`**: sempat ditambah lalu **di-revert** (keputusan: tidak usah — 405 adalah perilaku jujur; GET misleading di URL verifikasi).
-  - **FIX FK violation verifikasi APL-02** (`089bb14`):
-    - Bug: view kirim `verifikasi[{elemen_id}]`, backend `AsesmenService::verifikasiApl02` lakukan `updateOrCreate(['penilaian_id','kuk_id'] => $elemen_id)` → `kuk_id` bukan KUK valid → FK `apl02_jawabans_kuk_id_foreign` gagal (1452).
-    - Fix: view tampilan tetap per-elemen, tapi key form (`name`, `old()`) pakai **kuk_id pertama elemen** (`$kukVerifikasi = $elemen->kriteriaUnjukKerjas->first()`). Tombol "Cek Semua Valid" tetap (JS `input[name^="verifikasi["]`).
-    - Regression test: `assertSee('name="verifikasi[{kuk_id}][valid]"')` + `assertDontSee('name="verifikasi[{elemen_id}][valid]"')` — test sebelumnya pakai KUK-id langsung jadi bug lolos.
-  - **Testing**: full Feature suite **91/91** lulus; `pint --dirty` bersih.
-  - **Commit**: `c600bec`, `96b3c9b`, `089bb14`.
-
-
-  **Lanjutan Sesi 10 — MAK-02 & APL-02 asesi**
+- **1 November 2026 — Sesi 10 Awal (Branch: `single`)**
   - **APL-02 asesi restore approval & bukti dari DB** (`63d2b5d`):
     - Bug: radio `elemen_approval` tanpa `@checked` — selalu kosong saat load. Bukti pakai `->where('elemen_id', ...)` (field tidak ada, hanya `kuk_id`) — null.
     - Fix: key per kuk_id pertama elemen, restore via `old()` → DB `jawaban_asesi`.
