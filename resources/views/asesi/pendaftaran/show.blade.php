@@ -275,10 +275,28 @@
                 <span class="text-secondary">Skema</span>
                 <span class="fw-semibold small">{{ $pendaftaran->skema->kode_skema }}</span>
             </div>
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-secondary">Biaya</span>
                 <span class="fw-semibold small">Rp {{ number_format((float) $pendaftaran->skema->biaya, 0, ',', '.') }}</span>
             </div>
+
+            @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_SELESAI)
+                @php
+                    $hasilAsesmen = $pendaftaran->hasilAsesmens->first();
+                    $kompeten = $hasilAsesmen?->rekomendasi === \App\Models\HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN;
+                @endphp
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary">Hasil Asesmen</span>
+                    @if ($hasilAsesmen)
+                        <span class="fw-semibold small badge {{ $kompeten ? 'bg-success-lt text-success' : 'bg-danger-lt text-danger' }}">
+                            {{ $kompeten ? 'KOMPETEN' : 'BELUM KOMPETEN' }}
+                        </span>
+                    @else
+                        <span class="small text-secondary">—</span>
+                    @endif
+                </div>
+            @endif
         </x-tabler.card>
 
         <div class="card mt-3 bg-primary-lt border-0">
