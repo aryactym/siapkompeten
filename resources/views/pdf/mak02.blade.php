@@ -55,28 +55,25 @@
             </thead>
             <tbody>
                 @php $hasilUnit = $hasilUnits->get($unit->id); @endphp
-                @foreach (\App\Models\HasilAsesmenMetode::METODES as $metode)
-                    @php $hasilMetode = $hasilUnit?->metodes->firstWhere('metode', $metode); @endphp
-                    @php
-                        $digunakan = false;
-                        if (!empty($metodeDefault)) {
-                            foreach ($metodeDefault as $m) {
-                                if ($m === $metode) { $digunakan = true; break; }
-                            }
-                        }
-                    @endphp
+                @if ($hasilUnit?->metodes->isNotEmpty())
+                    @foreach ($hasilUnit->metodes as $hasilMetode)
+                        <tr>
+                            <td>{{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$hasilMetode->metode] ?? ucfirst(str_replace('_', ' ', $hasilMetode->metode)) }}</td>
+                            <td>{{ $hasilMetode->digunakan ? 'Ya' : '—' }}</td>
+                            <td class="muted">
+                                {{ $hasilMetode->bukti_langsung ? 'Langsung' : '' }}
+                                {{ $hasilMetode->bukti_tidak_langsung ? '· Tidak langsung' : '' }}
+                                {{ $hasilMetode->bukti_tambahan ? '· Tambahan' : '' }}
+                            </td>
+                            <td>{{ $hasilMetode->pencapaian ? 'Ya' : '—' }}</td>
+                            <td>{{ $hasilMetode->keputusan ? ucwords(str_replace('_', ' ', $hasilMetode->keputusan)) : '—' }}</td>
+                        </tr>
+                    @endforeach
+                @else
                     <tr>
-                        <td>{{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}</td>
-                        <td>{{ $digunakan ? 'Ya' : '—' }}</td>
-                        <td class="muted">
-                            {{ $hasilMetode?->bukti_langsung ? 'Langsung' : '' }}
-                            {{ $hasilMetode?->bukti_tidak_langsung ? '· Tidak langsung' : '' }}
-                            {{ $hasilMetode?->bukti_tambahan ? '· Tambahan' : '' }}
-                        </td>
-                        <td>{{ $hasilMetode?->pencapaian ? 'Ya' : '—' }}</td>
-                        <td>{{ $hasilMetode?->keputusan ? ucwords(str_replace('_', ' ', $hasilMetode->keputusan)) : '—' }}</td>
+                        <td colspan="5" class="text-secondary text-center">Tidak ada metode asesmen</td>
                     </tr>
-                @endforeach
+                @endif
                 <tr>
                     <td colspan="4"><strong>Keputusan unit</strong></td>
                     <td><strong>{{ $hasilUnit?->keputusan ? ucwords(str_replace('_', ' ', $hasilUnit->keputusan)) : '—' }}</strong></td>
