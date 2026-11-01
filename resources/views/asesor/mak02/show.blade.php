@@ -594,13 +594,6 @@
 {{-- ===== MODAL KONFIRMASI FINALISASI (Tabler modal, bukan confirm()) ===== --}}
 @unless ($sudahFinal)
     <x-tabler.modal id="modal-finalisasi" title="Konfirmasi Finalisasi FR.AK.02" size="lg">
-        <x-slot:footer>
-            <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" form="form-finalisasi" class="btn btn-primary ms-auto">
-                <i class="ti ti-lock me-1"></i> Ya, Finalkan Sekarang
-            </button>
-        </x-slot:footer>
-
         <form method="POST" action="{{ route('asesor.mak02.final', $pendaftaran) }}" id="form-finalisasi">
             @csrf
 
@@ -652,7 +645,7 @@
                 </div>
             </div>
 
-            {{-- Rekomendasi (mirror dari form utama via JS) --}}
+            {{-- Rekomendasi --}}
             <div class="mb-3">
                 <label class="form-label fw-semibold required" for="modal-rekomendasi">Rekomendasi</label>
                 <select id="modal-rekomendasi" name="rekomendasi" class="form-select" required>
@@ -680,7 +673,7 @@
             </label>
 
             {{-- Konfirmasi penguncian --}}
-            <label class="form-check" for="modal-konfirmasi">
+            <label class="form-check mb-4" for="modal-konfirmasi">
                 <input type="checkbox" id="modal-konfirmasi" class="form-check-input"
                        name="konfirmasi" value="1"
                        required>
@@ -689,6 +682,16 @@
                     Perubahan berikutnya wajib melalui admin LSP dan tercatat di audit log.
                 </span>
             </label>
+
+            {{-- Tombol di dalam form (bukan di footer slot) --}}
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                    Batal
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-lock me-1"></i> Ya, Finalkan Sekarang
+                </button>
+            </div>
         </form>
     </x-tabler.modal>
 @endunless
