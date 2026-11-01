@@ -18,14 +18,10 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
         ]);
 
+        // Branch `single`: satu LSP per instalasi
         $utama = Institution::firstOrCreate(
             ['slug' => 'siap-kompeten'],
             ['name' => 'LSP Siap Kompeten', 'is_active' => true]
-        );
-
-        $mitra = Institution::firstOrCreate(
-            ['slug' => 'mitra-nusantara'],
-            ['name' => 'LSP Mitra Nusantara', 'is_active' => true]
         );
 
         $admin = User::firstOrCreate(
@@ -44,7 +40,6 @@ class DatabaseSeeder extends Seeder
 
         $admin->institutions()->syncWithoutDetaching([
             $utama->id => ['role' => 'admin'],
-            $mitra->id => ['role' => 'admin'],
         ]);
 
         // Demo Asesor

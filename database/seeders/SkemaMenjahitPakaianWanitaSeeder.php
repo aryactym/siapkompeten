@@ -74,7 +74,6 @@ class SkemaMenjahitPakaianWanitaSeeder extends Seeder
     public function run(): void
     {
         $institutions = [
-            'bpvp-bandung-barat' => 'BPVP Bandung Barat',
             'siap-kompeten' => null, // LSP default, profil sudah diisi MasterDataSeeder
         ];
 
