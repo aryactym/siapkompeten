@@ -267,6 +267,7 @@ class AsesmenService
      *   2. Semua KUK harus punya tercapai (tidak boleh null).
      *   3. Jika keputusan unit berbeda dari saran otomatis, catatan wajib ada.
      *   4. Rekomendasi wajib, umpan_balik wajib.
+     *   5. Metode asesmen yang tidak digunakan wajib tanpa keputusan/catatan.
      */
     public function finalkan(
         HasilAsesmen $hasil,
@@ -345,6 +346,30 @@ class AsesmenService
         if ($unitCatatanErrors !== []) {
             throw ValidationException::withMessages([
                 'units' => implode(' | ', $unitCatatanErrors),
+            ]);
+        }
+
+        // 4. Metode asesmen yang tidak digunakan wajib tanpa keputusan/catatan.
+        $metodeErrors = [];
+        foreach ($units as $hasilUnit) {
+            foreach ($hasilUnit->metodes as $metode) {
+                if ($metode->digunakan) {
+                    continue;
+                }
+
+                if ($metode->keputusan !== null || $metode->catatan !== null) {
+                    $metodeErrors[] = sprintf(
+                        'Unit "%s": metode "%s" tidak digunakan, keputusan/catatan harus kosong.',
+                        $hasilUnit->unit_id,
+                        $metode->metode
+                    );
+                }
+            }
+        }
+
+        if ($metodeErrors !== []) {
+            throw ValidationException::withMessages([
+                'units' => implode(' | ', $metodeErrors),
             ]);
         }
 

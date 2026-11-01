@@ -461,6 +461,69 @@ class AsesmenTest extends TestCase
         );
     }
 
+    public function test_asesor_finalisasi_mak02_ditolak_metode_tidak_digunakan(): void
+    {
+        // Metode tidak digunakan (digunakan=0) tapi keputusan terisi → final ditolak.
+        $payload = [
+            'metode_default' => ['observasi'],
+            'elemenTercapai' => [$this->elemen->id => '1'],
+            'elemenCatatan' => [$this->elemen->id => null],
+            'elemen4C' => [
+                $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
+            'units' => [
+                $this->unit->id => [
+                    'keputusan' => 'kompeten',
+                    'catatan' => null,
+                    'metode' => [
+                        'observasi' => [
+                            'digunakan' => '0',
+                            'bukti_langsung' => '0',
+                            'bukti_tidak_langsung' => '0',
+                            'bukti_tambahan' => '0',
+                            'keputusan' => 'kompeten',
+                            'catatan' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHas('success');
+
+        $this->actingAs($this->asesiUser)
+            ->post(route('asesi.apl02.serah', $this->pendaftaran), $this->elemenPayload())
+            ->assertSessionHas('success');
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.apl02.verifikasi', $this->pendaftaran), [
+                'verifikasi' => [
+                    $this->kuk1->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+                    $this->kuk2->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+                ],
+                'bukti' => [],
+            ])
+            ->assertSessionHas('success');
+
+        // Paksa data: metode tidak digunakan tapi keputusan terisi.
+        $hasil = HasilAsesmen::where('pendaftaran_id', $this->pendaftaran->id)->firstOrFail();
+        $hasil->units()->first()->metodes()->first()->update(['keputusan' => 'kompeten']);
+
+        // Final diblokir: metode tidak digunakan tidak boleh punya keputusan/catatan.
+        $this->actingAs($this->asesorUser)
+            ->from(route('asesor.mak02.show', $this->pendaftaran))
+            ->post(route('asesor.mak02.final', $this->pendaftaran), [
+                'rekomendasi' => HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN,
+                'umpan_balik' => '1',
+                'konfirmasi' => '1',
+            ])
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHasErrors('units');
+    }
+
     public function test_asesor_finalisasi_mak02_gagal_validasi_field_wajib(): void
     {
         $payload = [
