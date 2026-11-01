@@ -47,7 +47,7 @@
 <div class="row g-2">
     <div class="col-md-6 mb-3">
         <label class="form-label">Provinsi</label>
-        <select name="province_code" class="form-select @error('province_code') is-invalid @enderror">
+        <select name="province_code" id="tuk-province-select" class="form-select @error('province_code') is-invalid @enderror">
             <option value="">-</option>
             @foreach ($provinces as $province)
                 <option value="{{ $province->code }}" @selected(old('province_code', $tuk->province_code) === $province->code)>
@@ -59,10 +59,11 @@
     </div>
     <div class="col-md-6 mb-3">
         <label class="form-label">Kota/Kabupaten</label>
-        <select name="city_code" class="form-select @error('city_code') is-invalid @enderror">
+        <select name="city_code" id="tuk-city-select" class="form-select @error('city_code') is-invalid @enderror">
             <option value="">-</option>
             @foreach ($cities as $city)
-                <option value="{{ $city->code }}" @selected(old('city_code', $tuk->city_code) === $city->code)>
+                <option value="{{ $city->code }}" data-province="{{ $city->province_code }}"
+                    @selected(old('city_code', $tuk->city_code) === $city->code)>
                     {{ $city->name }}
                 </option>
             @endforeach
@@ -70,6 +71,32 @@
         @error('city_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 </div>
+
+<script>
+(function () {
+    if (window.__tukCityFilter) return;
+    window.__tukCityFilter = true;
+
+    const provinceSelect = document.getElementById('tuk-province-select');
+    const citySelect = document.getElementById('tuk-city-select');
+    if (!provinceSelect || !citySelect) return;
+
+    function filterCities() {
+        const province = provinceSelect.value;
+        Array.from(citySelect.options).forEach((option) => {
+            if (!option.value) { option.hidden = false; return; }
+            const p = option.getAttribute('data-province');
+            option.hidden = province !== '' && p !== province;
+        });
+        if (citySelect.selectedOptions[0]?.hidden) {
+            citySelect.value = '';
+        }
+    }
+
+    provinceSelect.addEventListener('change', filterCities);
+    filterCities();
+})();
+</script>
 <div class="mb-3">
     <label class="form-check">
         <input type="checkbox" name="is_verified" value="1" class="form-check-input"
