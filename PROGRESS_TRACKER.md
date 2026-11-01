@@ -258,3 +258,13 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
     - Masalah: setiap baris metode punya `<input type="hidden" name="...[digunakan]" value="0">` + checkbox dengan nama yang sama. Saat dicentang, browser kirim keduanya → PHP terima array `["0","1"]` → gagal validasi `boolean` → redirect tanpa simpan. Error nested (`units.*.metode.*.digunakan`) juga tidak pernah ditampilkan karena view hanya cek `@error('units')` top-level. Akibatnya halaman reload tanpa flash error dan data tersimpan — "terjebak di halaman ini".
     - Perbaikan: hapus 4 hidden input per baris metode (`digunakan`, `bukti_langsung`, `bukti_tidak_langsung`, `bukti_tambahan`). Unchecked → tidak terkirim → `nullable` → null → `simpanMak02` treats as false (benar). Tambah alert validasi di atas form yang tangkap nested error `units.*` / `kuks.*` beserta top-level `hasil`/`kuks`/`units`. Hapus blok error duplikat di bawah tombol.
     - Test: tambah `test_asesor_simpan_mak02_metode_tidak_digunakan` di `tests/Feature/AsesmenTest.php` (digunakan = '0'); seluruh `AsesmenTest` 6/6 lulus; `pint --dirty --format agent` bersih.
+
+- **1 November 2026 — Sesi 8 (Branch: `single`)**
+  - **FR.AK.02 / MAK-02 — optimasi UI + perbaikan "Simpan Draf tidak tersimpan"**:
+    - **Akar masalah "Semua tercapai tidak tersimpan"**: `HasilAsesmenController@store` mewajibkan `units` (`required`). Asesor yang baru menilai per elemen (memilih "Semua tercapai") tidak bisa menyimpan draf sebelum unit keputusan diisi → submit selalu gagal validasi. `units` kini `nullable` di store; final tetap mewajibkan kelengkapan via validasi `finalkan()`.
+    - **Error tak tampil**: view hanya cek wildcard `units.*` / `kuks.*` via `hasAny` → error nested (mis. `units.<uuid>.keputusan`) tidak pernah dirender. Ganti dengan `$errors->any()` + loop `$errors->all()`.
+    - **UI disederhanakan**: accordion Bootstrap dihapus → semua unit tampil langsung sebagai kartu terbuka (lebih sederhana, tidak ada field di collapsed yang "hilang").
+    - **Alert sukses**: ditambahkan banner `session('success')` di atas form (user tidak pernah lihat konfirmasi "Draf berhasil disimpan").
+    - **Dead code**: hapus JS toggle metode per-unit (sudah simplified ke default-only).
+  - **Testing**: `AsesmenTest` 7/7 lulus (tambah `test_asesor_simpan_draf_mak02_dan_tanpa_unit_keputusan`); full Feature suite **89/89 lulus**; `pint --dirty` bersih.
+  - **Commit**: `da0932c` fix: MAK-02 simpan draf + UI sederhana.

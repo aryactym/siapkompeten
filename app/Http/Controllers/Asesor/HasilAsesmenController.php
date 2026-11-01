@@ -126,7 +126,8 @@ class HasilAsesmenController extends Controller
 
         return redirect()
             ->route('asesor.mak02.show', $pendaftaran)
-            ->with('success', 'Draf FR.AK.02 berhasil disimpan.');
+            ->with('success', 'Draf FR.AK.02 berhasil disimpan.')
+            ->withInput();
     }
 
     /**

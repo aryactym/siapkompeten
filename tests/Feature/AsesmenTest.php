@@ -419,6 +419,48 @@ class AsesmenTest extends TestCase
         $this->assertSame(true, $hasil->kuks()->first()->tercapai);
     }
 
+    public function test_asesor_mak02_refresh_shows_tercapai_terpilih(): void
+    {
+        $payload = [
+            'metode_default' => ['observasi'],
+            'elemenTercapai' => [$this->elemen->id => '1'],
+            'elemenCatatan' => [$this->elemen->id => null],
+            'elemen4C' => [
+                $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
+            'units' => [
+                $this->unit->id => [
+                    'keputusan' => 'kompeten',
+                    'catatan' => null,
+                    'metode' => [
+                        'observasi' => [
+                            'digunakan' => '1',
+                            'bukti_langsung' => '1',
+                            'bukti_tidak_langsung' => '0',
+                            'bukti_tambahan' => '0',
+                            'keputusan' => 'kompeten',
+                            'catatan' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHas('success');
+
+        // Setelah refresh, radio "Semua tercapai" harus masih terpilih.
+        $response = $this->actingAs($this->asesorUser)
+            ->get(route('asesor.mak02.show', $this->pendaftaran));
+        $response->assertOk();
+        $this->assertSame(
+            1,
+            preg_match('/name="elemenTercapai\[[^\]]+\]"\s+value="1"\s+checked/', $response->getContent())
+        );
+    }
+
     public function test_asesor_finalisasi_mak02_gagal_validasi_field_wajib(): void
     {
         $payload = [
