@@ -268,3 +268,11 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
     - **Dead code**: hapus JS toggle metode per-unit (sudah simplified ke default-only).
   - **Testing**: `AsesmenTest` 7/7 lulus (tambah `test_asesor_simpan_draf_mak02_dan_tanpa_unit_keputusan`); full Feature suite **89/89 lulus**; `pint --dirty` bersih.
   - **Commit**: `da0932c` fix: MAK-02 simpan draf + UI sederhana.
+
+- **1 November 2026 — Sesi 9 (Branch: `single`)**
+  - **FR.AK.02 / MAK-02 — "Terpilih tercapai" hilang setelah refresh**: investigasi + fix.
+    - Store redirect sekarang pakai `->withInput()` (plain `->with()` tidak flash old input).
+    - Perbaikan sebelumnya (Sesi 8): `units` nullable di store; error display generic; accordion dihapus (semua unit tampil langsung); alert sukses; dead JS metode dihapus.
+    - Test baru `test_asesor_mak02_refresh_shows_tercapai_terpilih`: setelah store + GET, radio elemen "Semua tercapai" (value="1" + checked) harus muncul → **refresh state terkonfirmasi**.
+  - **Testing**: `AsesmenTest` 8/8; full Feature suite **90/90** lulus; `pint --dirty` bersih.
+  - **Commit**: `a3f3baf` fix: refresh MAK-02 simpan draf + UI sederhana.
