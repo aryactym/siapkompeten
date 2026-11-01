@@ -85,9 +85,9 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No.</th>
-                    <th style="width: 55%;">Elemen Kompetensi</th>
+                    <th style="width: 35%;">Elemen Kompetensi</th>
+                    <th style="width: 20%;">Metode</th>
                     <th style="width: 12%;">Tercapai</th>
-                    <th style="width: 14%;">—</th>
                     <th style="width: 14%;">4C</th>
                 </tr>
             </thead>
@@ -99,13 +99,14 @@
                         $hasilKukElemen = $hasilKuks->filter(fn ($hk) => in_array($hk->kuk_id, $kukElemen->all()));
                         $tercapaiCount = $hasilKukElemen->filter(fn ($k) => $k->tercapai === true)->count();
                         $elemenTercapai = $tercapaiCount === $kukElemen->count() && $kukElemen->count() > 0;
+                        $metodeDisplay = !empty($metodeDefault) ? \App\Models\HasilAsesmenMetode::METODE_LABELS[$metodeDefault[0]] ?? ucfirst(str_replace('_', ' ', $metodeDefault[0])) : '—';
                         $no++;
                     @endphp
                     <tr>
                         <td>{{ $no }}</td>
                         <td>{{ $elemen->nama_elemen }}</td>
+                        <td class="muted small">{{ $metodeDisplay }}</td>
                         <td>{{ $elemenTercapai ? 'Ya' : 'Tidak' }}</td>
-                        <td>—</td>
                         <td class="muted">
                             @if ($hasilKukElemen->count() > 0)
                                 {{ $hasilKukElemen->first()?->valid ? 'V' : '-' }}{{ $hasilKukElemen->first()?->autentik ? 'A' : '-' }}{{ $hasilKukElemen->first()?->terkini ? 'T' : '-' }}{{ $hasilKukElemen->first()?->memadai ? 'M' : '-' }}
