@@ -105,7 +105,11 @@
     @endforeach
 
     @if ($dapatDiverifikasi)
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-success"
+                    onclick="cekSemuaValid()">
+                <i class="ti ti-check-all me-1"></i> Cek Semua Valid
+            </button>
             <button type="submit" class="btn btn-primary"
                     onclick="return confirm('Simpan hasil verifikasi APL-02?')">
                 <i class="ti ti-check me-1"></i> Simpan Verifikasi APL-02
@@ -113,4 +117,16 @@
         </div>
     @endif
 </form>
+@push('scripts')
+<script>
+/**
+ * Centang semua 4C (valid/autentik/terkini/memadai) pada seluruh elemen sekaligus.
+ */
+function cekSemuaValid() {
+    document.querySelectorAll('input[name^="verifikasi["]').forEach(function (el) {
+        if (!el.disabled) { el.checked = true; }
+    });
+}
+</script>
+@endpush
 @endsection
