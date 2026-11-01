@@ -707,9 +707,24 @@ document.addEventListener('DOMContentLoaded', function () {
     var successAlert = document.querySelector('.alert-success');
     var modal = document.getElementById('modal-finalisasi');
     if (successAlert && modal) {
-        // Cek apakah modal sedang terbuka, tutup jika ada
-        var bsModal = bootstrap.Modal.getOrCreateInstance(modal);
-        if (bsModal) { bsModal.hide(); }
+        // Tunggu bootstrap tersedia (max 100ms)
+        var attempts = 0;
+        var checkBootstrap = setInterval(function () {
+            attempts++;
+            if (typeof bootstrap !== 'undefined') {
+                clearInterval(checkBootstrap);
+                var bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+                if (bsModal) { bsModal.hide(); }
+            } else if (attempts >= 10) {
+                // Fallback: tutup dengan vanilla JS (backdrop + aria-hidden)
+                clearInterval(checkBootstrap);
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                var backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) { backdrop.remove(); }
+                document.body.classList.remove('modal-open');
+            }
+        }, 10);
     }
 });
 
