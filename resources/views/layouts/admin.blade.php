@@ -91,12 +91,11 @@
                             ['label' => 'Penjadwalan', 'icon' => 'ti-calendar', 'children' => [
                                 ['label' => 'Jadwal Asesmen', 'route' => 'admin.jadwal.index', 'match' => 'admin.jadwal.*'],
                                 ['label' => 'Event', 'route' => 'admin.event.index', 'match' => 'admin.event.*'],
-                                // planned: Bundle Sertifikat (luar BRD — keputusan tertunda)
-                                ['label' => 'Bundle Sertifikat', 'route' => 'admin.jadwal.bundle.create', 'match' => 'admin.jadwal.bundle.*', 'planned' => true],
                             ]],
-                            // Sertifikat — sekarang aktif
+                            // Sertifikat — aktif
                             ['label' => 'Sertifikat', 'icon' => 'ti-award', 'children' => [
                                 ['label' => 'Data Sertifikat', 'route' => 'admin.sertifikat.index', 'match' => ['admin.sertifikat.*']],
+                                ['label' => 'Bundle Sertifikat', 'route' => 'admin.sertifikat.bundle.index', 'match' => 'admin.sertifikat.bundle.*'],
                                 ['label' => 'Template Presensi', 'route' => 'admin.template_presensi.index', 'match' => 'admin.template_presensi.*', 'planned' => true],
                             ]],
                         ]],

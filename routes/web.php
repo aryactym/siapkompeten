@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AsesorController as AdminAsesorController;
 use App\Http\Controllers\Admin\AsesorInviteController as AdminAsesorInviteController;
 use App\Http\Controllers\Admin\AsesorLingkupController as AdminAsesorLingkupController;
 use App\Http\Controllers\Admin\BiayaController as AdminBiayaController;
+use App\Http\Controllers\Admin\BundleSertifikatController as AdminBundleSertifikatController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\JadwalController as AdminJadwalController;
 use App\Http\Controllers\Admin\NotifikasiController as AdminNotifikasiController;
@@ -243,6 +244,13 @@ Route::prefix('admin')
             ->name('sertifikat.store');
         Route::get('sertifikat/{sertifikat}', [AdminSertifikatController::class, 'show'])->name('sertifikat.show');
         Route::get('sertifikat/{sertifikat}/pdf', [AdminSertifikatController::class, 'pdf'])->name('sertifikat.pdf');
+
+        // Bundle Sertifikat per Jadwal
+        Route::get('sertifikat-bundle', [AdminBundleSertifikatController::class, 'index'])->name('sertifikat.bundle.index');
+        Route::get('sertifikat-bundle/{jadwal}', [AdminBundleSertifikatController::class, 'create'])->name('sertifikat.bundle.create');
+        Route::post('sertifikat-bundle/{jadwal}', [AdminBundleSertifikatController::class, 'store'])
+            ->middleware('throttle:5,1')
+            ->name('sertifikat.bundle.store');
     });
 
 Route::prefix('asesor')

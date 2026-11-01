@@ -63,7 +63,7 @@ class SertifikatController extends Controller
 
         $validated = $request->validate([
             'pendaftaran_id' => ['required', 'uuid', Rule::exists('pendaftarans', 'id')],
-            'no_seri_blangko' => ['required', 'string', 'max:100', 'regex:'.substr(Sertifikat::FORMAT_REGEX, 1, -1)],
+            'no_seri_blangko' => ['required', 'string', 'max:100', 'regex:/^[A-Z0-9\-.]+\.[A-Z0-9\-.]+\.\d{5,}\.\d{4}$/'],
         ]);
 
         $pendaftaran = Pendaftaran::with(['asesi.user', 'skema'])->findOrFail($validated['pendaftaran_id']);
