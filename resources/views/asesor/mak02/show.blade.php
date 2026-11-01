@@ -571,8 +571,8 @@
 </form>
 
 {{-- ===== MODAL KONFIRMASI FINALISASI (Vanilla Bootstrap) ===== --}}
-<div class="modal fade" id="modal-finalisasi" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
+<div class="modal fade" id="modal-finalisasi" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1061 !important;">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document" style="z-index: 1061 !important;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Konfirmasi Finalisasi FR.AK.02</h5>
