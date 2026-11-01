@@ -159,6 +159,41 @@
         </div>
     @endif
 
+    {{-- ===== PANEL METODE DEFAULT ===== --}}
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-microscope me-2"></i> Metode Asesmen (Default untuk semua unit)
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary small mb-3">
+                Pilih metode yang digunakan. Default ini akan diterapkan ke semua unit kecuali ada override per unit.
+            </p>
+            <div class="row g-2 mb-3">
+                @foreach (\App\Models\HasilAsesmenMetode::METODES as $metode)
+                    <div class="col-auto">
+                        <label class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input"
+                                   name="metode_default[]" value="{{ $metode }}"
+                                   @checked(in_array($metode, old('metode_default', $hasil->metode_default ?? [])))
+                                   @disabled($sudahFinal)>
+                            <span class="form-check-label">
+                                {{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}
+                            </span>
+                        </label>
+                    </div>
+                @endforeach
+            </div>
+            @if (!$sudahFinal)
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-apply-default"
+                        onclick="return confirm('Terapkan metode default ke semua unit? Override per unit akan dihapus.')">
+                    <i class="ti ti-copy me-1"></i> Terapkan ke semua unit
+                </button>
+            @endif
+        </div>
+    </div>
+
     {{-- ACCORDION UNIT --}}
     <div class="accordion mb-3" id="accordion-units">
         @foreach ($units as $unitIdx => $unit)
@@ -217,184 +252,124 @@
                      data-bs-parent="#accordion-units">
                     <div class="card-body pt-0">
 
-                        {{-- (A) TABEL METODE ASESMEN --}}
-                        <h4 class="fw-semibold fs-6 mt-3 mb-2 text-secondary text-uppercase tracking-wide">
-                            <i class="ti ti-clipboard-list me-1"></i> Metode Asesmen
-                        </h4>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-vcenter align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">Metode</th>
-                                        <th scope="col" class="text-center" style="width:80px;">Digunakan</th>
-                                        <th scope="col" class="text-center" style="width:80px;">Bukti Langsung</th>
-                                        <th scope="col" class="text-center" style="width:90px;">Bukti Tdk Langsung</th>
-                                        <th scope="col" class="text-center" style="width:80px;">Bukti Tambahan</th>
-                                        <th scope="col" style="width:130px;">Keputusan</th>
-                                        <th scope="col">Catatan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($metodeDaftar as $metode)
-                                        @php
-                                            $hasilMetode = $hasilUnit?->metodes->firstWhere('metode', $metode);
-                                            $digunakan   = (bool) old(
-                                                'units.'.$unit->id.'.metode.'.$metode.'.digunakan',
-                                                $hasilMetode?->digunakan ?? false
-                                            );
-                                            $mId = 'm-'.$unit->id.'-'.$metode;
-                                        @endphp
-                                        <tr data-metode-row="{{ $mId }}">
-                                            <td class="fw-medium">
-                                                <label for="digunakan-{{ $mId }}" class="mb-0">
-                                                    {{ $metodeLabels[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}
-                                                </label>
-                                            </td>
-                                            <td class="text-center">
-                                                <input type="checkbox"
-                                                       id="digunakan-{{ $mId }}"
-                                                       class="form-check-input mt-0 metode-digunakan"
-                                                       name="units[{{ $unit->id }}][metode][{{ $metode }}][digunakan]"
-                                                       value="1"
-                                                       @checked($digunakan)
-                                                       @disabled($sudahFinal)
-                                                       data-row="{{ $mId }}">
-                                            </td>
-                                            @foreach (['bukti_langsung' => 'BL', 'bukti_tidak_langsung' => 'BTL', 'bukti_tambahan' => 'BT'] as $bField => $bLabel)
-                                                <td class="text-center">
-                                                    <input type="checkbox"
-                                                           class="form-check-input mt-0 metode-bukti"
-                                                           name="units[{{ $unit->id }}][metode][{{ $metode }}][{{ $bField }}]"
-                                                           value="1"
-                                                           @checked(old('units.'.$unit->id.'.metode.'.$metode.'.'.$bField, $hasilMetode?->{$bField}))
-                                                           @disabled($sudahFinal || ! $digunakan)
-                                                           data-row="{{ $mId }}">
-                                                </td>
-                                            @endforeach
-                                            <td>
-                                                <select name="units[{{ $unit->id }}][metode][{{ $metode }}][keputusan]"
-                                                        class="form-select form-select-sm metode-bukti"
-                                                        @disabled($sudahFinal || ! $digunakan)
-                                                        data-row="{{ $mId }}">
-                                                    <option value="">—</option>
-                                                    @foreach ($keputusanLabels as $val => $lbl)
-                                                        <option value="{{ $val }}"
-                                                            @selected(old('units.'.$unit->id.'.metode.'.$metode.'.keputusan', $hasilMetode?->keputusan) === $val)>
-                                                            {{ $lbl }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="text"
-                                                       class="form-control form-control-sm metode-bukti"
-                                                       name="units[{{ $unit->id }}][metode][{{ $metode }}][catatan]"
-                                                       value="{{ old('units.'.$unit->id.'.metode.'.$metode.'.catatan', $hasilMetode?->catatan) }}"
-                                                       maxlength="1000"
-                                                       placeholder="Catatan opsional"
-                                                       @disabled($sudahFinal || ! $digunakan)
-                                                       data-row="{{ $mId }}">
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {{-- (B) DAFTAR KUK PER ELEMEN --}}
+                        {{-- (B) DAFTAR ELEMEN & PENILAIAN --}}
                         <h4 class="fw-semibold fs-6 mb-2 text-secondary text-uppercase tracking-wide">
-                            <i class="ti ti-list-check me-1"></i> Kriteria Unjuk Kerja (KUK)
+                            <i class="ti ti-list-check me-1"></i> Elemen Kompetensi
                         </h4>
 
                         @foreach ($unit->elemenKompetensis as $elemen)
-                            <h4 class="h6 fw-semibold mt-3 mb-2 ps-2 border-start border-2 border-primary">
-                                {{ $elemen->nama_elemen }}
-                            </h4>
+                            @php
+                                $kukElemen = $elemen->kriteriaUnjukKerjas->pluck('id');
+                                $hasilKukElemen = $hasilKuks->only($kukElemen->all());
+                                $tercapaiCount = $hasilKukElemen->filter(fn ($k) => $k->tercapai === true)->count();
+                                $totalKukElemen = $kukElemen->count();
+                                
+                                // Status elemen: jika ada hasil, set. Jika tidak, default belum dinilai
+                                $elemenTercapai = old('elemenTercapai.'.$elemen->id,
+                                    $hasilKukElemen->count() > 0 ? (
+                                        $tercapaiCount === $totalKukElemen ? '1' : '0'
+                                    ) : ''
+                                );
+                            @endphp
+                            <fieldset class="border rounded p-3 mb-3 @if($elemenTercapai === '1') border-success-subtle bg-success-lt @elseif($elemenTercapai === '0') border-danger-subtle bg-danger-lt @endif"
+                                      style="border-color: #dee2e6 !important;">
+                                <legend class="fw-semibold small float-none w-auto px-1 mb-2">
+                                    {{ $elemen->nama_elemen }}
+                                    <span class="text-secondary fw-normal">({{ $totalKukElemen }} KUK)</span>
+                                </legend>
 
-                            @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
-                                @php
-                                    $hasilKuk  = $hasilKuks->get($kuk->id);
-                                    $apl02Jaw  = $apl02Jawabans->get($kuk->id);
-                                    $tercapai  = old('kuks.'.$kuk->id.'.tercapai',
-                                        $hasilKuk?->tercapai === null ? '' :
-                                        ($hasilKuk->tercapai ? '1' : '0')
-                                    );
+                                {{-- KUK list untuk referensi --}}
+                                <div class="text-secondary small mb-3">
+                                    <strong>Kriteria Unjuk Kerja:</strong>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
+                                            <li>{{ $kuk->pernyataan_kuk }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+
+                                {{-- Bukti asesi per elemen dari APL-02 --}}
+                                @php 
+                                    $firstKuk = $elemen->kriteriaUnjukKerjas->first();
+                                    $apl02Jaw = $firstKuk ? $apl02Jawabans->get($firstKuk->id) : null;
                                 @endphp
-                                <fieldset class="border rounded p-2 mb-2 @if($tercapai === '1') border-success-subtle bg-success-lt @elseif($tercapai === '0') border-danger-subtle bg-danger-lt @endif"
-                                          style="border-color: #dee2e6 !important;"
-                                          @if($tercapai === '1') style="background: var(--tblr-success-lt)!important;border-color: var(--tblr-success)!important;" @endif>
-                                    <legend class="fw-semibold small float-none w-auto px-1 mb-2">
-                                        {{ $kuk->pernyataan_kuk }}
-                                    </legend>
+                                @if ($apl02Jaw && filled($apl02Jaw->bukti_asesi))
+                                    <div class="small text-secondary mb-3 p-2 bg-light rounded">
+                                        <i class="ti ti-quote me-1"></i>
+                                        <span class="fw-medium">Bukti dari APL-02:</span>
+                                        {{ $apl02Jaw->bukti_asesi }}
+                                    </div>
+                                @endif
 
-                                    {{-- Bukti asesi dari APL-02 --}}
-                                    @if ($apl02Jaw && filled($apl02Jaw->bukti_asesi))
-                                        <div class="small text-secondary mb-2">
-                                            <i class="ti ti-quote me-1"></i>
-                                            <span class="fw-medium">Bukti dari APL-02:</span>
-                                            {{ $apl02Jaw->bukti_asesi }}
-                                        </div>
-                                    @endif
-
-                                    <div class="row g-2 align-items-center">
-                                        {{-- Radio Ya/Tidak --}}
-                                        <div class="col-auto">
-                                            <div class="d-flex gap-2">
-                                                <label class="form-check mb-0 d-flex align-items-center gap-1"
-                                                       for="kuk-ya-{{ $kuk->id }}">
-                                                    <input type="radio"
-                                                           id="kuk-ya-{{ $kuk->id }}"
-                                                           class="form-check-input"
-                                                           name="kuks[{{ $kuk->id }}][tercapai]"
-                                                           value="1"
-                                                           @checked($tercapai === '1')
-                                                           @disabled($sudahFinal)>
-                                                    <span class="form-check-label badge bg-success-lt text-success fw-medium">
-                                                        <i class="ti ti-check me-1"></i> Ya, tercapai
-                                                    </span>
-                                                </label>
-                                                <label class="form-check mb-0 d-flex align-items-center gap-1"
-                                                       for="kuk-tidak-{{ $kuk->id }}">
-                                                    <input type="radio"
-                                                           id="kuk-tidak-{{ $kuk->id }}"
-                                                           class="form-check-input"
-                                                           name="kuks[{{ $kuk->id }}][tercapai]"
-                                                           value="0"
-                                                           @checked($tercapai === '0')
-                                                           @disabled($sudahFinal)>
-                                                    <span class="form-check-label badge bg-danger-lt text-danger fw-medium">
-                                                        <i class="ti ti-x me-1"></i> Tidak tercapai
-                                                    </span>
-                                                </label>
-                                                <label class="form-check mb-0 d-flex align-items-center gap-1"
-                                                       for="kuk-belum-{{ $kuk->id }}">
-                                                    <input type="radio"
-                                                           id="kuk-belum-{{ $kuk->id }}"
-                                                           class="form-check-input"
-                                                           name="kuks[{{ $kuk->id }}][tercapai]"
-                                                           value=""
-                                                           @checked($tercapai === '' || $tercapai === null)
-                                                           @disabled($sudahFinal)>
-                                                    <span class="form-check-label badge bg-secondary-lt text-secondary fw-medium">
-                                                        Belum dinilai
-                                                    </span>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        {{-- Catatan asesor (collapsible) --}}
-                                        <div class="col">
-                                            <input type="text"
-                                                   class="form-control form-control-sm"
-                                                   name="kuks[{{ $kuk->id }}][catatan]"
-                                                   value="{{ old('kuks.'.$kuk->id.'.catatan', $hasilKuk?->catatan) }}"
-                                                   maxlength="1000"
-                                                   placeholder="Catatan asesor (opsional)"
-                                                   @disabled($sudahFinal)>
+                                {{-- Penilaian elemen --}}
+                                <div class="row g-2 align-items-center mb-3">
+                                    <div class="col-auto">
+                                        <div class="d-flex gap-2">
+                                            <label class="form-check mb-0 d-flex align-items-center gap-1"
+                                                   for="elemen-ya-{{ $elemen->id }}">
+                                                <input type="radio"
+                                                       id="elemen-ya-{{ $elemen->id }}"
+                                                       class="form-check-input"
+                                                       name="elemenTercapai[{{ $elemen->id }}]"
+                                                       value="1"
+                                                       @checked($elemenTercapai === '1')
+                                                       @disabled($sudahFinal)>
+                                                <span class="form-check-label badge bg-success-lt text-success fw-medium">
+                                                    <i class="ti ti-check me-1"></i> Semua tercapai
+                                                </span>
+                                            </label>
+                                            <label class="form-check mb-0 d-flex align-items-center gap-1"
+                                                   for="elemen-tidak-{{ $elemen->id }}">
+                                                <input type="radio"
+                                                       id="elemen-tidak-{{ $elemen->id }}"
+                                                       class="form-check-input"
+                                                       name="elemenTercapai[{{ $elemen->id }}]"
+                                                       value="0"
+                                                       @checked($elemenTercapai === '0')
+                                                       @disabled($sudahFinal)>
+                                                <span class="form-check-label badge bg-danger-lt text-danger fw-medium">
+                                                    <i class="ti ti-x me-1"></i> Belum tercapai
+                                                </span>
+                                            </label>
+                                            <label class="form-check mb-0 d-flex align-items-center gap-1"
+                                                   for="elemen-belum-{{ $elemen->id }}">
+                                                <input type="radio"
+                                                       id="elemen-belum-{{ $elemen->id }}"
+                                                       class="form-check-input"
+                                                       name="elemenTercapai[{{ $elemen->id }}]"
+                                                       value=""
+                                                       @checked($elemenTercapai === '' || $elemenTercapai === null)
+                                                       @disabled($sudahFinal)>
+                                                <span class="form-check-label badge bg-secondary-lt text-secondary fw-medium">
+                                                    Belum dinilai
+                                                </span>
+                                            </label>
                                         </div>
                                     </div>
-                                </fieldset>
-                            @endforeach
+                                </div>
+
+                                {{-- Catatan & 4C per elemen --}}
+                                <label class="form-label fw-semibold small">Catatan Penilaian</label>
+                                <textarea class="form-control form-control-sm mb-2"
+                                          name="elemenCatatan[{{ $elemen->id }}]"
+                                          rows="2"
+                                          maxlength="1000"
+                                          placeholder="Catatan asesor untuk elemen ini"
+                                          @disabled($sudahFinal)>{{ old('elemenCatatan.'.$elemen->id, $hasilKukElemen->first()?->catatan) }}</textarea>
+
+                                <label class="form-label fw-semibold small">Empat Bukti Kompetensi (4C)</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach (['valid' => 'Valid', 'autentik' => 'Autentik', 'terkini' => 'Terkini', 'memadai' => 'Memadai'] as $key => $label)
+                                        <label class="form-check">
+                                            <input type="checkbox" class="form-check-input"
+                                                   name="elemen4C[{{ $elemen->id }}][{{ $key }}]" value="1"
+                                                   @checked(old('elemen4C.'.$elemen->id.'.'.$key, $hasilKukElemen->first()?->{$key}))
+                                                   @disabled($sudahFinal)>
+                                            <span class="form-check-label">{{ $label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </fieldset>
                         @endforeach
 
                         {{-- (C) KEPUTUSAN UNIT --}}

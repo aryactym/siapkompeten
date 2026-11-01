@@ -39,6 +39,7 @@ class HasilAsesmen extends Model
             'persen_kompeten' => 'float',
             'umpan_balik_diberikan' => 'boolean',
             'finalized_at' => 'datetime',
+            'metode_default' => 'array',
         ];
     }
 
@@ -65,5 +66,15 @@ class HasilAsesmen extends Model
     public function isFinal(): bool
     {
         return $this->status === self::STATUS_FINAL;
+    }
+
+    /**
+     * Set default metode untuk semua unit.
+     *
+     * @param array<int, string> $metodes
+     */
+    public function setDefaultMetodes(array $metodes): void
+    {
+        $this->update(['metode_default' => $metodes]);
     }
 }

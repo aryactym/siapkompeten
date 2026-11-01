@@ -88,6 +88,8 @@ class HasilAsesmenController extends Controller
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
 
         $validated = $request->validate([
+            'metode_default' => ['nullable', 'array'],
+            'metode_default.*' => ['string', 'in:observasi,demonstrasi,tes_lisan,tes_tertulis,wawancara,portofolio'],
             'units' => ['required', 'array'],
             'units.*.keputusan' => ['nullable', Rule::in(['kompeten', 'belum_kompeten', 'asesmen_lanjut'])],
             'units.*.catatan' => ['nullable', 'string', 'max:2000'],
@@ -98,12 +100,23 @@ class HasilAsesmenController extends Controller
             'units.*.metode.*.bukti_tambahan' => ['nullable', 'boolean'],
             'units.*.metode.*.keputusan' => ['nullable', Rule::in(['kompeten', 'belum_kompeten', 'asesmen_lanjut'])],
             'units.*.metode.*.catatan' => ['nullable', 'string', 'max:1000'],
-            'kuks' => ['required', 'array'],
-            'kuks.*.tercapai' => ['nullable', 'in:0,1,'],
-            'kuks.*.catatan' => ['nullable', 'string', 'max:1000'],
+            'elemenTercapai' => ['required', 'array'],
+            'elemenTercapai.*' => ['nullable', 'in:0,1,'],
+            'elemenCatatan' => ['nullable', 'array'],
+            'elemenCatatan.*' => ['nullable', 'string', 'max:1000'],
+            'elemen4C' => ['nullable', 'array'],
+            'elemen4C.*' => ['nullable', 'array'],
         ]);
 
-        $this->asesmen->simpanMak02($hasil, $validated['units'], $validated['kuks']);
+        // Simpan default metode jika ada
+        if (!empty($validated['metode_default'])) {
+            $hasil->setDefaultMetodes($validated['metode_default']);
+        }
+
+        // Convert per elemen ke per KUK
+        $kuks = $this->mapElemenToKuk($validated, $pendaftaran->skema);
+
+        $this->asesmen->simpanMak02($hasil, $validated['units'], $kuks);
 
         activity('asesmen')
             ->causedBy($request->user())
@@ -164,6 +177,40 @@ class HasilAsesmenController extends Controller
     }
 
     /**
+     * Map per elemen ke per KUK untuk simpan ke database.
+     *
+     * @return array<string, array{tercapai: bool|null, catatan: string|null, valid: bool, autentik: bool, terkini: bool, memadai: bool}>
+     */
+    private function mapElemenToKuk(array $validated, $skema): array
+    {
+        $result = [];
+        
+        $elemenIds = array_keys($validated['elemenTercapai'] ?? []);
+        $elemenKompetensis = \App\Models\ElemenKompetensi::whereIn('id', $elemenIds)
+            ->with('kriteriaUnjukKerjas')
+            ->get();
+
+        foreach ($elemenKompetensis as $elemen) {
+            $tercapai = $validated['elemenTercapai'][$elemen->id] ?? '';
+            $catatan = $validated['elemenCatatan'][$elemen->id] ?? null;
+            $fourC = $validated['elemen4C'][$elemen->id] ?? [];
+
+            foreach ($elemen->kriteriaUnjukKerjas as $kuk) {
+                $result[$kuk->id] = [
+                    'tercapai' => $tercapai === '' ? null : (bool) $tercapai,
+                    'catatan' => $catatan,
+                    'valid' => (bool) ($fourC['valid'] ?? false),
+                    'autentik' => (bool) ($fourC['autentik'] ?? false),
+                    'terkini' => (bool) ($fourC['terkini'] ?? false),
+                    'memadai' => (bool) ($fourC['memadai'] ?? false),
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Unduh laporan FR.AK.02 dalam format PDF (FR-FRM-04).
      */
     public function pdf(Pendaftaran $pendaftaran): Response
@@ -180,6 +227,7 @@ class HasilAsesmenController extends Controller
             'kuks' => $this->asesmen->kukItems($pendaftaran->skema),
             'hasilUnits' => $hasil->units->keyBy('unit_id'),
             'hasilKuks' => $hasil->kuks->keyBy('kuk_id'),
+            'metodeDefault' => $hasil->metode_default ?? [],
         ])->stream(sprintf('frak02-%s.pdf', $pendaftaran->no_pendaftaran));
     }
 }
