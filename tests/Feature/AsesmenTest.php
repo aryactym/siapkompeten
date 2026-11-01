@@ -280,22 +280,22 @@ class AsesmenTest extends TestCase
             'units' => [
                 $this->unit->id => [
                     'keputusan' => 'kompeten',
-                    'pencapaian' => '1',
+                    'catatan' => null,
                     'metode' => [
                         'observasi' => [
                             'digunakan' => '1',
                             'bukti_langsung' => '1',
                             'bukti_tidak_langsung' => '0',
                             'bukti_tambahan' => '0',
-                            'pencapaian' => '1',
                             'keputusan' => 'kompeten',
+                            'catatan' => null,
                         ],
                     ],
                 ],
             ],
             'kuks' => [
-                $this->kuk1->id => ['pencapaian' => '1', 'bukti_no' => 'B-001', 'valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
-                $this->kuk2->id => ['pencapaian' => '1', 'bukti_no' => 'B-002', 'valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+                $this->kuk1->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
+                $this->kuk2->id => ['tercapai' => '1', 'catatan' => null, 'valid' => '1', 'asli' => '1', 'terkini' => '1', 'memadai' => '1'],
             ],
         ];
 

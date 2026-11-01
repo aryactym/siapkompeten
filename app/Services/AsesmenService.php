@@ -21,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 class AsesmenService
 {
     /**
-     * Struktur unit -> elemen -> KUK milik skema untuk formulir APL-02 & MAK-02.
+     * Struktur unit -> elemen -> KUK milik skema untuk formulir APL-02 & FR.AK.02.
      *
      * @return Collection<int, UnitKompetensi>
      */
@@ -132,7 +132,7 @@ class AsesmenService
     }
 
     /**
-     * Pastikan draf laporan MAK-02 tersedia.
+     * Pastikan draf laporan FR.AK.02 tersedia.
      */
     public function ensureHasil(Pendaftaran $pendaftaran): HasilAsesmen
     {
@@ -147,7 +147,45 @@ class AsesmenService
     }
 
     /**
-     * Simpan draf MAK-02: keputusan per unit, metode, dan capaian per KUK (FR-ASM-05..08).
+     * Hitung saran keputusan per unit berdasarkan KUK tercapai.
+     *
+     * null = masih ada KUK belum dinilai
+     * 'kompeten' = semua KUK tercapai
+     * 'belum_kompeten' = ada KUK tidak tercapai
+     *
+     * @param  Collection<int, HasilAsesmenKuk>  $hasilKuksUnit  KUK milik unit ini saja
+     * @return 'kompeten'|'belum_kompeten'|null
+     */
+    public function saranKeputusanUnit(Collection $hasilKuksUnit): ?string
+    {
+        if ($hasilKuksUnit->isEmpty()) {
+            return null;
+        }
+
+        // Ada yang belum dinilai (tercapai === null)
+        if ($hasilKuksUnit->contains(fn (HasilAsesmenKuk $k) => $k->tercapai === null)) {
+            return null;
+        }
+
+        return $hasilKuksUnit->every(fn (HasilAsesmenKuk $k) => $k->tercapai === true)
+            ? 'kompeten'
+            : 'belum_kompeten';
+    }
+
+    /**
+     * Simpan draf FR.AK.02: keputusan per unit, metode, dan penilaian per KUK.
+     *
+     * Skema field baru:
+     *   units[id][keputusan]         — enum kompeten|belum_kompeten|asesmen_lanjut
+     *   units[id][catatan]           — wajib jika keputusan ≠ saran (divalidasi di final, bukan draf)
+     *   units[id][metode][x][digunakan]        — boolean
+     *   units[id][metode][x][bukti_langsung]   — boolean, hanya disimpan jika digunakan
+     *   units[id][metode][x][bukti_tidak_langsung]
+     *   units[id][metode][x][bukti_tambahan]
+     *   units[id][metode][x][keputusan]        — enum
+     *   units[id][metode][x][catatan]          — text
+     *   kuks[id][tercapai]           — 1|0|'' (1=ya, 0=tidak, ''=hapus/null)
+     *   kuks[id][catatan]            — catatan asesor per KUK
      *
      * @param  array<string, mixed>  $units
      * @param  array<string, mixed>  $kuks
@@ -156,7 +194,7 @@ class AsesmenService
     {
         if ($hasil->isFinal()) {
             throw ValidationException::withMessages([
-                'hasil' => 'Laporan MAK-02 sudah final dan tidak dapat diubah.',
+                'hasil' => 'Laporan FR.AK.02 sudah final dan tidak dapat diubah.',
             ]);
         }
 
@@ -166,35 +204,54 @@ class AsesmenService
                     ['hasil_id' => $hasil->id, 'unit_id' => $unitId],
                     [
                         'keputusan' => $unitData['keputusan'] ?? null,
-                        'pencapaian' => ! empty($unitData['pencapaian']),
+                        'catatan' => $unitData['catatan'] ?? null,
+                        // pencapaian: deprecated — tidak diupdate oleh UI baru
                     ]
                 );
 
                 foreach ($unitData['metode'] ?? [] as $metode => $metodeData) {
+                    // Hanya simpan metode yang dikenal
+                    if (! in_array($metode, HasilAsesmenMetode::METODES, true)) {
+                        continue;
+                    }
+
+                    $digunakan = ! empty($metodeData['digunakan']);
+
                     HasilAsesmenMetode::updateOrCreate(
                         ['hasil_unit_id' => $unit->id, 'metode' => $metode],
                         [
-                            'digunakan' => ! empty($metodeData['digunakan']),
-                            'bukti_langsung' => ! empty($metodeData['bukti_langsung']),
-                            'bukti_tidak_langsung' => ! empty($metodeData['bukti_tidak_langsung']),
-                            'bukti_tambahan' => ! empty($metodeData['bukti_tambahan']),
-                            'pencapaian' => ! empty($metodeData['pencapaian']),
-                            'keputusan' => $metodeData['keputusan'] ?? null,
+                            'digunakan' => $digunakan,
+                            // Bukti hanya bermakna jika digunakan; bila tidak digunakan → false
+                            'bukti_langsung' => $digunakan && ! empty($metodeData['bukti_langsung']),
+                            'bukti_tidak_langsung' => $digunakan && ! empty($metodeData['bukti_tidak_langsung']),
+                            'bukti_tambahan' => $digunakan && ! empty($metodeData['bukti_tambahan']),
+                            'keputusan' => $digunakan ? ($metodeData['keputusan'] ?? null) : null,
+                            'catatan' => $digunakan ? ($metodeData['catatan'] ?? null) : null,
+                            // pencapaian: deprecated — tidak diupdate
                         ]
                     );
                 }
             }
 
             foreach ($kuks as $kukId => $kukData) {
+                // tercapai: '' / null → null (belum dinilai), '1'/true → true, '0'/false → false
+                $tercapai = isset($kukData['tercapai']) && $kukData['tercapai'] !== ''
+                    ? (bool) $kukData['tercapai']
+                    : null;
+
                 HasilAsesmenKuk::updateOrCreate(
                     ['hasil_id' => $hasil->id, 'kuk_id' => $kukId],
                     [
-                        'pencapaian' => ! empty($kukData['pencapaian']),
-                        'bukti_no' => $kukData['bukti_no'] ?? null,
+                        'tercapai' => $tercapai,
+                        'catatan' => $kukData['catatan'] ?? null,
+                        // Field VATM (valid/asli/terkini/memadai) masih disimpan jika dikirim
                         'valid' => ! empty($kukData['valid']),
-                        'autentik' => ! empty($kukData['autentik']),
+                        'asli' => ! empty($kukData['asli']),
                         'terkini' => ! empty($kukData['terkini']),
                         'memadai' => ! empty($kukData['memadai']),
+                        // Deprecated fields — tidak diupdate lagi oleh UI baru
+                        // 'pencapaian' → tidak diisi
+                        // 'bukti_no'   → tidak diisi
                     ]
                 );
             }
@@ -202,8 +259,14 @@ class AsesmenService
     }
 
     /**
-     * Finalkan MAK-02: kunci laporan, hitung persentase, perbarui status kompetensi
-     * asesi dan status pendaftaran (FR-ASM-10/12).
+     * Finalkan FR.AK.02: kunci laporan, validasi kelengkapan, hitung persentase,
+     * perbarui status kompetensi asesi dan status pendaftaran (FR-ASM-10/12).
+     *
+     * Aturan bisnis finalisasi:
+     *   1. Semua unit harus punya keputusan.
+     *   2. Semua KUK harus punya tercapai (tidak boleh null).
+     *   3. Jika keputusan unit berbeda dari saran otomatis, catatan wajib ada.
+     *   4. Rekomendasi wajib, umpan_balik wajib.
      */
     public function finalkan(
         HasilAsesmen $hasil,
@@ -214,21 +277,83 @@ class AsesmenService
     ): void {
         if ($hasil->isFinal()) {
             throw ValidationException::withMessages([
-                'hasil' => 'Laporan MAK-02 sudah final.',
+                'hasil' => 'Laporan FR.AK.02 sudah final.',
             ]);
         }
 
-        DB::transaction(function () use ($hasil, $pendaftaran, $asesorUser, $rekomendasi, $umpanBalik): void {
-            $totalKuk = $hasil->kuks()->count();
+        // Muat semua relasi yang diperlukan untuk validasi
+        $units = $hasil->units()->with('metodes')->get();
+        $allKuks = $hasil->kuks()->get();
 
-            if ($totalKuk === 0) {
-                throw ValidationException::withMessages([
-                    'hasil' => 'Belum ada capaian KUK yang disimpan untuk MAK-02.',
-                ]);
+        $errors = [];
+
+        // 1. Semua unit wajib punya keputusan
+        $unitTanpaKeputusan = $units->filter(fn (HasilAsesmenUnit $u) => blank($u->keputusan));
+        if ($unitTanpaKeputusan->isNotEmpty()) {
+            $errors['hasil'] = 'Semua unit kompetensi harus memiliki keputusan sebelum difinalkan.';
+        }
+
+        // 2. Semua KUK wajib dinilai (tercapai tidak boleh null)
+        $kukBelumDinilai = $allKuks->filter(fn (HasilAsesmenKuk $k) => $k->tercapai === null);
+        if ($kukBelumDinilai->isNotEmpty()) {
+            $errors['kuks'] = sprintf(
+                '%d KUK belum dinilai. Semua KUK harus dinilai (Ya/Tidak) sebelum difinalkan.',
+                $kukBelumDinilai->count()
+            );
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        // 3. Validasi: keputusan unit berbeda dari saran → catatan wajib
+        $unitCatatanErrors = [];
+        foreach ($units as $hasilUnit) {
+            // Kumpulkan KUK milik unit ini
+            $kukUnit = $allKuks->filter(function (HasilAsesmenKuk $k): bool {
+                // KUK terhubung ke unit via elemen kompetensi — query langsung lebih akurat
+                return true; // akan divalidasi via query di bawah bila ada masalah
+            });
+
+            // Cari KUK yang terhubung ke unit ini via DB
+            $kukUnitIds = $hasil->kuks()
+                ->whereHas('kuk.elemenKompetensi', fn ($q) => $q->where('unit_kompetensi_id', $hasilUnit->unit_id))
+                ->pluck('tercapai')
+                ->all();
+
+            if (empty($kukUnitIds)) {
+                continue;
             }
 
-            $tercapai = $hasil->kuks()->where('pencapaian', true)->count();
-            $persen = round(($tercapai / $totalKuk) * 100, 2);
+            // Hitung saran
+            $adaNull = in_array(null, $kukUnitIds, true);
+            $saran = $adaNull
+                ? null
+                : (in_array(false, $kukUnitIds, true) ? 'belum_kompeten' : 'kompeten');
+
+            // Jika saran berbeda dari keputusan dan catatan kosong → error
+            if ($saran !== null && $hasilUnit->keputusan !== $saran && blank($hasilUnit->catatan)) {
+                $unitCatatanErrors[] = sprintf(
+                    'Unit "%s": keputusan berbeda dari saran otomatis (%s → %s), wajib mengisi catatan alasan.',
+                    $hasilUnit->unit_id,
+                    $saran,
+                    $hasilUnit->keputusan
+                );
+            }
+        }
+
+        if ($unitCatatanErrors !== []) {
+            throw ValidationException::withMessages([
+                'units' => implode(' | ', $unitCatatanErrors),
+            ]);
+        }
+
+        DB::transaction(function () use ($hasil, $pendaftaran, $asesorUser, $rekomendasi, $umpanBalik, $allKuks): void {
+            $totalKuk = $allKuks->count();
+
+            // Hitung persentase dari field `tercapai` (bukan `pencapaian` lama)
+            $tercapaiCount = $allKuks->filter(fn (HasilAsesmenKuk $k) => $k->tercapai === true)->count();
+            $persen = $totalKuk > 0 ? round(($tercapaiCount / $totalKuk) * 100, 2) : 0.0;
 
             $asesor = Asesor::where('user_id', $asesorUser->id)->first();
 
@@ -257,7 +382,7 @@ class AsesmenService
                     'rekomendasi' => $rekomendasi,
                     'persen_kompeten' => $persen,
                 ])
-                ->log('Laporan MAK-02 difinalkan oleh asesor.');
+                ->log('Laporan FR.AK.02 difinalkan oleh asesor.');
         });
     }
 }
