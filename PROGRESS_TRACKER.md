@@ -280,8 +280,11 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
 - **1 November 2026 — Sesi 10 (Branch: `single`)**
   - **FK violation APL-02 verifikasi fixed** (`f934074`): form key `verifikasi[{kukId}]` sesuai backend. View pakai `$elemenJawaban->kuk_id` (first KUK per elemen).
   - **Modal finalisasi rapih** (`b547336`): pindah dari `@section('content')` → `@push('modals')` di luar `.page`. Layout asesor tambah `@stack('modals')`. Blok `@php` ($keputusanLabels, $rekomendasiSaran) pindah ke atas file. Modal render hanya jika `! $sudahFinal`.
+  - **Modal scroll vertikal + size lg** (`7ec7e66`): form flex container, tabel ringkas (max-height 260px, sticky header), Str::limit 40 char.
+  - **Duplikat umpan balik hapus** (`2969b06`): hanya di modal finalisasi, form utama dihapus.
+  - **Notifikasi ganda hapus** (`fbbfdce`): banner alert final dihapus, hanya session alert.
   - **Testing**: 9/9 APL-02 lulus, full Feature 91/91 hijau.
-  - **Commits**: `f934074` (FK fix), `f3d7b61` (modal awal reorder), `a937e29` (PROGRESS), `b547336` (modal rapih).
+  - **Commits**: `f934074`, `f3d7b61`, `a937e29`, `b547336`, `92f03db`, `7ec7e66`, `2969b06`, `fbbfdce`.
 
 - **1 November 2026 — Sesi 10 Awal (Branch: `single`)**
   - **APL-02 asesi restore approval & bukti dari DB** (`63d2b5d`):
