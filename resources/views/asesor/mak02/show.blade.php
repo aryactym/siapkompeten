@@ -14,6 +14,13 @@
 @endsection
 
 @section('content')
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible mb-3" role="alert">
+        <i class="ti ti-check me-1"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 @php
     use App\Models\HasilAsesmen;
     use App\Models\HasilAsesmenMetode;
@@ -135,26 +142,14 @@
 <form method="POST" action="{{ route('asesor.mak02.store', $pendaftaran) }}" id="form-mak02">
     @csrf
 
-    {{-- Validasi error (tangkap nested fields units.* / kuks.*) --}}
-    @if ($errors->hasAny(['units.*', 'kuks.*', 'hasil', 'kuks', 'units']))
+    {{-- Validasi error (menampilkan semua error termasuk nested) --}}
+    @if ($errors->any())
         <div class="alert alert-danger mb-3">
             <div class="fw-semibold mb-1"><i class="ti ti-alert-triangle me-1"></i> Perbaiki kesalahan berikut:</div>
             <ul class="mb-0 ps-3 small">
-                @foreach ($errors->get('units.*') ?? [] as $message)
-                    <li>{{ $message }}</li>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
                 @endforeach
-                @foreach ($errors->get('kuks.*') ?? [] as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-                @error('hasil')
-                    <li>{{ $message }}</li>
-                @enderror
-                @error('kuks')
-                    <li>{{ $message }}</li>
-                @enderror
-                @error('units')
-                    <li>{{ $message }}</li>
-                @enderror
             </ul>
         </div>
     @endif
@@ -168,7 +163,7 @@
         </div>
         <div class="card-body">
             <p class="text-secondary small mb-3">
-                Pilih metode yang digunakan. Default ini akan diterapkan ke semua unit kecuali ada override per unit.
+                Pilih metode yang digunakan. Metode ini berlaku sebagai default untuk semua unit.
             </p>
             <div class="row g-2 mb-3">
                 @foreach (\App\Models\HasilAsesmenMetode::METODES as $metode)
@@ -194,15 +189,15 @@
         </div>
     </div>
 
-    {{-- ACCORDION UNIT --}}
-    <div class="accordion mb-3" id="accordion-units">
+    {{-- UNIT SECTIONS --}}
+    <div class="mb-3">
         @foreach ($units as $unitIdx => $unit)
             @php
                 $hasilUnit  = $hasilUnits->get($unit->id);
                 $saran      = $saranPerUnit[$unit->id] ?? null;
                 $keputusan  = old('units.'.$unit->id.'.keputusan', $hasilUnit?->keputusan);
 
-                // Status badge unit untuk accordion header
+                // Status badge unit untuk header card
                 $unitBadgeClass = match ($keputusan) {
                     'kompeten'       => 'bg-success-lt text-success',
                     'belum_kompeten' => 'bg-danger-lt text-danger',
@@ -219,11 +214,7 @@
                     ->filter(fn ($k) => $k->tercapai !== null)->count();
             @endphp
             <div class="card mb-2">
-                <div class="card-header" id="heading-unit-{{ $unitIdx }}" style="cursor:pointer;"
-                     data-bs-toggle="collapse"
-                     data-bs-target="#collapse-unit-{{ $unitIdx }}"
-                     aria-expanded="{{ $unitIdx === 0 ? 'true' : 'false' }}"
-                     aria-controls="collapse-unit-{{ $unitIdx }}">
+                <div class="card-header">
                     <div class="d-flex align-items-center justify-content-between w-100 pe-3">
                         <div>
                             <h3 class="mb-0 fw-semibold fs-5">
@@ -246,10 +237,7 @@
                     </div>
                 </div>
 
-                <div id="collapse-unit-{{ $unitIdx }}"
-                     class="collapse {{ $unitIdx === 0 ? 'show' : '' }}"
-                     aria-labelledby="heading-unit-{{ $unitIdx }}"
-                     data-bs-parent="#accordion-units">
+                <div>
                     <div class="card-body pt-0">
 
                         {{-- (B) DAFTAR ELEMEN & PENILAIAN --}}
@@ -431,10 +419,9 @@
                         </div>
 
                     </div>{{-- /card-body --}}
-                </div>{{-- /collapse --}}
             </div>{{-- /card --}}
         @endforeach
-    </div>{{-- /accordion --}}
+    </div>{{-- /unit sections --}}
 
     {{-- ===== KARTU REKOMENDASI & FINALISASI ===== --}}
     <div class="card mb-3">
@@ -712,33 +699,12 @@
  * Buka ulang modal finalisasi jika server mengembalikan error
  * dari field yang ada di modal (rekomendasi, umpan_balik, konfirmasi).
  */
-@if ($errors->hasAny(['rekomendasi', 'umpan_balik', 'konfirmasi', 'hasil', 'kuks']))
+@if ($errors->hasAny(['rekomendasi', 'umpan_balik', 'konfirmasi', 'hasil', 'kuks', 'units', 'elemenTercapai', 'elemenCatatan', 'elemen4C', 'metode_default']))
 document.addEventListener('DOMContentLoaded', function () {
     var el = document.getElementById('modal-finalisasi');
     if (el) { new bootstrap.Modal(el).show(); }
 });
 @endif
-
-/**
- * Metode asesmen: toggle disabled state untuk input bukti + keputusan
- * saat checkbox "Digunakan" berubah.
- */
-document.querySelectorAll('.metode-digunakan').forEach(function (cb) {
-    cb.addEventListener('change', function () {
-        toggleMetodeRow(this.dataset.row, this.checked);
-    });
-});
-
-function toggleMetodeRow(rowId, enabled) {
-    document.querySelectorAll('[data-row="' + rowId + '"].metode-bukti').forEach(function (el) {
-        el.disabled = !enabled;
-        if (!enabled) {
-            if (el.type === 'checkbox') { el.checked = false; }
-            else if (el.tagName === 'SELECT') { el.value = ''; }
-            else { el.value = ''; }
-        }
-    });
-}
 
 /**
  * Sinkron pilihan rekomendasi dari form utama ke modal finalisasi.

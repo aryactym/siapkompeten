@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Asesor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Apl02Penilaian;
+use App\Models\ElemenKompetensi;
 use App\Models\HasilAsesmen;
 use App\Models\HasilAsesmenMetode;
 use App\Models\Pendaftaran;
@@ -90,7 +91,7 @@ class HasilAsesmenController extends Controller
         $validated = $request->validate([
             'metode_default' => ['nullable', 'array'],
             'metode_default.*' => ['string', 'in:observasi,demonstrasi,tes_lisan,tes_tertulis,wawancara,portofolio'],
-            'units' => ['required', 'array'],
+            'units' => ['nullable', 'array'],
             'units.*.keputusan' => ['nullable', Rule::in(['kompeten', 'belum_kompeten', 'asesmen_lanjut'])],
             'units.*.catatan' => ['nullable', 'string', 'max:2000'],
             'units.*.metode' => ['nullable', 'array'],
@@ -109,14 +110,14 @@ class HasilAsesmenController extends Controller
         ]);
 
         // Simpan default metode jika ada
-        if (!empty($validated['metode_default'])) {
+        if (! empty($validated['metode_default'])) {
             $hasil->setDefaultMetodes($validated['metode_default']);
         }
 
         // Convert per elemen ke per KUK
         $kuks = $this->mapElemenToKuk($validated, $pendaftaran->skema);
 
-        $this->asesmen->simpanMak02($hasil, $validated['units'], $kuks);
+        $this->asesmen->simpanMak02($hasil, $validated['units'] ?? [], $kuks);
 
         activity('asesmen')
             ->causedBy($request->user())
@@ -161,11 +162,11 @@ class HasilAsesmenController extends Controller
         $metodeDefault = $hasil->metode_default ?? [];
         $metodeTerpilih = array_values(array_filter(
             $metodeDefault,
-            fn ($m) => !empty($m)
+            fn ($m) => ! empty($m)
         ));
 
         abort_unless(
-            !empty($metodeTerpilih),
+            ! empty($metodeTerpilih),
             422,
             'Minimal satu metode asesmen harus dipilih sebelum FR.AK.02 difinalkan.'
         );
@@ -197,9 +198,9 @@ class HasilAsesmenController extends Controller
     private function mapElemenToKuk(array $validated, $skema): array
     {
         $result = [];
-        
+
         $elemenIds = array_keys($validated['elemenTercapai'] ?? []);
-        $elemenKompetensis = \App\Models\ElemenKompetensi::whereIn('id', $elemenIds)
+        $elemenKompetensis = ElemenKompetensi::whereIn('id', $elemenIds)
             ->with('kriteriaUnjukKerjas')
             ->get();
 

@@ -396,6 +396,29 @@ class AsesmenTest extends TestCase
         $this->assertFalse($hasilUnit->metodes->first()->digunakan);
     }
 
+    public function test_asesor_simpan_draf_mak02_dan_tanpa_unit_keputusan(): void
+    {
+        // Penilaian per elemen (mis. "Semua tercapai") harus tersimpan
+        // walau unit keputusan belum diisi — final tetap mewajibkan nanti.
+        $payload = [
+            'metode_default' => ['observasi'],
+            'elemenTercapai' => [$this->elemen->id => '1'],
+            'elemenCatatan' => [$this->elemen->id => null],
+            'elemen4C' => [
+                $this->elemen->id => ['valid' => '1', 'autentik' => '1', 'terkini' => '1', 'memadai' => '1'],
+            ],
+        ];
+
+        $this->actingAs($this->asesorUser)
+            ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
+            ->assertRedirect(route('asesor.mak02.show', $this->pendaftaran))
+            ->assertSessionHas('success');
+
+        $hasil = HasilAsesmen::where('pendaftaran_id', $this->pendaftaran->id)->firstOrFail();
+        $this->assertSame(2, $hasil->kuks()->count());
+        $this->assertSame(true, $hasil->kuks()->first()->tercapai);
+    }
+
     public function test_asesor_finalisasi_mak02_gagal_validasi_field_wajib(): void
     {
         $payload = [
