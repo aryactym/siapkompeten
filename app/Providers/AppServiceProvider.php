@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Skema;
+use App\Policies\SkemaPolicy;
 use App\Services\Notifications\LogSmsGateway;
 use App\Services\Notifications\SmsGateway;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
+    }
+
+    private function registerPolicies(): void
+    {
+        \Illuminate\Support\Facades\Gate::policy(Skema::class, SkemaPolicy::class);
     }
 }
