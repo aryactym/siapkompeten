@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Skema;
+use App\Models\SkmaPersyaratan;
 use App\Models\Skkni;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
@@ -115,9 +116,64 @@ class AdminSkemaController extends Controller
         ]);
     }
 
+    public function storePersyaratan(Request $request, Skema $skema): RedirectResponse
+    {
+        $this->authorize('update', $skema);
+
+        $validated = $request->validate([
+            'nama_dokumen' => ['required', 'string', 'max:200'],
+            'deskripsi' => ['nullable', 'string', 'max:500'],
+            'is_required' => ['nullable', 'boolean'],
+        ]);
+
+        $skema->persyaratans()->create([
+            'institution_id' => TenantContext::requireId(),
+            'nama_dokumen' => $validated['nama_dokumen'],
+            'deskripsi' => $validated['deskripsi'],
+            'is_required' => (bool) ($validated['is_required'] ?? false),
+            'urutan' => $skema->persyaratans()->max('urutan') + 1,
+        ]);
+
+        return redirect()
+            ->route('admin.skema.persyaratan', $skema)
+            ->with('success', 'Persyaratan dokumen berhasil ditambahkan.');
+    }
+
+    public function updatePersyaratan(Request $request, Skema $skema, SkmaPersyaratan $persyaratan): RedirectResponse
+    {
+        $this->authorize('update', $skema);
+
+        $validated = $request->validate([
+            'nama_dokumen' => ['required', 'string', 'max:200'],
+            'deskripsi' => ['nullable', 'string', 'max:500'],
+            'is_required' => ['nullable', 'boolean'],
+        ]);
+
+        $persyaratan->update([
+            'nama_dokumen' => $validated['nama_dokumen'],
+            'deskripsi' => $validated['deskripsi'],
+            'is_required' => (bool) ($validated['is_required'] ?? false),
+        ]);
+
+        return redirect()
+            ->route('admin.skema.persyaratan', $skema)
+            ->with('success', 'Persyaratan dokumen berhasil diperbarui.');
+    }
+
+    public function destroyPersyaratan(Request $request, Skema $skema, SkmaPersyaratan $persyaratan): RedirectResponse
+    {
+        $this->authorize('update', $skema);
+
+        $persyaratan->delete();
+
+        return redirect()
+            ->route('admin.skema.persyaratan', $skema)
+            ->with('success', 'Persyaratan dokumen berhasil dihapus.');
+    }
+
     /**
-     * @return array<string, mixed>
-     */
+      * @return array<string, mixed>
+      */
     private function validateSkema(Request $request, ?Skema $skema = null): array
     {
         $validated = $request->validate([

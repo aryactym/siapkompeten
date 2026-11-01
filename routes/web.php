@@ -121,6 +121,12 @@ Route::prefix('admin')
         Route::get('skema/{skema}', [AdminSkemaController::class, 'show'])->name('skema.show');
         Route::get('skema/{skema}/persyaratan', [AdminSkemaController::class, 'persyaratan'])
             ->name('skema.persyaratan');
+        Route::post('skema/{skema}/persyaratan', [AdminSkemaController::class, 'storePersyaratan'])
+            ->name('skema.persyaratan.store');
+        Route::put('skema/{skema}/persyaratan/{persyaratan}', [AdminSkemaController::class, 'updatePersyaratan'])
+            ->name('skema.persyaratan.update');
+        Route::delete('skema/{skema}/persyaratan/{persyaratan}', [AdminSkemaController::class, 'destroyPersyaratan'])
+            ->name('skema.persyaratan.destroy');
         Route::resource('unit', AdminUnitKompetensiController::class)->except(['show']);
         Route::get('unit/{unit}', [AdminUnitKompetensiController::class, 'show'])->name('unit.show');
         Route::resource('unit-mappings', AdminUnitMappingController::class)->except(['show']);
