@@ -243,7 +243,10 @@ class AsesmenTest extends TestCase
         $this->actingAs($this->asesorUser)
             ->get(route('asesor.apl02.show', $this->pendaftaran))
             ->assertOk()
-            ->assertSee('Mampu menyusun rencana uji');
+            ->assertSee('Mampu menyusun rencana uji')
+            // Regression: kunci form verifikasi wajib kuk_id, bukan elemen_id (FK apl02_jawabans).
+            ->assertSee('name="verifikasi['.$this->kuk1->id.'][valid]"', false)
+            ->assertDontSee('name="verifikasi['.$this->elemen->id.'][valid]"', false);
 
         $verifikasi = [
             'verifikasi' => [

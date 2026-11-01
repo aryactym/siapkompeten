@@ -78,11 +78,13 @@
 
                         <hr>
 
-                        {{-- Verifikasi per elemen --}}
+                        {{-- Verifikasi per elemen (kunci form = kuk_id, sesuai backend updateOrCreate per kuk_id) --}}
+                        @php $kukVerifikasi = $elemen->kriteriaUnjukKerjas->first(); @endphp
+
                         <label class="form-label">Catatan Verifikasi Asesor untuk Elemen Ini</label>
-                        <textarea name="bukti[{{ $elemen->id }}]" rows="3" class="form-control" maxlength="1000"
+                        <textarea name="bukti[{{ $kukVerifikasi?->id }}]" rows="3" class="form-control" maxlength="1000"
                                   @disabled(! $dapatDiverifikasi)
-                                  placeholder="Catatan pemeriksaan bukti kompetensi untuk elemen ini">{{ old('bukti.'.$elemen->id, $elemenJawaban?->bukti_asesor) }}</textarea>
+                                  placeholder="Catatan pemeriksaan bukti kompetensi untuk elemen ini">{{ old('bukti.'.$kukVerifikasi?->id, $elemenJawaban?->bukti_asesor) }}</textarea>
 
                         <div class="mt-3">
                             <div class="text-secondary small mb-2">Empat Bukti Kompetensi (4C) untuk Elemen Ini</div>
@@ -90,8 +92,8 @@
                                 @foreach (['valid' => 'Valid', 'autentik' => 'Autentik', 'terkini' => 'Terkini', 'memadai' => 'Memadai'] as $key => $label)
                                     <label class="form-check">
                                         <input type="checkbox" class="form-check-input"
-                                               name="verifikasi[{{ $elemen->id }}][{{ $key }}]" value="1"
-                                               @checked(old('verifikasi.'.$elemen->id.'.'.$key, $elemenJawaban?->{$key}))
+                                               name="verifikasi[{{ $kukVerifikasi?->id }}][{{ $key }}]" value="1"
+                                               @checked(old('verifikasi.'.$kukVerifikasi?->id.'.'.$key, $elemenJawaban?->{$key}))
                                                @disabled(! $dapatDiverifikasi)>
                                         <span class="form-check-label">{{ $label }}</span>
                                     </label>
