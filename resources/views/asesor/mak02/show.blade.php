@@ -8,8 +8,11 @@
     <a href="{{ route('asesor.apl02.show', $pendaftaran) }}" class="btn btn-outline-secondary">
         <i class="ti ti-list-check me-1"></i> APL-02
     </a>
-    <a href="{{ route('asesor.mak02.pdf', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
-        <i class="ti ti-file-pdf me-1"></i> Unduh PDF
+    <a href="{{ route('asesor.mak02.pdf', $pendaftaran) }}" class="btn btn-primary" target="_blank">
+        <i class="ti ti-file-pdf me-1"></i> Unduh FR.AK.02 PDF Ringkas
+    </a>
+    <a href="{{ route('asesor.mak02.pdf-redesign', $pendaftaran) }}" class="btn btn-primary" target="_blank">
+        <i class="ti ti-file-pdf me-1"></i> Unduh FR.AK.02 PDF Detail
     </a>
 @endsection
 
