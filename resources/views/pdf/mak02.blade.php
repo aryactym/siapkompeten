@@ -22,8 +22,28 @@
     </style>
 </head>
 <body>
-    <h1>FR.AK.02 — Rekaman Asesmen Kompetensi</h1>
-    <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
+    <table style="margin-bottom: 16px;">
+        <tr>
+            <td style="width: 20%; text-align: center;">
+                @if ($pendaftaran->institution?->logo_bnsp_path)
+                    <img src="{{ public_path('storage/' . $pendaftaran->institution->logo_bnsp_path) }}" 
+                         alt="Logo BNSP" 
+                         style="max-height: 60px;">
+                @endif
+            </td>
+            <td style="width: 60%; text-align: center;">
+                <h1>FR.AK.02 — Rekaman Asesmen Kompetensi</h1>
+                <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
+            </td>
+            <td style="width: 20%; text-align: center;">
+                @if ($pendaftaran->institution?->logo_lsp_path)
+                    <img src="{{ public_path('storage/' . $pendaftaran->institution->logo_lsp_path) }}" 
+                         alt="Logo LSP" 
+                         style="max-height: 60px;">
+                @endif
+            </td>
+        </tr>
+    </table>
 
     <table class="meta">
         <tr>
@@ -31,10 +51,13 @@
                 <div><strong>No. Pendaftaran:</strong> {{ $pendaftaran->no_pendaftaran }}</div>
                 <div><strong>Asesi:</strong> {{ $pendaftaran->asesi->user->name ?? '—' }}</div>
                 <div><strong>No. Registrasi:</strong> {{ $pendaftaran->asesi->no_registrasi ?? '—' }}</div>
+                <div><strong>Nama Skema:</strong> {{ $pendaftaran->skema->nama_skema ?? '—' }}</div>
+                <div><strong>Nomor Skema:</strong> {{ $pendaftaran->skema->kode_skema ?? '—' }}</div>
             </td>
             <td>
                 <div><strong>Status:</strong> {{ strtoupper($hasil->status) }}</div>
                 <div><strong>Asesor:</strong> {{ $hasil->asesor->user->name ?? '—' }}</div>
+                <div><strong>Tanggal Asesmen:</strong> {{ $pendaftaran->jadwal?->tanggal?->translatedFormat('d F Y') ?: '—' }}</div>
                 <div><strong>Final:</strong> {{ $hasil->finalized_at?->translatedFormat('d F Y H:i') ?: '—' }}</div>
             </td>
         </tr>
@@ -55,18 +78,14 @@
             </thead>
             <tbody>
                 @php $hasilUnit = $hasilUnits->get($unit->id); @endphp
-                @if ($hasilUnit?->metodes->isNotEmpty())
-                    @foreach ($hasilUnit->metodes as $hasilMetode)
+                @if (!empty($metodeDefault))
+                    @foreach ($metodeDefault as $metode)
                         <tr>
-                            <td>{{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$hasilMetode->metode] ?? ucfirst(str_replace('_', ' ', $hasilMetode->metode)) }}</td>
-                            <td>{{ $hasilMetode->digunakan ? 'Ya' : '—' }}</td>
-                            <td class="muted">
-                                {{ $hasilMetode->bukti_langsung ? 'Langsung' : '' }}
-                                {{ $hasilMetode->bukti_tidak_langsung ? '· Tidak langsung' : '' }}
-                                {{ $hasilMetode->bukti_tambahan ? '· Tambahan' : '' }}
-                            </td>
-                            <td>{{ $hasilMetode->pencapaian ? 'Ya' : '—' }}</td>
-                            <td>{{ $hasilMetode->keputusan ? ucwords(str_replace('_', ' ', $hasilMetode->keputusan)) : '—' }}</td>
+                            <td>{{ \App\Models\HasilAsesmenMetode::METODE_LABELS[$metode] ?? ucfirst(str_replace('_', ' ', $metode)) }}</td>
+                            <td>Ya</td>
+                            <td class="muted">—</td>
+                            <td>—</td>
+                            <td>{{ $hasilUnit?->keputusan ? ucwords(str_replace('_', ' ', $hasilUnit->keputusan)) : '—' }}</td>
                         </tr>
                     @endforeach
                 @else
@@ -85,7 +104,7 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No.</th>
-                    <th style="width: 35%;">Elemen Kompetensi</th>
+                    <th style="width: 35%;">Kriteria Unjuk Kerja</th>
                     <th style="width: 20%;">Metode</th>
                     <th style="width: 12%;">Tercapai</th>
                     <th style="width: 14%;">4C</th>
@@ -94,27 +113,28 @@
             <tbody>
                 @php $no = 0; @endphp
                 @foreach ($unit->elemenKompetensis as $elemen)
-                    @php
-                        $kukElemen = $elemen->kriteriaUnjukKerjas->pluck('id');
-                        $hasilKukElemen = $hasilKuks->filter(fn ($hk) => in_array($hk->kuk_id, $kukElemen->all()));
-                        $tercapaiCount = $hasilKukElemen->filter(fn ($k) => $k->tercapai === true)->count();
-                        $elemenTercapai = $tercapaiCount === $kukElemen->count() && $kukElemen->count() > 0;
-                        $metodeDisplay = !empty($metodeDefault) ? \App\Models\HasilAsesmenMetode::METODE_LABELS[$metodeDefault[0]] ?? ucfirst(str_replace('_', ' ', $metodeDefault[0])) : '—';
-                        $no++;
-                    @endphp
-                    <tr>
-                        <td>{{ $no }}</td>
-                        <td>{{ $elemen->nama_elemen }}</td>
-                        <td class="muted small">{{ $metodeDisplay }}</td>
-                        <td>{{ $elemenTercapai ? 'Ya' : 'Tidak' }}</td>
-                        <td class="muted">
-                            @if ($hasilKukElemen->count() > 0)
-                                {{ $hasilKukElemen->first()?->valid ? 'V' : '-' }}{{ $hasilKukElemen->first()?->autentik ? 'A' : '-' }}{{ $hasilKukElemen->first()?->terkini ? 'T' : '-' }}{{ $hasilKukElemen->first()?->memadai ? 'M' : '-' }}
-                            @else
-                                —
-                            @endif
-                        </td>
-                    </tr>
+                    @foreach ($elemen->kriteriaUnjukKerjas as $kuk)
+                        @php
+                            $hasilKuk = $hasilKuks->get($kuk->id);
+                            $no++;
+                        @endphp
+                        <tr>
+                            <td>{{ $no }}</td>
+                            <td>
+                                <div style="font-size: 8px; color: #888; margin-bottom: 2px;">{{ $elemen->nama_elemen }}</div>
+                                <div>{{ $kuk->pernyataan_kuk }}</div>
+                            </td>
+                            <td class="muted small">{{ !empty($metodeDefault) ? (\App\Models\HasilAsesmenMetode::METODE_LABELS[$metodeDefault[0]] ?? ucfirst(str_replace('_', ' ', $metodeDefault[0]))) : '—' }}</td>
+                            <td>{{ $hasilKuk?->tercapai === true ? 'Ya' : ($hasilKuk?->tercapai === false ? 'Tidak' : '—') }}</td>
+                            <td class="muted">
+                                @if ($hasilKuk)
+                                    {{ $hasilKuk->valid ? 'V' : '-' }}{{ $hasilKuk->asli ? 'A' : '-' }}{{ $hasilKuk->terkini ? 'T' : '-' }}{{ $hasilKuk->memadai ? 'M' : '-' }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
                 @endforeach
             </tbody>
         </table>
@@ -125,8 +145,8 @@
         <div>
             <strong>Rekomendasi:</strong>
             {{ $hasil->rekomendasi === \App\Models\HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN
-                ? 'DIREKOMENDASIKAN (KOMPETEN)'
-                : ($hasil->rekomendasi ? 'TIDAK DIREKOMENDASIKAN' : '—') }}
+                ? 'Kompeten'
+                : 'Belum Kompeten' }}
         </div>
         <div><strong>Umpan balik diberikan:</strong> {{ $hasil->umpan_balik_diberikan ? 'Ya' : 'Belum' }}</div>
     </div>
@@ -135,15 +155,42 @@
         <tr>
             <td>
                 <div>Asesi,</div>
-                <div class="signature-line">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
+                @if ($pendaftaran->asesi->user->signature_path)
+                    <div style="margin: 30px 0;">
+                        <img src="{{ public_path('storage/' . $pendaftaran->asesi->user->signature_path) }}" 
+                             alt="Tanda Tangan Asesi" 
+                             style="max-height: 80px; max-width: 150px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div style="margin-top: 10px;">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
             </td>
             <td>
                 <div>Asesor,</div>
-                <div class="signature-line">{{ $hasil->asesor->user->name ?? '________________' }}</div>
+                @if ($hasil->asesor->user->signature_path)
+                    <div style="margin: 30px 0;">
+                        <img src="{{ public_path('storage/' . $hasil->asesor->user->signature_path) }}" 
+                             alt="Tanda Tangan Asesor" 
+                             style="max-height: 80px; max-width: 150px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div style="margin-top: 10px;">{{ $hasil->asesor->user->name ?? '________________' }}</div>
             </td>
             <td>
                 <div>Ketua LSP,</div>
-                <div class="signature-line">________________</div>
+                @if ($pendaftaran->institution?->tanda_tangan_path)
+                    <div style="margin: 30px 0;">
+                        <img src="{{ public_path('storage/' . $pendaftaran->institution->tanda_tangan_path) }}" 
+                             alt="Tanda Tangan Ketua LSP" 
+                             style="max-height: 80px; max-width: 150px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div style="margin-top: 10px;">{{ $pendaftaran->institution?->nama_ketua ?? '________________' }}</div>
             </td>
         </tr>
     </table>
