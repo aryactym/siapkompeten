@@ -94,7 +94,7 @@ class HasilAsesmenController extends Controller
 
         $validated = $request->validate([
             'metode_default' => ['nullable', 'array'],
-            'metode_default.*' => ['string', 'in:observasi,demonstrasi,tes_lisan,tes_tertulis,wawancara,portofolio'],
+            'metode_default.*' => ['string', 'in:observasi,demonstrasi_simulasi,tes_lisan,tes_tertulis,wawancara,portofolio'],
             'units' => ['nullable', 'array'],
             'units.*.keputusan' => ['nullable', Rule::in(['kompeten', 'belum_kompeten', 'asesmen_lanjut'])],
             'units.*.catatan' => ['nullable', 'string', 'max:2000'],
@@ -115,7 +115,7 @@ class HasilAsesmenController extends Controller
 
         // Simpan default metode jika ada
         if (! empty($validated['metode_default'])) {
-            $hasil->setDefaultMetodes($validated['metode_default']);
+            $hasil->update(['metode_default' => $validated['metode_default']]);
         }
 
         // Convert per elemen ke per KUK
@@ -234,6 +234,7 @@ class HasilAsesmenController extends Controller
 
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
         $hasil->load(['asesor.user', 'units.metodes', 'kuks']);
+        $pendaftaran->load('institution');
 
         return Pdf::loadView('pdf.mak02', [
             'pendaftaran' => $pendaftaran,
@@ -244,5 +245,49 @@ class HasilAsesmenController extends Controller
             'hasilKuks' => $hasil->kuks->keyBy('kuk_id'),
             'metodeDefault' => $hasil->metode_default ?? [],
         ])->stream(sprintf('frak02-%s.pdf', $pendaftaran->no_pendaftaran));
+    }
+
+    /**
+     * Unduh laporan FR.AK.02 ringkas (fokus unit, tanpa detail elemen).
+     */
+    public function pdf2(Pendaftaran $pendaftaran): Response
+    {
+        $this->authorize('inputMak02', $pendaftaran);
+
+        $hasil = $this->asesmen->ensureHasil($pendaftaran);
+        $hasil->load(['asesor.user', 'units.metodes', 'kuks']);
+        $pendaftaran->load('institution');
+
+        return Pdf::loadView('pdf.mak02-ringkas', [
+            'pendaftaran' => $pendaftaran,
+            'hasil' => $hasil,
+            'units' => $this->asesmen->unitItems($pendaftaran->skema),
+            'kuks' => $this->asesmen->kukItems($pendaftaran->skema),
+            'hasilUnits' => $hasil->units->keyBy('unit_id'),
+            'hasilKuks' => $hasil->kuks->keyBy('kuk_id'),
+            'metodeDefault' => $hasil->metode_default ?? [],
+        ])->stream(sprintf('frak02-ringkas-%s.pdf', $pendaftaran->no_pendaftaran));
+    }
+
+    /**
+     * Unduh laporan FR.AK.02 redesain (profesional, A4).
+     */
+    public function pdfRedesign(Pendaftaran $pendaftaran): Response
+    {
+        $this->authorize('inputMak02', $pendaftaran);
+
+        $hasil = $this->asesmen->ensureHasil($pendaftaran);
+        $hasil->load(['asesor.user', 'units.elemenKompetensis.kriteriaUnjukKerjas', 'kuks']);
+        $pendaftaran->load('institution');
+
+        return Pdf::loadView('pdf.mak02-redesign', [
+            'pendaftaran' => $pendaftaran,
+            'hasil' => $hasil,
+            'units' => $this->asesmen->unitItems($pendaftaran->skema),
+            'kuks' => $this->asesmen->kukItems($pendaftaran->skema),
+            'hasilUnits' => $hasil->units->keyBy('unit_id'),
+            'hasilKuks' => $hasil->kuks->keyBy('kuk_id'),
+            'metodeDefault' => $hasil->metode_default ?? [],
+        ])->stream(sprintf('frak02-redesign-%s.pdf', $pendaftaran->no_pendaftaran));
     }
 }

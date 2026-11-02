@@ -43,10 +43,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\SertifikatVerifikasiController;
+use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\WidgetController;
-use App\Http\Controllers\WilayahController;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return Auth::check()
@@ -267,6 +265,9 @@ Route::prefix('asesor')
     ->group(function (): void {
         Route::get('jadwal', [AsesorJadwalController::class, 'index'])->name('jadwal.index');
         Route::get('jadwal/{jadwal}/peserta', [AsesorJadwalController::class, 'peserta'])->name('jadwal.peserta');
+        Route::get('tanda-tangan', [SignatureController::class, 'show'])->name('signature.show');
+        Route::post('tanda-tangan', [SignatureController::class, 'store'])->name('signature.store');
+        Route::delete('tanda-tangan', [SignatureController::class, 'delete'])->name('signature.delete');
 
         Route::get('pendaftaran/{pendaftaran}/apl02', [AsesorApl02Controller::class, 'show'])->name('apl02.show');
         Route::post('pendaftaran/{pendaftaran}/apl02/verifikasi', [AsesorApl02Controller::class, 'verifikasi'])
@@ -280,7 +281,9 @@ Route::prefix('asesor')
         Route::post('pendaftaran/{pendaftaran}/mak02/final', [AsesorHasilAsesmenController::class, 'final'])
             ->middleware('throttle:10,1')
             ->name('mak02.final');
-        Route::get('pendaftaran/{pendaftaran}/mak02/pdf', [AsesorHasilAsesmenController::class, 'pdf'])->name('mak02.pdf');
+        Route::get('pendaftaran/{pendaftaran}/mak02/pdf', [AsesorHasilAsesmenController::class, 'pdf2'])->name('mak02.pdf');
+        Route::get('pendaftaran/{pendaftaran}/mak02/pdf2', [AsesorHasilAsesmenController::class, 'pdf'])->name('mak02.pdf2');
+        Route::get('pendaftaran/{pendaftaran}/mak02/pdf-redesign', [AsesorHasilAsesmenController::class, 'pdfRedesign'])->name('mak02.pdf-redesign');
     });
 
 Route::prefix('asesi')
@@ -289,6 +292,9 @@ Route::prefix('asesi')
     ->group(function (): void {
         Route::get('profil', [AsesiProfilController::class, 'edit'])->name('profil.edit');
         Route::put('profil', [AsesiProfilController::class, 'update'])->name('profil.update');
+        Route::get('tanda-tangan', [SignatureController::class, 'show'])->name('signature.show');
+        Route::post('tanda-tangan', [SignatureController::class, 'store'])->name('signature.store');
+        Route::delete('tanda-tangan', [SignatureController::class, 'delete'])->name('signature.delete');
         Route::get('panduan', AsesiPanduanController::class)->name('panduan');
 
         // Hasil & Sertifikat (FR-RPT-04)
