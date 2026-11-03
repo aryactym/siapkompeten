@@ -25,6 +25,8 @@ class Institution extends Model
         'website',
         'nama_ketua',
         'logo_path',
+        'logo_bnsp_path',
+        'logo_lsp_path',
         'stempel_path',
         'tanda_tangan_path',
         'is_active',

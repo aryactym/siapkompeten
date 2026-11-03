@@ -90,6 +90,14 @@
                                     <span class="nav-link-title">Profil Saya</span>
                                 </a>
                             </li>
+                            <li class="nav-item {{ request()->routeIs('asesi.signature.show', 'asesi.signature.store', 'asesi.signature.delete') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ route('asesi.signature.show') }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <i class="ti ti-pencil fs-2"></i>
+                                    </span>
+                                    <span class="nav-link-title">Tanda Tangan</span>
+                                </a>
+                            </li>
                             <li class="nav-item {{ request()->routeIs('asesi.sertifikat.*') ? 'active' : '' }}">
                                 <a class="nav-link" href="{{ route('asesi.sertifikat.index') }}">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">

@@ -91,15 +91,42 @@
         <tr>
             <td>
                 <div>Asesi,</div>
-                <div class="signature-line">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
+                @if ($pendaftaran->asesi->user->signature_path && file_exists(public_path('storage/' . $pendaftaran->asesi->user->signature_path)))
+                    <div style="margin: 30px 0;">
+                        <img src="{{ public_path('storage/' . $pendaftaran->asesi->user->signature_path) }}" 
+                             alt="Tanda Tangan Asesi" 
+                             style="max-height: 80px; max-width: 150px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div style="margin-top: 10px;">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
             </td>
             <td>
                 <div>Asesor,</div>
-                <div class="signature-line">{{ $penilaian->asesor->user->name ?? '________________' }}</div>
+                @if ($penilaian->asesor->user->signature_path && file_exists(public_path('storage/' . $penilaian->asesor->user->signature_path)))
+                    <div style="margin: 30px 0;">
+                        <img src="{{ public_path('storage/' . $penilaian->asesor->user->signature_path) }}" 
+                             alt="Tanda Tangan Asesor" 
+                             style="max-height: 80px; max-width: 150px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div style="margin-top: 10px;">{{ $penilaian->asesor->user->name ?? '________________' }}</div>
             </td>
             <td>
                 <div>Ketua LSP,</div>
-                <div class="signature-line">________________</div>
+                @if ($pendaftaran->institution?->tanda_tangan_path && file_exists(public_path('storage/' . $pendaftaran->institution->tanda_tangan_path)))
+                    <div style="margin: 30px 0;">
+                        <img src="{{ public_path('storage/' . $pendaftaran->institution->tanda_tangan_path) }}" 
+                             alt="Tanda Tangan Ketua LSP" 
+                             style="max-height: 80px; max-width: 150px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div style="margin-top: 10px;">{{ $pendaftaran->institution?->nama_ketua ?? '________________' }}</div>
             </td>
         </tr>
     </table>

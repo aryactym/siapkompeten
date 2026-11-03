@@ -30,6 +30,7 @@ use Spatie\Permission\Traits\HasRoles;
     'is_locked',
     'last_login_at',
     'last_login_ip',
+    'signature_path',
 ])]
 #[Hidden(['password', 'remember_token', 'nik_hash'])]
 class User extends Authenticatable

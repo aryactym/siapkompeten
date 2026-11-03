@@ -74,6 +74,14 @@
                                     <span class="nav-link-title">Hasil Asesmen (FR.AK.02)</span>
                                 </a>
                             </li>
+                            <li class="nav-item {{ request()->routeIs('asesor.signature.show', 'asesor.signature.store', 'asesor.signature.delete') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ route('asesor.signature.show') }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <i class="ti ti-pencil fs-2"></i>
+                                    </span>
+                                    <span class="nav-link-title">Tanda Tangan</span>
+                                </a>
+                            </li>
                             <li class="nav-item ms-lg-auto">
                                 <a class="nav-link text-primary fw-medium" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">

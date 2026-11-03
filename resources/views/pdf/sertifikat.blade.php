@@ -37,6 +37,7 @@
         .info-table td:first-child { font-weight: bold; width: 35%; color: #555; }
         .footer-row { display: table; width: 100%; margin-top: 10mm; }
         .sign-block { display: table-cell; width: 50%; text-align: center; vertical-align: bottom; }
+        .sign-block img { max-height: 50px; max-width: 150px; margin: 4px 0; }
         .sign-line { border-top: 1px solid #333; width: 70%; margin: 0 auto; padding-top: 2px; }
         .reg-no { text-align: center; font-size: 8pt; color: #888; margin-top: 4mm; }
         .watermark {
@@ -91,18 +92,35 @@
         <div class="footer-row">
             <div class="sign-block">
                 <div class="lsp-sub">Tempat, {{ $sertifikat->tanggal_terbit?->translatedFormat('d F Y') }}</div>
-                <br><br><br>
+                <br>
+                @if ($sertifikat->asesi?->user?->signature_path && file_exists(storage_path('app/public/'.$sertifikat->asesi->user->signature_path)))
+                    <img src="{{ storage_path('app/public/'.$sertifikat->asesi->user->signature_path) }}"
+                         alt="Tanda Tangan Asesi"
+                         style="max-height: 60px; max-width: 200px; display: block; margin: 8px auto;">
+                @else
+                    <br><br>
+                @endif
                 <div class="sign-line">
-                    <div>{{ $institution?->nama_ketua ?? $institution?->name ?? '' }}</div>
-                    <div class="lsp-sub">Ketua LSP</div>
+                    <div>{{ $sertifikat->asesi?->user?->name ?? '—' }}</div>
+                    <div class="lsp-sub">Peserta</div>
                 </div>
             </div>
             <div class="sign-block">
                 <div class="lsp-sub">Diterbitkan Oleh</div>
-                <br><br><br>
+                <br>
+                @php
+                    $asesor = $sertifikat->pendaftaran?->hasilAsesmens?->first()?->asesor;
+                @endphp
+                @if ($asesor?->user?->signature_path && file_exists(storage_path('app/public/'.$asesor->user->signature_path)))
+                    <img src="{{ storage_path('app/public/'.$asesor->user->signature_path) }}"
+                         alt="Tanda Tangan Asesor"
+                         style="max-height: 60px; max-width: 200px; display: block; margin: 8px auto;">
+                @else
+                    <br><br>
+                @endif
                 <div class="sign-line">
-                    <div>{{ $sertifikat->penerbit?->name ?? '—' }}</div>
-                    <div class="lsp-sub">Administrator</div>
+                    <div>{{ $asesor?->nama_lengkap ?? $sertifikat->penerbit?->name ?? '—' }}</div>
+                    <div class="lsp-sub">{{ $asesor ? 'Asesor' : 'Administrator' }}</div>
                 </div>
             </div>
         </div>

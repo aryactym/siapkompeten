@@ -76,15 +76,34 @@
     <table class="signatures">
         <tr>
             <td>
-                <div class="signature-line">Asesi</div>
+                @if ($u->signature_path && file_exists(public_path('storage/' . $u->signature_path)))
+                    <div style="margin: 20px 0;">
+                        <img src="{{ public_path('storage/' . $u->signature_path) }}" 
+                             alt="Tanda Tangan Asesi" 
+                             style="max-height: 60px; max-width: 120px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div>Asesi</div>
                 <div>{{ $u->name ?? '' }}</div>
             </td>
             <td>
-                <div class="signature-line">Admin LSP</div>
+                @if (auth()->user()->signature_path && file_exists(public_path('storage/' . auth()->user()->signature_path)))
+                    <div style="margin: 20px 0;">
+                        <img src="{{ public_path('storage/' . auth()->user()->signature_path) }}" 
+                             alt="Tanda Tangan Admin" 
+                             style="max-height: 60px; max-width: 120px;">
+                    </div>
+                @else
+                    <div class="signature-line"></div>
+                @endif
+                <div>Admin LSP</div>
                 <div>{{ auth()->user()->name ?? '' }}</div>
             </td>
             <td>
-                <div class="signature-line">Tanggal</div>
+                <div class="signature-line"></div>
+                <div>Tanggal</div>
                 <div>{{ now()->translatedFormat('d F Y') }}</div>
             </td>
         </tr>

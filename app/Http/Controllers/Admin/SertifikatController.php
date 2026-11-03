@@ -124,7 +124,13 @@ class SertifikatController extends Controller
     {
         $this->authorize('view', $sertifikat);
 
-        $sertifikat->load(['asesi.user', 'skema', 'pendaftaran.jadwal.tuk', 'penerbit']);
+        $sertifikat->load([
+            'asesi.user',
+            'skema',
+            'pendaftaran.jadwal.tuk',
+            'pendaftaran.hasilAsesmens.asesor.user',
+            'penerbit',
+        ]);
 
         return Pdf::loadView('pdf.sertifikat', [
             'sertifikat' => $sertifikat,

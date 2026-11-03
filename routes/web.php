@@ -140,7 +140,9 @@ Route::prefix('admin')
         Route::resource('wilayah', AdminWilayahController::class)->except(['show']);
 
         // Kelembagaan (Fase 1)
-        Route::resource('institution', AdminInstitutionController::class)->except(['show']);
+        Route::resource('institution', AdminInstitutionController::class);
+        Route::post('institution/{institution}/logo', [AdminInstitutionController::class, 'uploadLogo'])
+            ->name('institution.upload-logo');
         Route::resource('tuk', AdminTukController::class)->except(['show']);
 
         Route::resource('event', AdminEventController::class)->except(['show']);

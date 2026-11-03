@@ -21,8 +21,16 @@ class AdminInstitutionController extends Controller
         ]);
     }
 
+    public function show(Institution $institution): View
+    {
+        return view('admin.institution.index', [
+            'institution' => $institution,
+        ]);
+    }
+
     public function update(Request $request, Institution $institution): RedirectResponse
     {
+        // Validate non-file fields only
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nomor_lisensi' => ['nullable', 'string', 'max:100'],
@@ -49,5 +57,58 @@ class AdminInstitutionController extends Controller
         return redirect()
             ->route('admin.institution.index')
             ->with('success', 'Profil lembaga berhasil diperbarui.');
+    }
+
+    public function uploadLogo(Request $request, Institution $institution): RedirectResponse
+    {
+        $validated = $request->validate([
+            'logo_type' => ['required', Rule::in(['logo_bnsp_path', 'logo_lsp_path'])],
+            'logo_file' => ['required', 'file', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $field = $validated['logo_type'];
+        $file = $request->file('logo_file');
+
+        // Hapus file lama
+        $oldPath = $institution->getAttribute($field);
+        if ($oldPath && \Storage::disk('public')->exists($oldPath)) {
+            \Storage::disk('public')->delete($oldPath);
+        }
+
+        // Simpan file baru — pola stream seperti PendaftaranStorage (reliable di Windows)
+        $tempPath = $file->getPathname();
+
+        if (blank($tempPath) || ! is_readable($tempPath)) {
+            return back()
+                ->withErrors(['logo_file' => 'Berkas sementara tidak dapat dibaca. Coba unggah ulang.']);
+        }
+
+        $stream = fopen($tempPath, 'rb');
+
+        if ($stream === false) {
+            return back()
+                ->withErrors(['logo_file' => 'Berkas sementara tidak dapat dibuka. Coba unggah ulang.']);
+        }
+
+        $filename = time().'_'.$file->getClientOriginalName();
+        $path = 'institution/logos/'.$filename;
+
+        try {
+            $stored = \Storage::disk('public')->put($path, $stream);
+        } catch (\Exception $e) {
+            $stored = false;
+        } finally {
+            fclose($stream);
+        }
+
+        if (! $stored) {
+            return back()
+                ->withErrors(['logo_file' => 'Berkas gagal disimpan.']);
+        }
+
+        $institution->update([$field => $path]);
+
+        return back()
+            ->with('success', 'Logo berhasil diperbarui.');
     }
 }

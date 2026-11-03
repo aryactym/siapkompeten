@@ -21,7 +21,7 @@ class HasilAsesmenMetode extends Model
      */
     public const METODES = [
         'observasi',
-        'demonstrasi',
+        'demonstrasi_simulasi',
         'tes_lisan',
         'tes_tertulis',
         'wawancara',
@@ -35,7 +35,7 @@ class HasilAsesmenMetode extends Model
      */
     public const METODE_LABELS = [
         'observasi' => 'Observasi',
-        'demonstrasi' => 'Demonstrasi / Simulasi',
+        'demonstrasi_simulasi' => 'Demonstrasi / Simulasi',
         'tes_lisan' => 'Tes Lisan',
         'tes_tertulis' => 'Tes Tertulis',
         'wawancara' => 'Wawancara',
