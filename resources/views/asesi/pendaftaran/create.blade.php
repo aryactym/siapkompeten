@@ -19,7 +19,9 @@
     @else
         <div class="row row-cards">
             @foreach ($skemas as $skema)
-                @php($isActive = in_array($skema->id, $activeSkemaIds, true))
+                @php
+                    $isActive = in_array($skema->id, $activeSkemaIds, true);
+                @endphp
                 <div class="col-lg-6">
                     <div class="card {{ $isActive ? 'border-secondary' : '' }}">
                         <div class="card-body">

@@ -91,4 +91,48 @@ class SidebarMenuTest extends TestCase
         $response->assertSee('Master Data');
         $response->assertSee('Sistem');
     }
+
+    public function test_asesor_portal_uses_same_vertical_sidebar_with_asesor_menu(): void
+    {
+        $asesor = User::factory()->create([
+            'institution_id' => $this->institution->id,
+            'status' => 'aktif',
+        ]);
+        $asesor->assignRole('asesor');
+        $asesor->institutions()->attach($this->institution->id, ['role' => 'asesor']);
+
+        $response = $this->actingAs($asesor)->get('/dashboard');
+
+        $response->assertStatus(200);
+        $response->assertSee('data-bs-navbar-position="vertical"', false);
+        $response->assertSee('id="sidebar-menu"', false);
+        $response->assertSee('Portal Asesor');
+        $response->assertSee('Jadwal Uji Saya');
+        $response->assertSee('/asesor/jadwal"', false);
+        $response->assertSee('Pra-Asesmen (APL-02)');
+        $response->assertSee('Hasil Asesmen (FR.AK.02)');
+        $response->assertSee('Tanda Tangan');
+        $response->assertDontSee('Master Data');
+    }
+
+    public function test_asesi_portal_uses_same_vertical_sidebar_with_asesi_menu(): void
+    {
+        $asesi = User::factory()->create([
+            'institution_id' => $this->institution->id,
+            'status' => 'aktif',
+        ]);
+        $asesi->assignRole('asesi');
+        $asesi->institutions()->attach($this->institution->id, ['role' => 'asesi']);
+
+        $response = $this->actingAs($asesi)->get('/dashboard');
+
+        $response->assertStatus(200);
+        $response->assertSee('data-bs-navbar-position="vertical"', false);
+        $response->assertSee('id="sidebar-menu"', false);
+        $response->assertSee('Portal Peserta');
+        $response->assertSee('Status Pendaftaran');
+        $response->assertSee('/asesi/pendaftaran"', false);
+        $response->assertSee('Hasil &amp; Sertifikat', false);
+        $response->assertDontSee('Validasi Pembayaran');
+    }
 }

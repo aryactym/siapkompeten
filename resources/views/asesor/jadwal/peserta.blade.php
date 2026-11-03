@@ -56,7 +56,9 @@
                 </thead>
                 <tbody>
                     @foreach ($jadwal->pendaftarans as $pendaftaran)
-                        @php($asesi = $pendaftaran->asesi)
+                        @php
+                            $asesi = $pendaftaran->asesi;
+                        @endphp
                         <tr>
                             <td>
                                 <div class="fw-semibold">{{ $asesi->user->name }}</div>

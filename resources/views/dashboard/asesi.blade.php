@@ -6,6 +6,7 @@
 
 @php
     $stage = $activePendaftaran?->currentStage();
+    $isSelesai = $activePendaftaran?->status === \App\Models\Pendaftaran::STATUS_SELESAI;
     $profileComplete = $asesi?->isProfileComplete() ?? false;
 @endphp
 
@@ -108,7 +109,11 @@
                     </div>
                 </div>
                 <a href="{{ route('asesi.pendaftaran.show', $activePendaftaran) }}" class="btn btn-primary">
-                    <i class="ti ti-arrow-right me-1"></i> Lanjutkan Tahapan
+                    @if ($isSelesai)
+                        <i class="ti ti-file-certificate me-1"></i> Lihat Hasil Asesmen
+                    @else
+                        <i class="ti ti-arrow-right me-1"></i> Lanjutkan Tahapan
+                    @endif
                 </a>
             @endif
         </x-tabler.card>
@@ -137,7 +142,9 @@
                             </thead>
                             <tbody>
                                 @foreach ($activePendaftaran->skema->persyaratans as $persyaratan)
-                                    @php($dokumen = $activePendaftaran->dokumens->firstWhere('skema_persyaratan_id', $persyaratan->id))
+                                    @php
+                                        $dokumen = $activePendaftaran->dokumens->firstWhere('skema_persyaratan_id', $persyaratan->id);
+                                    @endphp
                                     <tr>
                                         <td>
                                             <div class="fw-semibold">{{ $persyaratan->nama_dokumen }}</div>
@@ -155,7 +162,7 @@
                                         </td>
                                         <td>
                                             <a href="{{ route('asesi.pendaftaran.show', $activePendaftaran) }}" class="btn btn-sm btn-outline-primary">
-                                                {{ $dokumen ? 'Lihat' : 'Unggah' }}
+                                                {{ $dokumen || $isSelesai ? 'Lihat' : 'Unggah' }}
                                             </a>
                                         </td>
                                     </tr>

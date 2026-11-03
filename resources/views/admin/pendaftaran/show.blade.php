@@ -7,13 +7,13 @@
 @section('content')
 <div class="mb-3">
     <a href="{{ route('admin.pendaftaran.apl01', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
-        <i class="ti ti-file-text me-1"></i> Unduh APL-01 (PDF)
+        <i class="ti ti-file-text me-1"></i> Unduh FR.APL.01 (PDF)
     </a>
     <a href="{{ route('admin.pendaftaran.mak01', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
-        <i class="ti ti-file-check me-1"></i> Unduh FR.AK.01 (PDF)
+        <i class="ti ti-file-check me-1"></i> Unduh FR.IA.08 (PDF)
     </a>
     <a href="{{ route('admin.pendaftaran.mak03', $pendaftaran) }}" class="btn btn-outline-primary" target="_blank">
-        <i class="ti ti-file-text me-1"></i> Unduh FR.AK.04 (PDF)
+        <i class="ti ti-file-text me-1"></i> Unduh Berita Acara Asesmen (PDF)
     </a>
 </div>
 <div class="row row-cards">
@@ -77,7 +77,9 @@
                         </thead>
                         <tbody>
                             @foreach ($pendaftaran->dokumens as $dokumen)
-                                @php($persyaratan = $dokumen->persyaratan)
+                                @php
+                                    $persyaratan = $dokumen->persyaratan;
+                                @endphp
                                 <tr>
                                     <td>
                                         <div class="fw-semibold">{{ $persyaratan->nama_dokumen }}</div>
@@ -210,7 +212,9 @@
         @endif
 
         @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_SELESAI && $pendaftaran->asesi?->status_kompetensi === 'kompeten')
-            @php($sudahAdaSertifikat = $pendaftaran->sertifikat()->exists())
+            @php
+                $sudahAdaSertifikat = $pendaftaran->sertifikat()->exists();
+            @endphp
             @if ($sudahAdaSertifikat)
                 <x-tabler.card title="Sertifikat Kompetensi" class="mt-3">
                     <div class="alert alert-success mb-3">

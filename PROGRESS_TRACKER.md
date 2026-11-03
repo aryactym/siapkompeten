@@ -300,3 +300,17 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
   - **Testing**: full Feature **91/91** lulus, `pint` bersih.
   - **Commits akhir sesi 10**: `63d2b5d`, `a5064ee`, `1a5797e`, `7bef2fd`.
   - **Total sesi 10**: 8 commits, 3 bug fix utama (FK violation APL-02, APL-02 asesi restore, MAK-02 `only()` bug).
+
+- **3 November 2026 — Sesi 11 (Branch: `feature/redesain-pdf-frak02`)**
+  - **Commit `0be8c1a`**: logo lembaga (BNSP/LSP), tanda tangan asesi/asesor, penyematan tanda tangan di PDF, MAK-02 ringkas, migrasi enum `demonstrasi_simulasi`, `.gitignore` artefak PDF.
+  - **Audit gap BNSP**: dibuat `docs/GAP_ANALYSIS_ASESMEN_BNSP.md` — peta 10 tahap alur, matriks 26 formulir, temuan struktural, rekomendasi P0/P1/P2, serta rencana kerja 9 fase (Fase 0–8, termasuk honor asesor per asesi) dan urutan rilis `v0.6.1`–`v1.0.0`. Keputusan honor sudah ditetapkan: tarif utama per skema, observer boleh 0, basis presensi hadir + MAK-02 final, batch per event, PPh di luar sistem, uji ulang sesi baru, banding honor peninjau terpisah.
+  - **Hasil singkat**: 1 tahap siap, 3 sebagian, 6 belum; 2 formulir siap, 3 sebagian, 21 belum. Inti pelaksanaan uji (FR.IA) dan tata kelola pleno/banding belum ada.
+  - **Temuan blocking**: test suite **91/92**; PDF APL-02 500 karena `$penilaian->asesor->user` tanpa null-safe (regresi `0be8c1a`). **Sudah diperbaiki** dengan null-safe di `pdf/apl02` dan `pdf/mak02-ringkas`.
+  - **Utang dokumentasi**: `PROGRESS_TRACKER.md` sebelumnya basi (berhenti di 1 November 2026).
+  - **Navigasi portal disatukan**: `layouts/portal.blade.php` + `x-portal-sidebar`; admin, asesor, dan asesi kini memakai sidebar vertikal Tabler yang sama. Menu per peran dipusatkan di `App\Support\PortalNavigation` (menggantikan array menu di dalam layout admin).
+  - **Body layout**: admin tetap default (tanpa `layout-boxed`), asesor dan asesi memakai `bg-light` tanpa `layout-boxed`.
+  - **Testing sesi 11 (akhir)**: full suite **99/99** lulus, 534 assertions; `pint` bersih; semua compiled view lolos `php -l`. Dusk `tests/Browser/NavigasiPortalSidebarTest.php` ditambahkan untuk asesor & asesi (belum dijalankan; shim Dusk belum tersedia).
+  - **File navigasi**: `app/Support/PortalNavigation.php`, `resources/views/components/portal-sidebar.blade.php`, `resources/views/layouts/portal.blade.php`, `layouts/admin|asesor|asesi.blade.php`, `tests/Feature/SidebarMenuTest.php`.
+  - **Fase 0 selesai (0.1–0.7)**: label formulir dikoreksi (`FR.IA.08` untuk MAK-01, Berita Acara Asesmen tanpa `FR.AK.04`, `FR.APL.01`/`FR.APL.02`), penandatangan MAK-01 diambil dari asesor jadwal, APL-01 memakai `adminLsp` eksplisit, dan `App\Support\PdfFile` + `x-pdf.signature` membuat kegagalan `storage:link` terlihat. File: `app/Support/PdfFile.php`, `resources/views/components/pdf/signature.blade.php`, `Admin\PendaftaranController`, `pdf/{mak01,mak03,apl01,apl02,mak02,mak02-ringkas}`, `admin/pendaftaran/show`, `tests/Feature/PdfFormulirTest.php`.
+  - **Bug Blade diperbaiki**: `@php(...)` inline (5 file) dipasangkan compiler dengan `@endphp` berikutnya sehingga blok sesudahnya tidak dikompilasi; muncul ParseError `unexpected token "endif"` di `asesi/pendaftaran/show`. Semua inline diganti `@php ... @endphp`. File: `asesi/pendaftaran/{show,create}`, `asesor/jadwal/peserta`, `dashboard/asesi`, `admin/pendaftaran/show`, `asesi/panduan`.
+  - **Catatan relasi**: `JadwalAsesmen::asesors()` adalah belongsToMany langsung ke `Asesor`, sehingga jalur yang benar `jadwal.asesors.user` (bukan `jadwal.asesors.asesor.user`).

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>FR.AK.04 · {{ $pendaftaran->no_pendaftaran }}</title>
+    <title>Berita Acara Asesmen · {{ $pendaftaran->no_pendaftaran }}</title>
     <style>
         @page { margin: 14mm 12mm; }
         * { box-sizing: border-box; }
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>FR.AK.04 · Berita Acara Asesmen</h1>
+    <h1>Berita Acara Asesmen</h1>
     <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
 
     @php $a = $pendaftaran->asesi; $u = $a->user; @endphp
@@ -36,7 +36,7 @@
         <tr><td>TUK</td><td>{{ $pendaftaran->jadwal?->tuk?->nama_tuk ?? '—' }}</td></tr>
         <tr><td>Tanggal Asesmen</td><td>{{ $pendaftaran->jadwal?->tanggal?->translatedFormat('d F Y') ?? '—' }}</td></tr>
         <tr><td>Waktu</td><td>{{ $pendaftaran->jadwal?->jam_mulai }} – {{ $pendaftaran->jadwal?->jam_selesai }}</td></tr>
-        <tr><td>Asesor</td><td>{{ $pendaftaran->jadwal?->asesors->first()?->asesor?->user?->name ?? '—' }}</td></tr>
+        <tr><td>Asesor</td><td>{{ $pendaftaran->jadwal?->asesors->first()?->user?->name ?? '—' }}</td></tr>
     </table>
 
     <h3>B. Keputusan Asesmen</h3>
@@ -78,29 +78,13 @@
     <table class="signatures">
         <tr>
             <td>
-                @php $asesorUser = $pendaftaran->jadwal?->asesors->first()?->asesor?->user; @endphp
-                @if ($asesorUser?->signature_path && file_exists(public_path('storage/' . $asesorUser->signature_path)))
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $asesorUser->signature_path) }}" 
-                             alt="Tanda Tangan Asesor" 
-                             style="max-height: 60px; max-width: 120px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                @php $asesorUser = $pendaftaran->jadwal?->asesors->first()?->user; @endphp
+                <x-pdf.signature :path="$asesorUser?->signature_path" label="Asesor" />
                 <div>Asesor</div>
                 <div>{{ $asesorUser?->name ?? '' }}</div>
             </td>
             <td>
-                @if ($u->signature_path && file_exists(public_path('storage/' . $u->signature_path)))
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $u->signature_path) }}" 
-                             alt="Tanda Tangan Asesi" 
-                             style="max-height: 60px; max-width: 120px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$u?->signature_path" label="Asesi" />
                 <div>Asesi</div>
                 <div>{{ $u->name ?? '' }}</div>
             </td>

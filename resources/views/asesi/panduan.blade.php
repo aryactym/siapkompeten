@@ -52,7 +52,9 @@
         </x-tabler.card>
 
         <x-tabler.card title="Kontak Lembaga" class="mt-3">
-            @php($institution = \App\Support\TenantContext::institution())
+            @php
+                $institution = \App\Support\TenantContext::institution();
+            @endphp
             <div class="mb-2">
                 <div class="text-secondary small">LSP Penyelenggara</div>
                 <div class="fw-semibold">{{ $institution?->name ?? config('app.name') }}</div>

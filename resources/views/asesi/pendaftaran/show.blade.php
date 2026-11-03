@@ -129,7 +129,9 @@
                     </thead>
                     <tbody>
                         @foreach ($pendaftaran->skema->persyaratans as $persyaratan)
-                            @php($dokumen = $pendaftaran->dokumens->firstWhere('skema_persyaratan_id', $persyaratan->id))
+                            @php
+                                $dokumen = $pendaftaran->dokumens->firstWhere('skema_persyaratan_id', $persyaratan->id);
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="fw-semibold">{{ $persyaratan->nama_dokumen }}</div>
@@ -282,7 +284,7 @@
 
             @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_SELESAI)
                 @php
-                    $hasilAsesmen = $pendaftaran->hasilAsesmens->first();
+                    $hasilAsesmen = $pendaftaran->hasilAsesmen;
                     $kompeten = $hasilAsesmen?->rekomendasi === \App\Models\HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN;
                 @endphp
                 <hr class="my-3">

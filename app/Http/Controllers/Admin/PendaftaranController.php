@@ -236,6 +236,7 @@ class PendaftaranController extends Controller
         return Pdf::loadView('pdf.apl01', [
             'pendaftaran' => $pendaftaran,
             'institution' => TenantContext::institution(),
+            'adminLsp' => request()->user(),
         ])
             ->setPaper('a4', 'portrait')
             ->stream(sprintf('FORM-APL-01-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
@@ -252,6 +253,7 @@ class PendaftaranController extends Controller
             'skema.persyaratans',
             'dokumens.persyaratan',
             'dokumens.verifikator',
+            'jadwal.asesors.user',
         ]);
 
         activity('pendaftaran')
@@ -264,7 +266,7 @@ class PendaftaranController extends Controller
             'institution' => TenantContext::institution(),
         ])
             ->setPaper('a4', 'portrait')
-            ->stream(sprintf('FORM-MAK-01-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
+            ->stream(sprintf('FORM-IA-08-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
     }
 
     public function mak03(Pendaftaran $pendaftaran): Response
@@ -277,7 +279,7 @@ class PendaftaranController extends Controller
             'asesi.city',
             'skema',
             'jadwal.tuk',
-            'jadwal.asesors.asesor.user',
+            'jadwal.asesors.user',
         ]);
 
         $hasil = HasilAsesmen::query()
@@ -297,7 +299,7 @@ class PendaftaranController extends Controller
             'institution' => TenantContext::institution(),
         ])
             ->setPaper('a4', 'portrait')
-            ->stream(sprintf('FORM-MAK-03-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
+            ->stream(sprintf('FORM-BERITA-ACARA-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
     }
 
     private function notifyStatusChange(Pendaftaran $pendaftaran, string $previousStatus): void

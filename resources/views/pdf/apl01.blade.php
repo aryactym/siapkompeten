@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>APL-01 · {{ $pendaftaran->no_pendaftaran }}</title>
+    <title>FR.APL.01 · {{ $pendaftaran->no_pendaftaran }}</title>
     <style>
         @page { margin: 14mm 12mm; }
         * { box-sizing: border-box; }
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Formulir APL-01 · Permohonan Sertifikasi Kompetensi</h1>
+    <h1>Formulir FR.APL.01 · Permohonan Sertifikasi Kompetensi</h1>
     <h2>{{ $pendaftaran->skema->nama_skema }} ({{ $pendaftaran->skema->kode_skema }})</h2>
 
     @php $a = $pendaftaran->asesi; $u = $a->user; @endphp
@@ -76,30 +76,14 @@
     <table class="signatures">
         <tr>
             <td>
-                @if ($u->signature_path && file_exists(public_path('storage/' . $u->signature_path)))
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $u->signature_path) }}" 
-                             alt="Tanda Tangan Asesi" 
-                             style="max-height: 60px; max-width: 120px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$u?->signature_path" label="Asesi" />
                 <div>Asesi</div>
                 <div>{{ $u->name ?? '' }}</div>
             </td>
             <td>
-                @if (auth()->user()->signature_path && file_exists(public_path('storage/' . auth()->user()->signature_path)))
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . auth()->user()->signature_path) }}" 
-                             alt="Tanda Tangan Admin" 
-                             style="max-height: 60px; max-width: 120px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$adminLsp?->signature_path" label="Admin LSP" />
                 <div>Admin LSP</div>
-                <div>{{ auth()->user()->name ?? '' }}</div>
+                <div>{{ $adminLsp?->name ?? '' }}</div>
             </td>
             <td>
                 <div class="signature-line"></div>

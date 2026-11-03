@@ -109,7 +109,7 @@
                 <div class="lsp-sub">Diterbitkan Oleh</div>
                 <br>
                 @php
-                    $asesor = $sertifikat->pendaftaran?->hasilAsesmens?->first()?->asesor;
+                    $asesor = $sertifikat->pendaftaran?->hasilAsesmen?->asesor;
                 @endphp
                 @if ($asesor?->user?->signature_path && file_exists(storage_path('app/public/'.$asesor->user->signature_path)))
                     <img src="{{ storage_path('app/public/'.$asesor->user->signature_path) }}"

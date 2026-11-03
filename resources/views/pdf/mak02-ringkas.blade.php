@@ -123,41 +123,17 @@
         <tr style="height: 100%;">
             <td style="vertical-align: bottom; padding-bottom: 10px;">
                 <div>Asesi,</div>
-                @if ($pendaftaran->asesi->user->signature_path)
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $pendaftaran->asesi->user->signature_path) }}" 
-                             alt="Tanda Tangan Asesi" 
-                             style="max-height: 60px; max-width: 150px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$pendaftaran->asesi->user?->signature_path" label="Asesi" :height="60" :width="150" />
                 <div style="margin-top: 8px; font-size: 9px;">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
             </td>
             <td style="vertical-align: bottom; padding-bottom: 10px;">
                 <div>Asesor,</div>
-                @if ($hasil->asesor->user->signature_path)
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $hasil->asesor->user->signature_path) }}" 
-                             alt="Tanda Tangan Asesor" 
-                             style="max-height: 60px; max-width: 150px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
-                <div style="margin-top: 8px; font-size: 9px;">{{ $hasil->asesor->user->name ?? '________________' }}</div>
+                <x-pdf.signature :path="$hasil?->asesor?->user?->signature_path" label="Asesor" :height="60" :width="150" />
+                <div style="margin-top: 8px; font-size: 9px;">{{ $hasil?->asesor?->user?->name ?? '________________' }}</div>
             </td>
             <td style="vertical-align: bottom; padding-bottom: 10px;">
                 <div>Ketua LSP,</div>
-                @if ($pendaftaran->institution?->tanda_tangan_path)
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $pendaftaran->institution->tanda_tangan_path) }}" 
-                             alt="Tanda Tangan Ketua LSP" 
-                             style="max-height: 60px; max-width: 150px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$pendaftaran->institution?->tanda_tangan_path" label="Ketua LSP" :height="60" :width="150" />
                 <div style="margin-top: 8px; font-size: 9px;">{{ $pendaftaran->institution?->nama_ketua ?? '________________' }}</div>
             </td>
         </tr>

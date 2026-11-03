@@ -128,7 +128,7 @@ class SertifikatController extends Controller
             'asesi.user',
             'skema',
             'pendaftaran.jadwal.tuk',
-            'pendaftaran.hasilAsesmens.asesor.user',
+            'pendaftaran.hasilAsesmen.asesor.user',
             'penerbit',
         ]);
 

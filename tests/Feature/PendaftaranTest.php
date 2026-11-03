@@ -382,6 +382,18 @@ class PendaftaranTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_asesi_can_render_pendaftaran_detail_page(): void
+    {
+        $pendaftaran = $this->createPendaftaran(Pendaftaran::STATUS_SELESAI);
+        $pendaftaran->update(['jadwal_id' => $this->createJadwalWithAsesor()->id]);
+
+        $this->asAsesi()
+            ->get(route('asesi.pendaftaran.show', $pendaftaran))
+            ->assertOk()
+            ->assertSee('Status Pendaftaran')
+            ->assertSee('Hasil Asesmen');
+    }
+
     private function asAsesi(): static
     {
         return $this->actingAs($this->asesiUser)

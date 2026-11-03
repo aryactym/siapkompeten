@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>FR.AK.01 · {{ $pendaftaran->no_pendaftaran }}</title>
+    <title>FR.IA.08 · {{ $pendaftaran->no_pendaftaran }}</title>
     <style>
         @page { margin: 14mm 12mm; }
         * { box-sizing: border-box; }
@@ -22,10 +22,14 @@
     </style>
 </head>
 <body>
-    <h1>FR.AK.01 · Checklist Verifikasi Portofolio</h1>
+    <h1>FR.IA.08 · Checklist Verifikasi Portofolio</h1>
     <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
 
-    @php $a = $pendaftaran->asesi; $u = $a->user; @endphp
+    @php
+        $a = $pendaftaran->asesi;
+        $u = $a->user;
+        $verifikator = $pendaftaran->jadwal?->asesors->first()?->user;
+    @endphp
 
     <h3>A. Data Asesi</h3>
     <table class="meta">
@@ -71,28 +75,12 @@
     <table class="signatures">
         <tr>
             <td>
-                @if (auth()->user()->signature_path && file_exists(public_path('storage/' . auth()->user()->signature_path)))
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . auth()->user()->signature_path) }}" 
-                             alt="Tanda Tangan Asesor" 
-                             style="max-height: 60px; max-width: 120px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$verifikator?->signature_path" label="Asesor / Verifikator" />
                 <div>Asesor / Verifikator</div>
-                <div>{{ auth()->user()->name ?? '' }}</div>
+                <div>{{ $verifikator?->name ?? '' }}</div>
             </td>
             <td>
-                @if ($u->signature_path && file_exists(public_path('storage/' . $u->signature_path)))
-                    <div style="margin: 20px 0;">
-                        <img src="{{ public_path('storage/' . $u->signature_path) }}" 
-                             alt="Tanda Tangan Asesi" 
-                             style="max-height: 60px; max-width: 120px;">
-                    </div>
-                @else
-                    <div class="signature-line"></div>
-                @endif
+                <x-pdf.signature :path="$u?->signature_path" label="Asesi" />
                 <div>Asesi</div>
                 <div>{{ $u->name ?? '' }}</div>
             </td>
