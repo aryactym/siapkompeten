@@ -638,3 +638,11 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
   - Perbaikan bug kritis: pemilih opsi tidak memicu event `change` pada native select, sehingga daftar kota tidak termuat; sekarang event `change` dikirim, provinsi → kota bekerja.
   - `/kebijakan-privasi` (publik) tersedia; link consent membuka tab baru dengan `rel="noopener noreferrer"`.
   - Verifikasi: screenshot 360/768/1280 px, cek tanpa horizontal overflow; flow provinsi → kota berfungsi; validasi client + server tetap; Dusk `tests/Browser/RegisterPageTest.php` 2 test lulus; feature `RegisterPageTest.php` 2 test lulus; Dusk terkait tetap hijau; suite 230/230 lulus (1034 assertions); `npm run build`, `pint` bersih.
+
+- **6 November 2026 — Sesi 51 (Paket FR.IA per jadwal + override per asesi)**
+  - Migrasi instrumen_terpilih (JSON) pada jadwal_asesmens dan rencana_asesmens.
+  - Admin form jadwal: card Instrumen FR.IA Default (Paket).
+  - Auto-assign: rencana asesmen menyalin pilihan dari jadwal.
+  - Override: rencana asesmen (ubah) dapat mengubah pilihan per asesi.
+  - Peserta jadwal hanya menampilkan FR.IA yang dipilih.
+  - Testing: suite 235/235 lulus; pint bersih.
