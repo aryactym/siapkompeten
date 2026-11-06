@@ -160,6 +160,8 @@ class RencanaAsesmenController extends Controller
             'ruang_lingkup' => ['required', 'string', 'max:2000'],
             'tanggal_asesmen' => ['required', 'date'],
             'catatan' => ['nullable', 'string', 'max:1000'],
+            'instrumen_terpilih' => ['nullable', 'array'],
+            'instrumen_terpilih.*' => ['string', 'in:ia02,ia03,ia04,ia05,ia06,ia07,ia08,ia09,ia10,ia11'],
             'unit_ids' => ['nullable', 'array'],
             'unit_ids.*' => ['uuid', 'exists:unit_kompetensis,id'],
             'units' => ['nullable', 'array'],
@@ -177,6 +179,7 @@ class RencanaAsesmenController extends Controller
                 'ruang_lingkup' => $validated['ruang_lingkup'],
                 'tanggal_asesmen' => $validated['tanggal_asesmen'],
                 'catatan' => $validated['catatan'] ?? null,
+                'instrumen_terpilih' => array_values($validated['instrumen_terpilih'] ?? []),
             ]);
 
             // Sync units

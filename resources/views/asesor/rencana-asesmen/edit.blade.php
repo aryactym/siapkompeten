@@ -78,6 +78,43 @@
         </div>
     </x-tabler.card>
 
+    @php
+        $allFrIa = [
+            'ia02' => 'FR.IA.02 — Tugas Praktik Demonstrasi',
+            'ia03' => 'FR.IA.03 — Pertanyaan Mendukung Observasi (PMO)',
+            'ia04' => 'FR.IA.04 — Proyek Singkat',
+            'ia05' => 'FR.IA.05 — Pilihan Ganda',
+            'ia06' => 'FR.IA.06 — Esai',
+            'ia07' => 'FR.IA.07 — Pertanyaan Lisan',
+            'ia08' => 'FR.IA.08 — Verifikasi Portofolio',
+            'ia09' => 'FR.IA.09 — Wawancara',
+            'ia10' => 'FR.IA.10 — Verifikasi Pihak Ketiga',
+            'ia11' => 'FR.IA.11 — Reviu Produk',
+        ];
+        $selectedFrIa = is_array($rencana->instrumen_terpilih) && ! empty($rencana->instrumen_terpilih)
+            ? $rencana->instrumen_terpilih
+            : array_keys($allFrIa);
+    @endphp
+
+    <x-tabler.card title="Instrumen FR.IA yang Digunakan" class="mb-3">
+        <p class="text-secondary small mb-2">
+            Pilih instrumen FR.IA yang akan ditampilkan pada halaman peserta jadwal untuk pendaftaran ini.
+        </p>
+        <div class="row g-2">
+            @foreach ($allFrIa as $key => $label)
+                <div class="col-md-6">
+                    <label class="form-check">
+                        <input type="checkbox" name="instrumen_terpilih[]" value="{{ $key }}"
+                               class="form-check-input"
+                               @checked(in_array($key, $selectedFrIa, true))
+                               {{ $rencana->isFinal() ? 'disabled' : '' }}>
+                        <span class="form-check-label small">{{ $label }}</span>
+                    </label>
+                </div>
+            @endforeach
+        </div>
+    </x-tabler.card>
+
     <x-tabler.card title="Unit Kompetensi & Peta Instrumen (MAPA.02)" class="mb-3">
         <p class="text-secondary small mb-2">
             Pilih unit kompetensi yang akan diuji. Untuk setiap unit, tentukan instrumen dan metode asesmen per KUK.

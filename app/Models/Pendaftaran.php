@@ -118,6 +118,11 @@ class Pendaftaran extends Model
         return $this->hasOne(PresensiAsesi::class);
     }
 
+    public function rencanaAsesmen(): HasOne
+    {
+        return $this->hasOne(RencanaAsesmen::class);
+    }
+
     public function umpanBalik(): HasOne
     {
         return $this->hasOne(UmpanBalikAsesmen::class);

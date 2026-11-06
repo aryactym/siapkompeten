@@ -86,6 +86,7 @@ class JadwalController extends Controller
             'pendaftarans.dokumens',
             'pendaftarans.persetujuanAsesmens',
             'pendaftarans.presensi',
+            'pendaftarans.rencanaAsesmen',
         ]);
 
         return view('asesor.jadwal.peserta', [

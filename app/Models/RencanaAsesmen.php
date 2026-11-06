@@ -27,7 +27,16 @@ class RencanaAsesmen extends Model
         'tanggal_asesmen',
         'status',
         'catatan',
+        'instrumen_terpilih',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'instrumen_terpilih' => 'array',
+            'tanggal_asesmen' => 'date',
+        ];
+    }
 
     public function pendaftaran(): BelongsTo
     {

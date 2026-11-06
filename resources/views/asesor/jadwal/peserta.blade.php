@@ -130,6 +130,13 @@
                             </td>
                             <td><x-tabler.status-badge :status="$pendaftaran->status" /></td>
                             <td>
+                                @php
+                                    $allFrIa = ['ia02','ia03','ia04','ia05','ia06','ia07','ia08','ia09','ia10','ia11'];
+                                    $rencanaPeserta = $pendaftaran->rencanaAsesmen;
+                                    $selectedFrIa = is_array($rencanaPeserta?->instrumen_terpilih) && ! empty($rencanaPeserta->instrumen_terpilih)
+                                        ? $rencanaPeserta->instrumen_terpilih
+                                        : $allFrIa;
+                                @endphp
                                 <div class="btn-list flex-nowrap">
                                     @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_TERJADWAL)
                                         <form method="POST" action="{{ route('asesor.pendaftaran.mulai-asesmen', $pendaftaran) }}">
@@ -146,46 +153,66 @@
                                        class="btn btn-sm btn-outline-secondary" title="Dokumen Pre-Asesmen">
                                         <i class="ti ti-file-check"></i>
                                     </a>
+                                    @if (in_array('ia03', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia03.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.03 PMO">
                                         <i class="ti ti-help-circle"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia04', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia04.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.04 Proyek Singkat">
                                         <i class="ti ti-briefcase"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia05', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia05.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.05 Pilihan Ganda">
                                         <i class="ti ti-list-numbers"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia06', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia06.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.06 Esai">
                                         <i class="ti ti-writing"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia07', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia07.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.07 Pertanyaan Lisan">
                                         <i class="ti ti-message-circle"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia09', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia09.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.09 Wawancara">
                                         <i class="ti ti-messages"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia10', $selectedFrIa, true))
                                     <a href="{{ route('asesor.ia10.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.10 Pihak Ketiga">
                                         <i class="ti ti-users"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia02', $selectedFrIa, true))
                                     <a href="{{ route('asesor.instrumen.show', [$pendaftaran, \App\Models\InstrumenAsesmen::JENIS_IA02]) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.02 Tugas Praktik">
                                         <i class="ti ti-clipboard-list"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia08', $selectedFrIa, true))
                                     <a href="{{ route('asesor.instrumen.show', [$pendaftaran, \App\Models\InstrumenAsesmen::JENIS_IA08]) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.08 Verifikasi Portofolio">
                                         <i class="ti ti-folder-check"></i>
                                     </a>
+                                    @endif
+                                    @if (in_array('ia11', $selectedFrIa, true))
                                     <a href="{{ route('asesor.instrumen.show', [$pendaftaran, \App\Models\InstrumenAsesmen::JENIS_IA11]) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.IA.11 Reviu Produk">
                                         <i class="ti ti-clipboard-check"></i>
                                     </a>
+                                    @endif
                                     <a href="{{ route('asesor.banding.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.AK.04 Banding">
                                         <i class="ti ti-gavel"></i>
