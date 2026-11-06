@@ -30,9 +30,8 @@ use Spatie\Permission\Traits\HasRoles;
     'is_locked',
     'last_login_at',
     'last_login_ip',
-    'signature_path',
 ])]
-#[Hidden(['password', 'remember_token', 'nik_hash'])]
+#[Hidden(['password', 'remember_token', 'nik_hash', 'signature_data'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -49,6 +48,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'nik' => 'encrypted',
+            'signature_data' => 'encrypted',
+            'signature_uploaded_at' => 'datetime',
             'is_locked' => 'boolean',
             'last_login_at' => 'datetime',
         ];

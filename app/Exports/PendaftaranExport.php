@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\HasilAsesmen;
 use App\Models\Pendaftaran;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -75,9 +76,11 @@ class PendaftaranExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             $asesorNames,
             $row->created_at?->format('d/m/Y H:i') ?? '—',
             $row->disetujui_pada?->format('d/m/Y H:i') ?? '—',
-            $row->asesi?->status_kompetensi
-                ? str_replace('_', ' ', $row->asesi->status_kompetensi)
-                : '—',
+            $row->hasilAsesmen?->isFinal()
+                ? ($row->hasilAsesmen->rekomendasi === HasilAsesmen::REKOMENDASI_DIREKOMENDASIKAN ? 'Kompeten' : 'Belum Kompeten')
+                : ($row->asesi?->status_kompetensi
+                    ? str_replace('_', ' ', $row->asesi->status_kompetensi)
+                    : '—'),
         ];
     }
 
@@ -89,6 +92,7 @@ class PendaftaranExport implements FromQuery, ShouldAutoSize, WithHeadings, With
                 'skema',
                 'jadwal.tuk',
                 'jadwal.asesors.user',
+                'hasilAsesmen',
             ]);
 
         $this->applyFilters($q);

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FR.AK.01 Persetujuan Asesmen dan Kerahasiaan</title><link rel="stylesheet" href="form.css"></head>
+<body>
+<div class="actions"><button onclick="print()">Cetak / Simpan PDF</button></div>
+<div class="page"><form>
+<table class="hd"><tr><td>FR.AK.01.</td><td>PERSETUJUAN ASESMEN DAN KERAHASIAAN</td></tr></table>
+<div class="gap"></div>
+<table><tr><td>Persetujuan Asesmen ini untuk menjamin bahwa Asesi telah diberi arahan secara rinci tentang perencanaan dan proses asesmen</td></tr></table>
+<table>
+<tr><td rowspan="2" style="width:38%">Skema Sertifikasi (KKNI/Okupasi/Klaster)</td><td style="width:14mm">Judul</td><td style="width:4mm">:</td><td><input type="text" name="skema_judul" value=""></td></tr>
+<tr><td>Nomor</td><td>:</td><td><input type="text" name="skema_nomor" value=""></td></tr>
+<tr><td>TUK</td><td colspan="2">:</td><td class="strike">
+<label><input type="radio" name="tuk_jenis" value="Sewaktu" checked><span>Sewaktu</span></label> /
+<label><input type="radio" name="tuk_jenis" value="Tempat Kerja"><span>Tempat Kerja</span></label> /
+<label><input type="radio" name="tuk_jenis" value="Mandiri"><span>Mandiri</span></label>*</td></tr>
+<tr><td>Nama Asesor</td><td colspan="2">:</td><td><input type="text" name="asesor_nama" value=""></td></tr>
+<tr><td>Nama Asesi</td><td colspan="2">:</td><td><input type="text" name="asesi_nama" value=""></td></tr>
+</table>
+<table>
+<tr><td rowspan="4" style="width:38%">Bukti yang akan dikumpulkan :</td>
+<td><label><input type="checkbox" name="bukti[]" value="portofolio">Hasil Verifikasi Portofolio</label></td>
+<td><label><input type="checkbox" name="bukti[]" value="reviu_produk">Hasil Reviu Produk</label></td></tr>
+<tr><td><label><input type="checkbox" name="bukti[]" value="observasi">Hasil Observasi Langsung</label></td>
+<td><label><input type="checkbox" name="bukti[]" value="kegiatan_terstruktur">Hasil Kegiatan Terstruktur</label></td></tr>
+<tr><td><label><input type="checkbox" name="bukti[]" value="tertulis">Hasil Pertanyaan Tertulis</label></td>
+<td><label><input type="checkbox" name="bukti[]" value="lisan">Hasil Pertanyaan Lisan</label></td></tr>
+<tr><td><label><input type="checkbox" name="bukti[]" value="wawancara">Hasil Pertanyaan Wawancara</label></td>
+<td><label><input type="checkbox" name="bukti[]" value="lainnya">Lainnya</label> <input type="text" name="bukti_lainnya_text" style="width:55%"></td></tr>
+</table>
+<table>
+<tr><td rowspan="3" style="width:38%">Pelaksanaan asesmen disepakati pada:</td><td style="width:28mm">Hari/ Tanggal</td><td style="width:4mm">:</td><td><input type="date" name="tanggal"></td></tr>
+<tr><td>Waktu</td><td>:</td><td><input type="time" name="waktu"></td></tr>
+<tr><td>TUK</td><td>:</td><td><input type="text" name="tuk_nama"></td></tr>
+</table>
+<table>
+<tr><td><b>Asesi :</b> Bahwa saya telah mendapatkan penjelasan terkait hak dan prosedur banding asesmen dari asesor.</td></tr>
+<tr><td><b>Asesor :</b> Menyatakan tidak akan membuka hasil pekerjaan yang saya peroleh karena penugasan saya sebagai Asesor dalam pekerjaan <i>Asesmen</i> kepada siapapun atau organisasi apapun selain kepada pihak yang berwenang sehubungan dengan kewajiban saya sebagai Asesor yang ditugaskan oleh LSP.</td></tr>
+<tr><td><b>Asesi :</b> Saya setuju mengikuti asesmen dengan pemahaman bahwa informasi yang dikumpulkan hanya digunakan untuk pengembangan profesional dan hanya dapat diakses oleh orang tertentu saja.</td></tr>
+</table>
+<table><tr>
+<td class="ttd" style="width:50%">Tanda tangan Asesor : <span id="ttd_asesor"></span><br><br><br>Tanggal : <input type="text" style="width:60%"></td>
+<td class="ttd">Tanda tangan Asesi : <span id="ttd_asesi"></span><br><br><br>Tanggal : <input type="text" style="width:60%"></td></tr></table>
+<p class="sm">* Coret yang tidak perlu</p>
+</form></div></body></html>

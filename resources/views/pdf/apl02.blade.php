@@ -91,17 +91,17 @@
         <tr>
             <td>
                 <div>Asesi,</div>
-                <x-pdf.signature :path="$pendaftaran->asesi->user?->signature_path" label="Asesi" :height="80" :width="150" :margin="30" />
+                <x-pdf.signature :model="$pendaftaran->asesi?->user" label="Asesi" :height="80" :width="150" :margin="30" />
                 <div style="margin-top: 10px;">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
             </td>
             <td>
                 <div>Asesor,</div>
-                <x-pdf.signature :path="$penilaian?->asesor?->user?->signature_path" label="Asesor" :height="80" :width="150" :margin="30" />
+                <x-pdf.signature :model="$penilaian?->asesor?->user" label="Asesor" :height="80" :width="150" :margin="30" />
                 <div style="margin-top: 10px;">{{ $penilaian?->asesor?->user?->name ?? '________________' }}</div>
             </td>
             <td>
                 <div>Ketua LSP,</div>
-                <x-pdf.signature :path="$pendaftaran->institution?->tanda_tangan_path" label="Ketua LSP" :height="80" :width="150" :margin="30" />
+                <x-pdf.signature :model="$pendaftaran->institution" label="Ketua LSP" :height="80" :width="150" :margin="30" />
                 <div style="margin-top: 10px;">{{ $pendaftaran->institution?->nama_ketua ?? '________________' }}</div>
             </td>
         </tr>

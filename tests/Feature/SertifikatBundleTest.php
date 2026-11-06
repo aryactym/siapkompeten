@@ -7,10 +7,13 @@ use App\Models\EventAsesmen;
 use App\Models\Institution;
 use App\Models\JadwalAsesmen;
 use App\Models\Pendaftaran;
+use App\Models\Pleno;
+use App\Models\PlenoPeserta;
 use App\Models\Sertifikat;
 use App\Models\Skema;
 use App\Models\Tuk;
 use App\Models\User;
+use App\Models\ValidasiAsesmen;
 use App\Support\TenantContext;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -105,13 +108,46 @@ class SertifikatBundleTest extends TestCase
             'status_kompetensi' => 'kompeten',
         ]);
 
-        return Pendaftaran::create([
+        $pendaftaran = Pendaftaran::create([
             'no_pendaftaran' => 'PDN'.rand(100000, 999999),
             'asesi_id' => $asesi->id,
             'skema_id' => $this->skema->id,
             'jadwal_id' => $this->jadwal->id,
             'status' => Pendaftaran::STATUS_SELESAI,
         ]);
+
+        ValidasiAsesmen::create([
+            'institution_id' => $this->institution->id,
+            'pendaftaran_id' => $pendaftaran->id,
+            'validator_id' => $this->admin->id,
+            'keputusan' => ValidasiAsesmen::KEPUTUSAN_DISETUJUI,
+            'status' => ValidasiAsesmen::STATUS_FINAL,
+            'finalized_at' => now(),
+            'finalized_by' => $this->admin->id,
+        ]);
+
+        $pleno = Pleno::firstOrCreate(
+            ['jadwal_id' => $this->jadwal->id],
+            [
+                'institution_id' => $this->institution->id,
+                'nomor_ba' => 'BA-TEST',
+                'tanggal' => now()->toDateString(),
+                'keputusan' => Pleno::KEPUTUSAN_DISETUJUI,
+                'status' => Pleno::STATUS_FINAL,
+                'finalized_at' => now(),
+                'finalized_by' => $this->admin->id,
+            ],
+        );
+
+        PlenoPeserta::firstOrCreate(
+            ['pleno_id' => $pleno->id, 'pendaftaran_id' => $pendaftaran->id],
+            [
+                'institution_id' => $this->institution->id,
+                'keputusan' => PlenoPeserta::KEPUTUSAN_KOMPETEN,
+            ],
+        );
+
+        return $pendaftaran;
     }
 
     public function test_admin_can_view_bundle_index(): void

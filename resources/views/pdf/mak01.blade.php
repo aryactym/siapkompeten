@@ -2,94 +2,113 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>FR.IA.08 · {{ $pendaftaran->no_pendaftaran }}</title>
-    <style>
-        @page { margin: 14mm 12mm; }
-        * { box-sizing: border-box; }
-        body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; color: #111; font-size: 10px; }
-        h1 { font-size: 13px; margin: 0 0 2px; text-align: center; text-transform: uppercase; }
-        h2 { font-size: 10.5px; margin: 0 0 12px; text-align: center; font-weight: normal; }
-        h3 { font-size: 10.5px; margin: 12px 0 4px; background: #eeeeee; padding: 3px 6px; }
-        table { width: 100%; border-collapse: collapse; }
-        .meta td { vertical-align: top; padding: 2px 0; }
-        .meta td:first-child { width: 34%; font-weight: bold; }
-        .items th, .items td { border: 1px solid #333; padding: 4px 6px; vertical-align: top; }
-        .items th { background: #eeeeee; font-size: 9px; text-transform: uppercase; }
-        .muted { color: #555; }
-        .signatures { margin-top: 30px; }
-        .signatures td { width: 33%; text-align: center; vertical-align: top; }
-        .signature-line { border-top: 1px solid #333; margin: 48px 12px 0; padding-top: 4px; }
-    </style>
+    <title>FR.AK.01 · {{ $pendaftaran->no_pendaftaran }}</title>
+    @include('pdf.partials.official-styles')
 </head>
 <body>
-    <h1>FR.IA.08 · Checklist Verifikasi Portofolio</h1>
-    <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
-
     @php
-        $a = $pendaftaran->asesi;
-        $u = $a->user;
-        $verifikator = $pendaftaran->jadwal?->asesors->first()?->user;
+        $skema = $skema ?? $pendaftaran?->skema;
+        $jadwal = $jadwal ?? $pendaftaran?->jadwal;
+        $persetujuan ??= null;
+        $data ??= [];
+        $asesi = $pendaftaran->asesi;
+        $asesiUser = $asesiUser ?? $asesi?->user;
+        $asesorUser = $jadwal?->asesors->first()?->user;
+        $asesiSignature = \App\Support\SignatureImage::for($asesiUser);
+        $asesorSignature = \App\Support\SignatureImage::for($asesorUser);
+        $jenisTuk = $data['tuk_jenis'] ?? ($jadwal?->tuk?->jenis);
+        $bukti = $data['bukti'] ?? [];
+        $buktiKeys = array_map('strval', (array) $bukti);
+        $isChecked = fn (string $value): string => in_array($value, $buktiKeys, true) ? 'checked' : '';
+        $signedAt = $persetujuan?->disetujui_pada?->translatedFormat('d F Y');
+        $dayDate = $data['tanggal'] ?? $jadwal?->tanggal?->translatedFormat('d F Y') ?? '—';
+        $time = $data['waktu'] ?? ($jadwal ? substr((string) $jadwal->jam_mulai, 0, 5).' – '.substr((string) $jadwal->jam_selesai, 0, 5) : '—');
+        $tukName = $data['tuk_nama'] ?? $jadwal?->tuk?->nama_tuk ?? '—';
     @endphp
 
-    <h3>A. Data Asesi</h3>
-    <table class="meta">
-        <tr><td>No. Pendaftaran</td><td>{{ $pendaftaran->no_pendaftaran }}</td></tr>
-        <tr><td>Nama Asesi</td><td>{{ $u->name ?? '—' }}</td></tr>
-        <tr><td>No. Registrasi</td><td>{{ $a->no_registrasi ?? '—' }}</td></tr>
-        <tr><td>Skema</td><td>{{ $pendaftaran->skema->nama_skema }} ({{ $pendaftaran->skema->kode_skema }})</td></tr>
-        <tr><td>LSP</td><td>{{ $institution->name ?? '—' }}</td></tr>
+    <table class="hd">
+        <tr><td>FR.AK.01.</td><td>PERSETUJUAN ASESMEN DAN KERAHASIAAN</td></tr>
+    </table>
+    <div class="gap"></div>
+
+    <table>
+        <tr><td>Persetujuan Asesmen ini untuk menjamin bahwa Asesi telah diberi arahan secara rinci tentang perencanaan dan proses asesmen.</td></tr>
     </table>
 
-    <h3>B. Checklist Dokumen Persyaratan</h3>
-    <table class="items">
-        <thead>
-            <tr>
-                <th style="width: 5%;">No.</th>
-                <th style="width: 45%;">Dokumen Persyaratan</th>
-                <th style="width: 15%;">Status</th>
-                <th style="width: 35%;">Catatan Verifikator</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php $no = 0; @endphp
-            @foreach ($pendaftaran->skema->persyaratans as $persyaratan)
-                @php
-                    $dokumen = $pendaftaran->dokumens->firstWhere('persyaratan_id', $persyaratan->id);
-                    $no++;
-                @endphp
-                <tr>
-                    <td>{{ $no }}</td>
-                    <td>{{ $persyaratan->nama }}</td>
-                    <td>{{ $dokumen ? strtoupper(str_replace('_', ' ', $dokumen->status)) : 'BELUM DIUNGGAH' }}</td>
-                    <td>{{ $dokumen?->catatan ?? '—' }}</td>
-                </tr>
-            @endforeach
-        </tbody>
+    <table>
+        <colgroup><col style="width:38%"><col style="width:14mm"><col style="width:4mm"><col></colgroup>
+        <tr><td rowspan="2">Skema Sertifikasi (KKNI/Okupasi/Klaster)</td><td>Judul</td><td class="sep">:</td><td>{{ $data['skema_judul'] ?? $skema?->nama_skema ?? '—' }}</td></tr>
+        <tr><td>Nomor</td><td class="sep">:</td><td>{{ $data['skema_nomor'] ?? $skema?->nomor_skema ?? '—' }}</td></tr>
+        <tr><td>TUK</td><td colspan="2" class="sep">:</td><td class="strike">
+            <span class="{{ ($jenisTuk === 'sewaktu' || $jenisTuk === 'Sewaktu') ? 'yes' : 'no' }}">Sewaktu</span> /
+            <span class="{{ in_array($jenisTuk, ['tempat_kerja', 'Tempat Kerja'], true) ? 'yes' : 'no' }}">Tempat Kerja</span> /
+            <span class="{{ in_array($jenisTuk, ['mandiri', 'Mandiri'], true) ? 'yes' : 'no' }}">Mandiri</span>*
+        </td></tr>
+        <tr><td>Nama Asesor</td><td colspan="2" class="sep">:</td><td>{{ $data['asesor_nama'] ?? $asesorUser?->name ?? '—' }}</td></tr>
+        <tr><td>Nama Asesi</td><td colspan="2" class="sep">:</td><td>{{ $data['asesi_nama'] ?? $asesiUser?->name ?? '—' }}</td></tr>
     </table>
 
-    <h3>C. Pernyataan Verifikator</h3>
-    <p class="muted">
-        Saya menyatakan bahwa portofolio asesi telah diverifikasi sesuai persyaratan skema dan hasilnya tercatat pada tabel di atas.
-    </p>
-
-    <table class="signatures">
+    <table>
+        <colgroup><col style="width:38%"><col><col></colgroup>
         <tr>
-            <td>
-                <x-pdf.signature :path="$verifikator?->signature_path" label="Asesor / Verifikator" />
-                <div>Asesor / Verifikator</div>
-                <div>{{ $verifikator?->name ?? '' }}</div>
+            <td rowspan="4">Bukti yang akan dikumpulkan :</td>
+            <td><span class="box">{{ in_array('portofolio', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Verifikasi Portofolio</td>
+            <td><span class="box">{{ in_array('reviu_produk', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Reviu Produk</td>
+        </tr>
+        <tr>
+            <td><span class="box">{{ in_array('observasi', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Observasi Langsung</td>
+            <td><span class="box">{{ in_array('kegiatan_terstruktur', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Kegiatan Terstruktur</td>
+        </tr>
+        <tr>
+            <td><span class="box">{{ in_array('tertulis', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Pertanyaan Tertulis</td>
+            <td><span class="box">{{ in_array('lisan', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Pertanyaan Lisan</td>
+        </tr>
+        <tr>
+            <td><span class="box">{{ in_array('wawancara', $buktiKeys, true) ? 'X' : '' }}</span> Hasil Pertanyaan Wawancara</td>
+            <td><span class="box">{{ in_array('lainnya', $buktiKeys, true) ? 'X' : '' }}</span> Lainnya{{ $data['bukti_lainnya_text'] ?? '' ? ' — '.$data['bukti_lainnya_text'] : '' }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <colgroup><col style="width:38%"><col style="width:28mm"><col style="width:4mm"><col></colgroup>
+        <tr><td rowspan="3">Pelaksanaan asesmen disepakati pada:</td><td>Hari/ Tanggal</td><td class="sep">:</td><td>{{ $dayDate }}</td></tr>
+        <tr><td>Waktu</td><td class="sep">:</td><td>{{ $time }}</td></tr>
+        <tr><td>TUK</td><td class="sep">:</td><td>{{ $tukName }}</td></tr>
+    </table>
+
+    <table>
+        <tr><td><b>Asesi :</b> Bahwa saya telah mendapatkan penjelasan terkait hak dan prosedur banding asesmen dari asesor.</td></tr>
+        <tr><td><b>Asesor :</b> Menyatakan tidak akan membuka hasil pekerjaan yang saya peroleh karena penugasan saya sebagai Asesor dalam pekerjaan <i>Asesmen</i> kepada siapapun atau organisasi apapun selain kepada pihak yang berwenang sehubungan dengan kewajiban saya sebagai Asesor yang ditugaskan oleh LSP.</td></tr>
+        <tr><td><b>Asesi :</b> Saya setuju mengikuti asesmen dengan pemahaman bahwa informasi yang dikumpulkan hanya digunakan untuk pengembangan profesional dan hanya dapat diakses oleh orang tertentu saja.</td></tr>
+    </table>
+
+    <table class="avoid-break" style="margin-bottom: 0">
+        <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+        <tr>
+            <td class="ttd">
+                Tanda tangan Asesor :<br>
+                @if ($asesorSignature)
+                    <img src="{{ $asesorSignature }}" alt="Tanda Tangan Asesor" style="max-height: 18mm; max-width: 45mm; margin-top: 3mm;">
+                @else
+                    <div class="sig-missing">Tanda tangan belum tersimpan.</div>
+                @endif
+                <br><span class="sm">Tanggal : {{ $signedAt ?? '—' }}</span>
             </td>
-            <td>
-                <x-pdf.signature :path="$u?->signature_path" label="Asesi" />
-                <div>Asesi</div>
-                <div>{{ $u->name ?? '' }}</div>
-            </td>
-            <td>
-                <div class="signature-line"></div>
-                <div>Tanggal</div>
-                <div>{{ now()->translatedFormat('d F Y') }}</div>
+            <td class="ttd">
+                Tanda tangan Asesi :<br>
+                @if ($asesiSignature)
+                    <img src="{{ $asesiSignature }}" alt="Tanda Tangan Asesi" style="max-height: 18mm; max-width: 45mm; margin-top: 3mm;">
+                @else
+                    <div class="sig-missing">Tanda tangan belum tersimpan.</div>
+                @endif
+                <br><span class="sm">Tanggal : {{ $signedAt ?? '—' }}</span>
             </td>
         </tr>
     </table>
+    <p class="sm">*) Coret yang tidak perlu</p>
+
+    @if ($persetujuan?->disetujui_pada)
+        <p><span class="b">Disetujui pada</span> {{ $persetujuan->disetujui_pada->translatedFormat('d F Y H:i') }}.</p>
+    @endif
 </body>
 </html>

@@ -68,6 +68,19 @@
             <div class="alert alert-danger mt-3">{{ $message }}</div>
         @enderror
 
+        <div class="mt-3">
+            <label class="form-label" for="tujuan_asesmen">Tujuan Asesmen</label>
+            <select name="tujuan_asesmen" id="tujuan_asesmen" class="form-select" required>
+                <option value="">— Pilih tujuan —</option>
+                @foreach (\App\Models\Pendaftaran::TUJUAN_LABELS as $value => $label)
+                    <option value="{{ $value }}" @selected(old('tujuan_asesmen') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            @error('tujuan_asesmen')
+                <div class="text-danger small mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="mt-3 d-flex gap-2">
             <a href="{{ route('asesi.pendaftaran.index') }}" class="btn btn-outline-secondary">Batal</a>
             <button type="submit" class="btn btn-primary"

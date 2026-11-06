@@ -71,7 +71,6 @@
             <div class="mb-3">
                 <label class="form-label d-flex align-items-center gap-1">
                     Masuk sebagai
-                    <span class="badge bg-blue-lt text-blue small ms-1">Baru</span>
                 </label>
                 <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Pilih portal">
                     @foreach ([
@@ -122,7 +121,23 @@
 </div>
 
 @push('styles')
-{{-- portal styles sudah di layouts/auth.blade.php --}}
+<style>
+    /* Portal selector — khusus halaman login */
+    .portal-radio:checked + .portal-card {
+        border-color: var(--tblr-primary) !important;
+        background-color: var(--tblr-primary-lt) !important;
+        box-shadow: 0 0 0 2px rgba(var(--tblr-primary-rgb), .2);
+    }
+    .portal-card {
+        transition: border-color .15s, background-color .15s;
+        user-select: none;
+        min-width: 120px;
+    }
+    .portal-card:hover {
+        border-color: var(--tblr-border-color-translucent);
+        background-color: var(--tblr-bg-surface-secondary) !important;
+    }
+</style>
 @endpush
 
 @push('scripts')

@@ -48,6 +48,28 @@
                 <small class="form-text text-muted">Format: JPG, PNG. Max 2MB.</small>
             </div>
         </div>
+
+        <div class="mt-3 border-top pt-3">
+            <h4 class="h5">Tanda Tangan Ketua LSP</h4>
+            <div class="text-secondary small mb-3">Digunakan pada PDF MAPA, APL-02, MAK-02, dan sertifikat.</div>
+            @if (\App\Support\SignatureImage::for($institution))
+                <div class="mb-3">
+                    <img src="{{ \App\Support\SignatureImage::for($institution) }}" alt="Tanda Tangan Ketua LSP" style="max-height: 100px; max-width: 300px;">
+                </div>
+                <form method="POST" action="{{ route('admin.institution.delete-signature', $institution) }}" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus tanda tangan Ketua LSP?')">Hapus Tanda Tangan</button>
+                </form>
+            @else
+                <p class="text-secondary small">Belum ada tanda tangan Ketua LSP.</p>
+            @endif
+            <form method="POST" action="{{ route('admin.institution.upload-signature', $institution) }}" enctype="multipart/form-data" class="mt-3">
+                @csrf
+                <input type="file" name="tanda_tangan_file" class="form-control form-control-sm" accept="image/png,image/jpeg" required>
+                <button type="submit" class="btn btn-outline-primary btn-sm mt-2">Simpan Tanda Tangan</button>
+            </form>
+        </div>
     </x-tabler.card>
 @else
     <form method="POST" action="{{ route('admin.institution.update', $institution) }}">

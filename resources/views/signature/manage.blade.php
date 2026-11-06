@@ -1,8 +1,22 @@
-﻿@extends(auth()->user()->hasRole('asesor') ? 'layouts.asesor' : 'layouts.asesi')
+﻿@php
+    $layout = match (true) {
+        auth()->user()->hasRole('asesor') => 'layouts.asesor',
+        auth()->user()->hasRole(['admin', 'super-admin', 'manajer-sertifikasi']) => 'layouts.admin',
+        default => 'layouts.asesi',
+    };
+@endphp
+@extends($layout)
 
 @section('title', 'Tanda Tangan')
 
 @section('page-title', 'Manajemen Tanda Tangan')
+@php
+    $signatureRoute = match (true) {
+        auth()->user()->hasRole('asesor') => 'asesor.signature',
+        auth()->user()->hasRole(['admin', 'super-admin', 'manajer-sertifikasi']) => 'admin.signature',
+        default => 'asesi.signature',
+    };
+@endphp
 
 @section('content')
 <div class="row">
@@ -30,13 +44,13 @@
                         <div class="mb-4">
                             <h6 class="mb-3">Tanda Tangan Saat Ini:</h6>
                             <div class="border p-3 d-inline-block bg-light">
-                                <img src="{{ asset('storage/' . $user->signature_path) }}" 
-                                     alt="Tanda Tangan" 
+                                <img src="{{ \App\Support\SignatureImage::for($user) }}"
+                                     alt="Tanda Tangan"
                                      class="img-fluid"
                                      style="max-height: 150px; max-width: 300px;">
                             </div>
                             <div class="mt-3">
-                                <form action="{{ route(auth()->user()->hasRole('asesor') ? 'asesor.signature.delete' : 'asesi.signature.delete') }}" 
+                                <form action="{{ route($signatureRoute.'.delete') }}" 
                                       method="POST" 
                                       class="d-inline">
                                     @csrf
@@ -61,7 +75,7 @@
                     <div class="tab-content">
                         <!-- Canvas Tab -->
                         <div class="tab-pane fade show active" id="canvas-panel" role="tabpanel">
-                            <form action="{{ route(auth()->user()->hasRole('asesor') ? 'asesor.signature.store' : 'asesi.signature.store') }}" 
+                            <form action="{{ route($signatureRoute.'.store') }}" 
                                   method="POST" 
                                   id="canvas-form">
                                 @csrf
@@ -92,7 +106,7 @@
 
                         <!-- Upload Tab -->
                         <div class="tab-pane fade" id="upload-panel" role="tabpanel">
-                            <form action="{{ route(auth()->user()->hasRole('asesor') ? 'asesor.signature.store' : 'asesi.signature.store') }}" 
+                            <form action="{{ route($signatureRoute.'.store') }}" 
                                   method="POST" 
                                   enctype="multipart/form-data"
                                   id="upload-form">
@@ -160,6 +174,15 @@ document.addEventListener('DOMContentLoaded', function() {
         canvas.width = 800 * dpr;
         canvas.height = 250 * dpr;
         ctx.scale(dpr, dpr);
+
+        const resetCanvas = () => {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        };
+        resetCanvas();
 
         function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
@@ -252,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Clear button
         document.getElementById('clear-canvas').addEventListener('click', function() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            resetCanvas();
         });
 
         // Form submit

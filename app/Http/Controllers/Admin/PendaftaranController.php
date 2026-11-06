@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ApprovePendaftaran;
 use App\Http\Controllers\Controller;
-use App\Models\HasilAsesmen;
 use App\Models\JadwalAsesmen;
 use App\Models\Pendaftaran;
 use App\Models\PendaftaranDokumen;
+use App\Models\PresensiAsesi;
+use App\Models\Skema;
+use App\Models\Tuk;
+use App\Models\User;
 use App\Services\NotificationOutbox;
 use App\Services\PendaftaranStorage;
 use App\Services\PendaftaranWorkflow;
+use App\Services\PresensiService;
 use App\Support\TenantContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DomainException;
@@ -29,8 +33,8 @@ class PendaftaranController extends Controller
     {
         $tab = $request->string('tab')->toString() ?: 'semua';
 
-        $pendaftarans = Pendaftaran::query()
-            ->with(['asesi.user', 'skema', 'jadwal.tuk'])
+        $query = Pendaftaran::query()
+            ->with(['asesi.user', 'skema', 'jadwal.tuk', 'jadwal.event'])
             ->withCount('dokumens')
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $search = '%'.$request->string('q')->trim().'%';
@@ -39,6 +43,12 @@ class PendaftaranController extends Controller
                         ->orWhereHas('asesi.user', fn ($userQuery) => $userQuery->where('name', 'like', $search));
                 });
             })
+            ->when($request->filled('skema'), fn ($query) => $query->where('skema_id', $request->string('skema')))
+            ->when($request->filled('tuk'), function ($query) use ($request): void {
+                $query->whereHas('jadwal', fn ($jadwalQuery) => $jadwalQuery->where('tuk_id', $request->string('tuk')));
+            })
+            ->when($request->filled('waktu.start'), fn ($query) => $query->whereHas('jadwal', fn ($jadwalQuery) => $jadwalQuery->whereDate('tanggal', '>=', $request->string('waktu.start'))))
+            ->when($request->filled('waktu.end'), fn ($query) => $query->whereHas('jadwal', fn ($jadwalQuery) => $jadwalQuery->whereDate('tanggal', '<=', $request->string('waktu.end'))))
             ->when($tab === 'perlu_verifikasi', fn ($query) => $query->where('status', Pendaftaran::STATUS_DOKUMEN_DIAJUKAN))
             ->when($tab === 'ditolak', fn ($query) => $query->whereIn('status', [Pendaftaran::STATUS_DOKUMEN_DITOLAK, Pendaftaran::STATUS_DITOLAK]))
             ->when($tab === 'siap_plotting', fn ($query) => $query->where('status', Pendaftaran::STATUS_MENUNGGU_JADWAL))
@@ -47,10 +57,24 @@ class PendaftaranController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $pendaftarans = $query;
+
+        $skemas = Skema::aktif()->orderBy('nama_skema')->get();
+        $tuks = Tuk::orderBy('nama_tuk')->get();
+
         return view('admin.pendaftaran.index', [
             'pendaftarans' => $pendaftarans,
             'tab' => $tab,
             'search' => $request->string('q')->toString(),
+            'skemas' => $skemas,
+            'tuks' => $tuks,
+            'filterSkema' => $request->string('skema')->toString(),
+            'filterEvent' => $request->string('event')->toString(),
+            'filterTuk' => $request->string('tuk')->toString(),
+            'filterWaktu' => [
+                'start' => $request->string('waktu.start')->toString(),
+                'end' => $request->string('waktu.end')->toString(),
+            ],
         ]);
     }
 
@@ -67,6 +91,11 @@ class PendaftaranController extends Controller
             'dokumens.verifikator',
             'jadwal.tuk',
             'jadwal.asesors.user',
+            'persetujuanAsesmens',
+            'presensi.pencatat',
+            'umpanBalik.pengisi',
+            'banding',
+            'validasiAsesmen',
         ]);
 
         $jadwalOptions = JadwalAsesmen::query()
@@ -122,6 +151,70 @@ class PendaftaranController extends Controller
             ->log('Dokumen persyaratan diverifikasi.');
 
         return back()->with('success', 'Verifikasi dokumen berhasil disimpan.');
+    }
+
+    public function verifyAllDocuments(
+        Request $request,
+        Pendaftaran $pendaftaran,
+        PendaftaranWorkflow $workflow,
+    ): RedirectResponse {
+        $this->authorize('verifyDocuments', $pendaftaran);
+
+        if ($pendaftaran->status !== Pendaftaran::STATUS_DOKUMEN_DIAJUKAN) {
+            return back()->with('error', 'Verifikasi semua dokumen hanya tersedia untuk pendaftaran yang belum diverifikasi.');
+        }
+
+        $menunggu = $pendaftaran->dokumens()
+            ->where('status', PendaftaranDokumen::STATUS_MENUNGGU)
+            ->get();
+
+        if ($menunggu->isEmpty()) {
+            return back()->with('info', 'Tidak ada dokumen menunggu yang perlu disetujui.');
+        }
+
+        DB::transaction(function () use ($request, $menunggu): void {
+            foreach ($menunggu as $dokumen) {
+                $this->authorize('verify', $dokumen);
+
+                $dokumen->update([
+                    'status' => PendaftaranDokumen::STATUS_DISETUJUI,
+                    'diverifikasi_oleh' => $request->user()->id,
+                    'diverifikasi_pada' => now(),
+                ]);
+            }
+        });
+
+        $previousStatus = $pendaftaran->status;
+        $pendaftaran = $workflow->syncAfterVerification($pendaftaran, $request->user());
+
+        activity('pendaftaran')
+            ->causedBy($request->user())
+            ->performedOn($pendaftaran)
+            ->withProperties([
+                'jumlah_dokumen' => $menunggu->count(),
+                'status_sebelumnya' => $previousStatus,
+                'status_baru' => $pendaftaran->status,
+            ])
+            ->log('Seluruh dokumen persyaratan disetujui sekaligus.');
+
+        if ($pendaftaran->status !== $previousStatus) {
+            $this->notifyStatusChange($pendaftaran, $previousStatus);
+        }
+
+        return back()->with('success', 'Semua dokumen persyaratan berhasil disetujui.');
+    }
+
+    /**
+     * Fallback GET untuk menghindari 405 bila URL verifikasi-semua diakses langsung.
+     */
+    public function verifyAllDocumentsFallback(
+        Request $request,
+        Pendaftaran $pendaftaran,
+    ): RedirectResponse {
+        $this->authorize('view', $pendaftaran);
+
+        return redirect()->route('admin.pendaftaran.show', $pendaftaran)
+            ->with('error', 'Verifikasi dokumen harus dilakukan melalui tombol di halaman pendaftaran.');
     }
 
     public function approve(
@@ -191,6 +284,25 @@ class PendaftaranController extends Controller
             ->with('success', 'Pendaftaran berhasil ditolak.');
     }
 
+    public function catatPresensi(
+        Request $request,
+        Pendaftaran $pendaftaran,
+        PresensiService $presensi,
+    ): RedirectResponse {
+        $this->authorize('catatPresensi', $pendaftaran);
+
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(array_keys(PresensiAsesi::STATUS_LABELS))],
+            'catatan' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $presensi->catat($pendaftaran, $validated['status'], $validated['catatan'] ?? null, $request->user());
+
+        return redirect()
+            ->route('admin.pendaftaran.show', $pendaftaran)
+            ->with('success', 'Presensi asesi diperbarui.');
+    }
+
     public function previewDokumen(PendaftaranDokumen $dokumen, PendaftaranStorage $storage): StreamedResponse
     {
         $this->authorize('view', $dokumen);
@@ -224,9 +336,15 @@ class PendaftaranController extends Controller
             'asesi.user',
             'asesi.province',
             'asesi.city',
-            'skema',
+            'skema.persyaratans',
+            'skema.unitKompetensis.skkni',
+            'dokumens.persyaratan',
             'jadwal.tuk',
         ]);
+
+        $adminLsp = $pendaftaran->disetujui_oleh
+            ? User::find($pendaftaran->disetujui_oleh)
+            : request()->user();
 
         activity('pendaftaran')
             ->causedBy(request()->user())
@@ -236,7 +354,7 @@ class PendaftaranController extends Controller
         return Pdf::loadView('pdf.apl01', [
             'pendaftaran' => $pendaftaran,
             'institution' => TenantContext::institution(),
-            'adminLsp' => request()->user(),
+            'adminLsp' => $adminLsp,
         ])
             ->setPaper('a4', 'portrait')
             ->stream(sprintf('FORM-APL-01-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
@@ -250,11 +368,13 @@ class PendaftaranController extends Controller
             'asesi.user',
             'asesi.province',
             'asesi.city',
-            'skema.persyaratans',
-            'dokumens.persyaratan',
-            'dokumens.verifikator',
+            'skema',
+            'jadwal.tuk',
             'jadwal.asesors.user',
+            'persetujuanAsesmens',
         ]);
+
+        $persetujuan = $pendaftaran->persetujuanAsesmens->firstWhere('jenis', 'ak01');
 
         activity('pendaftaran')
             ->causedBy(request()->user())
@@ -264,9 +384,14 @@ class PendaftaranController extends Controller
         return Pdf::loadView('pdf.mak01', [
             'pendaftaran' => $pendaftaran,
             'institution' => TenantContext::institution(),
+            'skema' => $pendaftaran->skema,
+            'jadwal' => $pendaftaran->jadwal,
+            'asesiUser' => $pendaftaran->asesi?->user,
+            'persetujuan' => $persetujuan,
+            'data' => $persetujuan?->data_json ?? [],
         ])
             ->setPaper('a4', 'portrait')
-            ->stream(sprintf('FORM-IA-08-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
+            ->stream(sprintf('FORM-MAK-01-AK01-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
     }
 
     public function mak03(Pendaftaran $pendaftaran): Response
@@ -280,13 +405,15 @@ class PendaftaranController extends Controller
             'skema',
             'jadwal.tuk',
             'jadwal.asesors.user',
+            'persetujuanAsesmens',
+            'banding',
         ]);
 
-        $hasil = HasilAsesmen::query()
-            ->where('pendaftaran_id', $pendaftaran->id)
-            ->with(['asesor.user', 'units'])
-            ->latest()
-            ->first();
+        $persetujuan = $pendaftaran->persetujuanAsesmens->firstWhere('jenis', 'ak04');
+        $data = $persetujuan?->data_json ?? [];
+        if (blank($data['alasan'] ?? null) && $pendaftaran->banding) {
+            $data['alasan'] = $pendaftaran->banding->alasan;
+        }
 
         activity('pendaftaran')
             ->causedBy(request()->user())
@@ -295,11 +422,15 @@ class PendaftaranController extends Controller
 
         return Pdf::loadView('pdf.mak03', [
             'pendaftaran' => $pendaftaran,
-            'hasil' => $hasil,
             'institution' => TenantContext::institution(),
+            'skema' => $pendaftaran->skema,
+            'jadwal' => $pendaftaran->jadwal,
+            'asesiUser' => $pendaftaran->asesi?->user,
+            'persetujuan' => $persetujuan,
+            'data' => $data,
         ])
             ->setPaper('a4', 'portrait')
-            ->stream(sprintf('FORM-BERITA-ACARA-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
+            ->stream(sprintf('FORM-MAK-03-AK04-%s-%s.pdf', str($pendaftaran->skema->kode_skema)->slug(), str($pendaftaran->asesi->user->name ?? 'asesi')->slug()));
     }
 
     private function notifyStatusChange(Pendaftaran $pendaftaran, string $previousStatus): void

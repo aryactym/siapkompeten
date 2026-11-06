@@ -11,6 +11,7 @@ use App\Models\HasilAsesmenMetode;
 use App\Models\HasilAsesmenUnit;
 use App\Models\KriteriaUnjukKerja;
 use App\Models\Pendaftaran;
+use App\Models\PresensiAsesi;
 use App\Models\Skema;
 use App\Models\UnitKompetensi;
 use App\Models\User;
@@ -418,6 +419,10 @@ class AsesmenService
             ]);
 
             $pendaftaran->update(['status' => Pendaftaran::STATUS_SELESAI]);
+
+            PresensiAsesi::where('pendaftaran_id', $pendaftaran->id)
+                ->whereNull('terkunci_pada')
+                ->update(['terkunci_pada' => now()]);
 
             activity('asesmen')
                 ->causedBy($asesorUser)

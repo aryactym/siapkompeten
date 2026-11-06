@@ -23,6 +23,8 @@ class RolePermissionSeeder extends Seeder
             'asesor',
             'asesi',
             'pimpinan',
+            'komite-teknis',
+            'manajer-sertifikasi',
         ];
 
         foreach ($roles as $roleName) {
@@ -69,6 +71,19 @@ class RolePermissionSeeder extends Seeder
         // Assign permissions to pimpinan
         $pimpinanRole = Role::findByName('pimpinan', 'web');
         $pimpinanRole->syncPermissions([
+            'view-reports',
+            'export-reports',
+        ]);
+
+        // Assign permissions to komite teknis (validasi asesmen)
+        $komiteRole = Role::findByName('komite-teknis', 'web');
+        $komiteRole->syncPermissions([
+            'view-reports',
+        ]);
+
+        // manajer sertifikasi mengelola penerbitan sertifikat
+        $manajerRole = Role::findByName('manajer-sertifikasi', 'web');
+        $manajerRole->syncPermissions([
             'view-reports',
             'export-reports',
         ]);

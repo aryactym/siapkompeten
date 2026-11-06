@@ -130,7 +130,7 @@ class SidebarMenuTest extends TestCase
         $response->assertSee('data-bs-navbar-position="vertical"', false);
         $response->assertSee('id="sidebar-menu"', false);
         $response->assertSee('Portal Peserta');
-        $response->assertSee('Status Pendaftaran');
+        $response->assertSee('Riwayat Uji Kompetensi');
         $response->assertSee('/asesi/pendaftaran"', false);
         $response->assertSee('Hasil &amp; Sertifikat', false);
         $response->assertDontSee('Validasi Pembayaran');

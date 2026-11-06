@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\HtmlSanitizer;
 use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,23 +49,11 @@ class CmsContent extends Model
     }
 
     /**
-     * Sanitasi HTML sederhana: buang <script>, <iframe>, <object>, <embed> dan atribut on*.
+     * Sanitasi HTML dengan allowlist: buang elemen berbahaya beserta isinya,
+     * unwrap elemen tak dikenal, dan tolak URL berskema tidak aman.
      */
     public function setIsiAttribute(?string $value): void
     {
-        if ($value === null) {
-            $this->attributes['isi'] = null;
-
-            return;
-        }
-
-        $clean = preg_replace('#<script\b[^>]*>.*?</script>#is', '', $value);
-        $clean = preg_replace('#<iframe\b[^>]*>.*?</iframe>#is', '', (string) $clean);
-        $clean = preg_replace('#<object\b[^>]*>.*?</object>#is', '', (string) $clean);
-        $clean = preg_replace('#<embed\b[^>]*/?>#is', '', (string) $clean);
-        $clean = preg_replace('#\son\w+\s*=\s*"[^"]*"#i', '', (string) $clean);
-        $clean = preg_replace("#\son\w+\s*=\s*'[^']*'#i", '', (string) $clean);
-
-        $this->attributes['isi'] = $clean;
+        $this->attributes['isi'] = HtmlSanitizer::clean($value);
     }
 }

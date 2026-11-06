@@ -108,6 +108,8 @@ class BundleSertifikatController extends Controller
                 ->where('jadwal_id', $jadwal->id)
                 ->where('status', Pendaftaran::STATUS_SELESAI)
                 ->whereHas('asesi', fn ($q) => $q->where('status_kompetensi', 'kompeten'))
+                ->whereHas('validasiAsesmen', fn ($q) => $q->where('status', 'final')->where('keputusan', 'disetujui'))
+                ->whereHas('jadwal.pleno', fn ($q) => $q->where('status', 'final')->where('keputusan', 'disetujui'))
                 ->whereDoesntHave('sertifikat')
                 ->find($item['pendaftaran_id']);
 

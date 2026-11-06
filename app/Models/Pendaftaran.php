@@ -39,6 +39,14 @@ class Pendaftaran extends Model
 
     public const STATUS_DIBATALKAN = 'dibatalkan';
 
+    public const TUJUAN_LABELS = [
+        'sertifikasi' => 'Sertifikasi',
+        'pkt' => 'Pengakuan Kompetensi Terkini (PKT)',
+        'rpl' => 'Rekognisi Pembelajaran Lampau (RPL)',
+        'penyetaraan' => 'Penyetaraan',
+        'lainnya' => 'Lainnya',
+    ];
+
     protected $fillable = [
         'institution_id',
         'no_pendaftaran',
@@ -46,6 +54,8 @@ class Pendaftaran extends Model
         'skema_id',
         'jadwal_id',
         'status',
+        'tujuan_asesmen',
+        'catatan_tujuan',
         'catatan_penolakan',
         'disetujui_oleh',
         'disetujui_pada',
@@ -96,6 +106,66 @@ class Pendaftaran extends Model
     public function hasilAsesmen(): HasOne
     {
         return $this->hasOne(HasilAsesmen::class);
+    }
+
+    public function persetujuanAsesmens(): HasMany
+    {
+        return $this->hasMany(PersetujuanAsesmen::class);
+    }
+
+    public function presensi(): HasOne
+    {
+        return $this->hasOne(PresensiAsesi::class);
+    }
+
+    public function umpanBalik(): HasOne
+    {
+        return $this->hasOne(UmpanBalikAsesmen::class);
+    }
+
+    public function ia03Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia03Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function ia04Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia04Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function ia05Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia05Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function ia06Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia06Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function ia07Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia07Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function ia09Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia09Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function ia10Asesmen(): HasOne
+    {
+        return $this->hasOne(Ia10Asesmen::class, 'pendaftaran_id');
+    }
+
+    public function banding(): HasOne
+    {
+        return $this->hasOne(Banding::class);
+    }
+
+    public function validasiAsesmen(): HasOne
+    {
+        return $this->hasOne(ValidasiAsesmen::class);
     }
 
     public function penyetuju(): BelongsTo

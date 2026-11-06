@@ -64,6 +64,106 @@
     </div>
 @endif
 
+@php
+    $preAsesmenLengkap = \App\Models\PersetujuanAsesmen::allApprovedFor($pendaftaran);
+@endphp
+@if (! $preAsesmenLengkap && ! $sudahFinal)
+    <div class="alert alert-warning mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="ti ti-alert-triangle fs-3"></i>
+            <div>
+                <div class="fw-semibold">Dokumen Pre-Asesmen Belum Lengkap</div>
+                <div class="small">
+                    Finalisasi FR.AK.02 diblokir hingga asesi menyetujui FR.AK.01/04/07.
+                    <a href="{{ route('asesor.pre-asesmen.show', $pendaftaran) }}" class="alert-link">Lihat status →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+{{-- ===== SUMBER BUKTI: INSTRUMEN ===== --}}
+<x-tabler.card title="Sumber Bukti Instrumen" class="mb-3">
+    <p class="text-secondary small mb-3">
+        Hasil instrumen FR.IA.01/IA.02 menjadi bukti pendukung penilaian KUK di bawah.
+        Rekap bersifat referensi; keputusan akhir tetap diisi manual pada FR.AK.02.
+    </p>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Instrumen</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Tercapai</th>
+                    <th class="text-center">Belum</th>
+                    <th class="text-center">Belum Dinilai</th>
+                    <th class="w-1">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($rekapInstrumen as $jenis => $data)
+                    <tr>
+                        <td>{{ $data['label'] }}</td>
+                        <td class="text-center">
+                            @if ($data['instrumen']?->isFinal())
+                                <span class="badge bg-success-lt text-success">Final</span>
+                            @elseif ($data['instrumen'])
+                                <span class="badge bg-warning-lt text-warning">Draf</span>
+                            @else
+                                <span class="text-secondary small">Belum diisi</span>
+                            @endif
+                        </td>
+                        <td class="text-center">{{ $data['rekap']['tercapai'] ?? '—' }}</td>
+                        <td class="text-center">{{ $data['rekap']['belum_tercapai'] ?? '—' }}</td>
+                        <td class="text-center">{{ $data['rekap']['belum_dinilai'] ?? '—' }}</td>
+                        <td>
+                            <div class="btn-list flex-nowrap">
+                                <a href="{{ route('asesor.instrumen.show', [$pendaftaran, $jenis]) }}"
+                                   class="btn btn-sm btn-outline-secondary" title="Buka instrumen">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                @if ($data['instrumen'])
+                                    <a href="{{ route('asesor.instrumen.pdf', [$pendaftaran, $jenis]) }}"
+                                       class="btn btn-sm btn-outline-secondary" title="Cetak PDF">
+                                        <i class="ti ti-printer"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</x-tabler.card>
+
+{{-- ===== UMPAN BALIK ASESI (FR.AK.03) ===== --}}
+<x-tabler.card title="Umpan Balik Asesi (FR.AK.03)" class="mb-3">
+    @php
+        $umpanBalik = $pendaftaran->umpanBalik;
+    @endphp
+    @if ($umpanBalik?->isSubmitted())
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <span class="badge bg-success-lt text-success me-2">Terkirim</span>
+                <span class="text-secondary small">
+                    {{ $umpanBalik->disubmit_pada?->translatedFormat('d F Y H:i') }}
+                    @if ($umpanBalik->pengisi)
+                        · {{ $umpanBalik->pengisi->name }}
+                    @endif
+                </span>
+            </div>
+            <a href="{{ route('asesor.umpan-balik.pdf', $pendaftaran) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="ti ti-file-pdf me-1"></i> Cetak FR.AK.03
+            </a>
+        </div>
+    @else
+        <p class="text-secondary small mb-0">
+            Asesi belum mengisi umpan balik. Formulir tersedia bagi asesi setelah keputusan asesmen difinalkan.
+        </p>
+    @endif
+</x-tabler.card>
+
 {{-- ===== RINGKASAN PROGRES ===== --}}
 <div class="row row-cards mb-3">
     <div class="col-sm-6 col-lg-3">

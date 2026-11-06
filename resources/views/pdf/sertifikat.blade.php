@@ -54,8 +54,9 @@
         <div class="watermark">KOMPETEN</div>
 
         <div class="header">
-            @if (!empty($institution?->logo_path) && file_exists(storage_path('app/public/'.$institution->logo_path)))
-                <img src="{{ storage_path('app/public/'.$institution->logo_path) }}"
+            @php $certificateLogoPath = $institution?->logo_lsp_path ?: $institution?->logo_bnsp_path; @endphp
+            @if (!empty($certificateLogoPath) && is_file(storage_path('app/public/'.$certificateLogoPath)))
+                <img src="{{ storage_path('app/public/'.$certificateLogoPath) }}"
                      class="lsp-logo" alt="{{ $institution->name }}">
             @endif
             <div class="lsp-name">{{ $institution?->name ?? config('app.name') }}</div>
@@ -91,42 +92,45 @@
 
         <div class="footer-row">
             <div class="sign-block">
-                <div class="lsp-sub">Tempat, {{ $sertifikat->tanggal_terbit?->translatedFormat('d F Y') }}</div>
+                <div class="lsp-sub">Diterbitkan Oleh, {{ $sertifikat->tanggal_terbit?->translatedFormat('d F Y') }}</div>
                 <br>
-                @if ($sertifikat->asesi?->user?->signature_path && file_exists(storage_path('app/public/'.$sertifikat->asesi->user->signature_path)))
-                    <img src="{{ storage_path('app/public/'.$sertifikat->asesi->user->signature_path) }}"
-                         alt="Tanda Tangan Asesi"
+                @php
+                    $ketuaSignature = \App\Support\SignatureImage::for($institution);
+                    $penerbitSignature = \App\Support\SignatureImage::for($sertifikat->penerbit);
+                    $issuerSignature = $ketuaSignature ?? $penerbitSignature;
+                    $issuerName = $ketuaSignature
+                        ? ($institution?->nama_ketua ?? 'Ketua LSP')
+                        : ($sertifikat->penerbit?->name ?? 'Administrator');
+                    $issuerRole = $ketuaSignature ? 'Ketua LSP' : 'Penerbit Sertifikat';
+                @endphp
+                @if ($issuerSignature)
+                    <img src="{{ $issuerSignature }}"
+                         alt="Tanda Tangan {{ $issuerRole }}"
                          style="max-height: 60px; max-width: 200px; display: block; margin: 8px auto;">
                 @else
-                    <br><br>
+                    <div style="font-size: 8pt; color: #a00; margin: 20px 0 8px;">Tanda tangan belum tersimpan.</div>
                 @endif
                 <div class="sign-line">
-                    <div>{{ $sertifikat->asesi?->user?->name ?? '—' }}</div>
-                    <div class="lsp-sub">Peserta</div>
+                    <div>{{ $issuerName }}</div>
+                    <div class="lsp-sub">{{ $issuerRole }}</div>
                 </div>
             </div>
             <div class="sign-block">
-                <div class="lsp-sub">Diterbitkan Oleh</div>
-                <br>
-                @php
-                    $asesor = $sertifikat->pendaftaran?->hasilAsesmen?->asesor;
-                @endphp
-                @if ($asesor?->user?->signature_path && file_exists(storage_path('app/public/'.$asesor->user->signature_path)))
-                    <img src="{{ storage_path('app/public/'.$asesor->user->signature_path) }}"
-                         alt="Tanda Tangan Asesor"
-                         style="max-height: 60px; max-width: 200px; display: block; margin: 8px auto;">
+                <div class="lsp-sub">Verifikasi Keaslian</div>
+                @if (! empty($qrCode))
+                    <img src="{{ $qrCode }}" alt="QR Verifikasi" style="width:90px;height:90px;margin:8px auto;display:block;">
                 @else
-                    <br><br>
+                    <div style="font-size:8pt;color:#a00;margin:20px 0 8px;">QR gagal dibuat.</div>
                 @endif
                 <div class="sign-line">
-                    <div>{{ $asesor?->nama_lengkap ?? $sertifikat->penerbit?->name ?? '—' }}</div>
-                    <div class="lsp-sub">{{ $asesor ? 'Asesor' : 'Administrator' }}</div>
+                    <div style="font-size: 8pt;">{{ $sertifikat->no_registrasi }}</div>
+                    <div class="lsp-sub">No. Registrasi</div>
                 </div>
             </div>
         </div>
 
         <div class="reg-no">
-            Verifikasi: {{ route('sertifikat.verifikasi', $sertifikat->qr_token) }}
+            Verifikasi keaslian sertifikat dengan memindai QR atau memasukkan nomor registrasi.
         </div>
     </div>
 </div>

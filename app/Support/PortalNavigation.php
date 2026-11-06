@@ -89,6 +89,7 @@ class PortalNavigation
                 ['label' => 'Penjadwalan', 'icon' => 'ti-calendar', 'children' => [
                     ['label' => 'Jadwal Asesmen', 'route' => 'admin.jadwal.index', 'match' => 'admin.jadwal.*'],
                     ['label' => 'Event', 'route' => 'admin.event.index', 'match' => 'admin.event.*'],
+                    ['label' => 'Pleno Asesmen', 'route' => 'pleno.index', 'match' => 'pleno.*'],
                 ]],
                 ['label' => 'Sertifikat', 'icon' => 'ti-award', 'children' => [
                     ['label' => 'Data Sertifikat', 'route' => 'admin.sertifikat.index', 'match' => ['admin.sertifikat.*']],
@@ -130,6 +131,7 @@ class PortalNavigation
 
             ['title' => 'Sistem', 'items' => [
                 ['label' => 'Manajemen Pengguna', 'icon' => 'ti-users', 'route' => 'admin.user.index', 'match' => 'admin.user.*'],
+                ['label' => 'Tanda Tangan', 'icon' => 'ti-pencil', 'route' => 'admin.signature.show', 'match' => 'admin.signature.*'],
                 ['label' => 'Pengaturan', 'icon' => 'ti-settings', 'children' => [
                     ['label' => 'Profil Lembaga', 'route' => 'admin.institution.index', 'match' => 'admin.institution.*'],
                     ['label' => 'Logo Lembaga', 'route' => 'admin.institution.index', 'match' => 'admin.institution.*', 'query' => 'tab=logo'],
@@ -156,6 +158,7 @@ class PortalNavigation
                 ['label' => 'Penilaian', 'icon' => 'ti-clipboard-check', 'children' => [
                     ['label' => 'Pra-Asesmen (APL-02)', 'route' => 'asesor.jadwal.index', 'match' => ['asesor.apl02.show', 'asesor.apl02.verifikasi']],
                     ['label' => 'Hasil Asesmen (FR.AK.02)', 'route' => 'asesor.jadwal.index', 'match' => ['asesor.mak02.show', 'asesor.mak02.store', 'asesor.mak02.final', 'asesor.mak02.pdf', 'asesor.mak02.pdf2', 'asesor.mak02.pdf-redesign']],
+                    ['label' => 'Rencana Asesmen (MAPA)', 'route' => 'asesor.rencana-asesmen.index', 'match' => ['asesor.rencana-asesmen.*']],
                 ]],
             ]],
 
@@ -179,9 +182,10 @@ class PortalNavigation
 
             ['title' => 'Pendaftaran', 'items' => [
                 ['label' => 'Kirim Pendaftaran Baru', 'icon' => 'ti-file-plus', 'route' => 'asesi.pendaftaran.create', 'match' => ['asesi.pendaftaran.create', 'asesi.pendaftaran.store']],
-                ['label' => 'Status Pendaftaran', 'icon' => 'ti-file-certificate', 'route' => 'asesi.pendaftaran.index', 'match' => ['asesi.pendaftaran.index', 'asesi.pendaftaran.show', 'asesi.pendaftaran.submit', 'asesi.pendaftaran.dokumen.*', 'asesi.pendaftaran.apl02.*']],
+                ['label' => 'Riwayat Uji Kompetensi', 'icon' => 'ti-file-certificate', 'route' => 'asesi.pendaftaran.index', 'match' => ['asesi.pendaftaran.index', 'asesi.pendaftaran.show', 'asesi.pendaftaran.submit', 'asesi.pendaftaran.dokumen.*', 'asesi.pendaftaran.apl02.*']],
                 ['label' => 'Biaya & Pembayaran', 'icon' => 'ti-cash', 'route' => 'asesi.pendaftaran.index', 'match' => ['asesi.pembayaran.*']],
                 ['label' => 'Asesmen Mandiri (APL-02)', 'icon' => 'ti-checklist', 'route' => 'asesi.pendaftaran.index', 'match' => ['asesi.apl02.*']],
+                ['label' => 'Dokumen Pre-Asesmen', 'icon' => 'ti-file-check', 'route' => 'asesi.pendaftaran.index', 'match' => ['asesi.pre-asesmen.*']],
             ]],
 
             ['title' => 'Hasil', 'items' => [

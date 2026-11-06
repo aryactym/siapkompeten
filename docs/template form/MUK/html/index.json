@@ -1,0 +1,188 @@
+[
+ {
+  "file": "000_Perangkat_COVER_MUK.html",
+  "kode": "000",
+  "judul": "Perangkat Cover MUK",
+  "sumber": ""
+ },
+ {
+  "file": "Bahan_Soal.html",
+  "kode": "Dokumen",
+  "judul": "Bahan Soal",
+  "sumber": "bahan soal"
+ },
+ {
+  "file": "Daftar_Periksa_Kelengkapan_Dokumen_Pelatihan.html",
+  "kode": "Dokumen",
+  "judul": "Daftar Periksa Kelengkapan Dokumen Pelatihan",
+  "sumber": "0. Daftar Periksa Kelengkapan Dokumen Pelatihan"
+ },
+ {
+  "file": "FR.APL.01_Permohonan_Sertifikasi_Kompetensi.html",
+  "kode": "FR.APL.01",
+  "judul": "Permohonan Sertifikasi Kompetensi",
+  "sumber": "1. FR.APL 01. Permohonan Sertifikasi Kompetensi"
+ },
+ {
+  "file": "FR.MAPA.01_Merencanakan_Aktivitas_dan_Proses.html",
+  "kode": "FR.MAPA.01",
+  "judul": "Merencanakan Aktivitas dan Proses",
+  "sumber": "4. FR.MAPA 01. Merencanakan Aktivitas dan Proses "
+ },
+ {
+  "file": "FR.APL.02_Asesmen_Mandiri.html",
+  "kode": "FR.APL.02",
+  "judul": "Asesmen Mandiri",
+  "sumber": "2. FR.APL 02. Asesmen Mandiri"
+ },
+ {
+  "file": "FR.MAPA.02_Peta_Instrumen_Asesmen.html",
+  "kode": "FR.MAPA.02",
+  "judul": "Peta Instrumen Asesmen",
+  "sumber": "6. FR.MAPA 02. Peta Instrumen Asesmen "
+ },
+ {
+  "file": "FR.IA.01_Ceklis_Observasi_Aktivitas_Praktik.html",
+  "kode": "FR.IA.01",
+  "judul": "Ceklis Observasi Aktivitas Praktik",
+  "sumber": "10. FR.IA.01.Ceklis Observasi Aktivitas Praktik"
+ },
+ {
+  "file": "FR.IA.02_Tugas_Praktik_Demonstrasi.html",
+  "kode": "FR.IA.02",
+  "judul": "Tugas Praktik Demonstrasi",
+  "sumber": "11. FR.IA.02. Tugas Praktik Demonstrasi"
+ },
+ {
+  "file": "FR.IA.03_Pertanyaan_Mendukung_Observasi_PMO.html",
+  "kode": "FR.IA.03",
+  "judul": "Pertanyaan Mendukung Observasi PMO",
+  "sumber": "12. FR.IA.03. Pertanyaan Mendukung Observasi (PMO) docx"
+ },
+ {
+  "file": "FR.IA.04.A_Penjelasan_Singkat_Proyek.html",
+  "kode": "FR.IA.04.A",
+  "judul": "Penjelasan Singkat Proyek",
+  "sumber": "13. a.FR.IA.04A. Penjelasan Singkat Proyek "
+ },
+ {
+  "file": "FR.IA.04.B_Penilaian_Proyek_Singkat_atau_Kegiatan_Terstruktur_Lainnya.html",
+  "kode": "FR.IA.04.B",
+  "judul": "Penilaian Proyek Singkat atau Kegiatan Terstruktur Lainnya",
+  "sumber": "13.b. FR.IA.04B. Penilaian Proyek Singkat atau Kegiatan Terstruktur Lainnya"
+ },
+ {
+  "file": "FR.IA.05.A_Pertanyaan_Tertulis_Pilihan_Ganda.html",
+  "kode": "FR.IA.05.A",
+  "judul": "Pertanyaan Tertulis Pilihan Ganda",
+  "sumber": "14. FR.IA.05A. Pertanyaan Tertulis Pilihan Ganda"
+ },
+ {
+  "file": "FR.IA.05.B_Lembar_Kunci_Jawaban_Pertanyaan_Pilihan_Ganda.html",
+  "kode": "FR.IA.05.B",
+  "judul": "Lembar Kunci Jawaban Pertanyaan Pilihan Ganda",
+  "sumber": "14. FR.IA.05.B. Lembar Kunci Jawaban Pertanyaan Pilihan Ganda"
+ },
+ {
+  "file": "FR.IA.05.C_Lembar_Jawaban_Pilihan_Ganda.html",
+  "kode": "FR.IA.05.C",
+  "judul": "Lembar Jawaban Pilihan Ganda",
+  "sumber": "14. FR.IA.05.C. Lembar Jawaban Pilihan Ganda"
+ },
+ {
+  "file": "FR.IA.06.A_Pertanyaan_Tertulis_Esai.html",
+  "kode": "FR.IA.06.A",
+  "judul": "Pertanyaan Tertulis Esai",
+  "sumber": "15. FR.IA.06A.  Pertanyaan Tertulis Esai"
+ },
+ {
+  "file": "FR.IA.06.B_Lembar_Kunci_Jawaban_Pertanyaan_Tertulis_Esai.html",
+  "kode": "FR.IA.06.B",
+  "judul": "Lembar Kunci Jawaban Pertanyaan Tertulis Esai",
+  "sumber": "15. FR.IA.06.B. Lembar Kunci Jawaban Pertanyaan Tertulis Esai"
+ },
+ {
+  "file": "FR.IA.06.C_Lembar_Jawaban_Pertanyaan_Esai.html",
+  "kode": "FR.IA.06.C",
+  "judul": "Lembar Jawaban Pertanyaan Esai",
+  "sumber": "15. FR.IA.06.C. Lembar Jawaban Pertanyaan  Esai"
+ },
+ {
+  "file": "FR.IA.07_Pertanyaan_Lisan.html",
+  "kode": "FR.IA.07",
+  "judul": "Pertanyaan Lisan",
+  "sumber": "16 FR.IA.07. Pertanyaan Lisan"
+ },
+ {
+  "file": "FR.IA.08_Ceklis_Verifikasi_Portofolio.html",
+  "kode": "FR.IA.08",
+  "judul": "Ceklis Verifikasi Portofolio",
+  "sumber": "17. FR.IA.08. Ceklis Verifikasi Portofolio"
+ },
+ {
+  "file": "FR.IA.09_Pertanyaan_Wawancara.html",
+  "kode": "FR.IA.09",
+  "judul": "Pertanyaan Wawancara",
+  "sumber": "18. FR.IA.09. Pertanyaan Wawancara"
+ },
+ {
+  "file": "FR.IA.10_Verifikasi_Pihak_Ketiga.html",
+  "kode": "FR.IA.10",
+  "judul": "Verifikasi Pihak Ketiga",
+  "sumber": "19. FR.IA.10. Verifikasi Pihak Ketiga"
+ },
+ {
+  "file": "FR.IA.11_Ceklist_Reviu_Produk_CRP.html",
+  "kode": "FR.IA.11",
+  "judul": "Ceklist Reviu Produk CRP",
+  "sumber": "20. FR.IA.11. Ceklist Reviu Produk (CRP)"
+ },
+ {
+  "file": "FR.AK.01_Persetujuan_Asesmen_dan_Kerahasiaan.html",
+  "kode": "FR.AK.01",
+  "judul": "Persetujuan Asesmen dan Kerahasiaan",
+  "sumber": ""
+ },
+ {
+  "file": "FR.AK.02_Rekaman_Asesmen_Kompetensi.html",
+  "kode": "FR.AK.02",
+  "judul": "Rekaman Asesmen Kompetensi",
+  "sumber": "21. FR.AK.02. Rekaman Asesmen Kompetensi"
+ },
+ {
+  "file": "FR.AK.03_Umpan_Balik_dan_Catatan_Asesmen.html",
+  "kode": "FR.AK.03",
+  "judul": "Umpan Balik dan Catatan Asesmen",
+  "sumber": "22. FR.AK.03. Umpan Balik dan Catatan Asesmen"
+ },
+ {
+  "file": "FR.AK.04_Banding_Asesmen.html",
+  "kode": "FR.AK.04",
+  "judul": "Banding Asesmen",
+  "sumber": ""
+ },
+ {
+  "file": "FR.AK.05_Laporan_Asesmen.html",
+  "kode": "FR.AK.05",
+  "judul": "Laporan Asesmen",
+  "sumber": "23. FR.AK.05. Laporan Asesmen"
+ },
+ {
+  "file": "FR.AK.06_Meninjau_Proses_Asesmen.html",
+  "kode": "FR.AK.06",
+  "judul": "Meninjau Proses Asesmen",
+  "sumber": "24 FR.AK.06 Meninjau Proses Asesmen"
+ },
+ {
+  "file": "FR.AK.07_Penyesuaian_Wajar_dan_Beralasan.html",
+  "kode": "FR.AK.07",
+  "judul": "Ceklis Penyesuaian yang Wajar dan Beralasan",
+  "sumber": ""
+ },
+ {
+  "file": "FR.VA_Memberikan_Kontribusi_dalam_Validasi_Asesmen.html",
+  "kode": "FR.VA",
+  "judul": "Memberikan Kontribusi dalam Validasi Asesmen",
+  "sumber": "25_FR.VA  MEMBERIKAN KONTRIBUSI DALAM VALIDASI ASESMEN"
+ }
+]

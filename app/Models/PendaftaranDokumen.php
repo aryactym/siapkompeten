@@ -12,6 +12,12 @@ class PendaftaranDokumen extends Model
 {
     use BelongsToTenant, HasFactory, HasUuids;
 
+    public const STATUS_MENUNGGU = 'menunggu';
+
+    public const STATUS_DISETUJUI = 'disetujui';
+
+    public const STATUS_DITOLAK = 'ditolak';
+
     protected $fillable = [
         'institution_id',
         'pendaftaran_id',

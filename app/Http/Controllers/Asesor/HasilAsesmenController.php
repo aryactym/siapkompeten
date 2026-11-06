@@ -7,8 +7,12 @@ use App\Models\Apl02Penilaian;
 use App\Models\ElemenKompetensi;
 use App\Models\HasilAsesmen;
 use App\Models\HasilAsesmenMetode;
+use App\Models\InstrumenAsesmen;
 use App\Models\Pendaftaran;
+use App\Models\PersetujuanAsesmen;
+use App\Models\RencanaAsesmen;
 use App\Services\AsesmenService;
+use App\Services\InstrumenAsesmenService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +23,10 @@ use Illuminate\View\View;
 
 class HasilAsesmenController extends Controller
 {
-    public function __construct(private readonly AsesmenService $asesmen) {}
+    public function __construct(
+        private readonly AsesmenService $asesmen,
+        private readonly InstrumenAsesmenService $instrumen,
+    ) {}
 
     /**
      * Input hasil FR.AK.02 per unit, metode, dan KUK (FR-ASM-05..08).
@@ -31,6 +38,7 @@ class HasilAsesmenController extends Controller
         $pendaftaran->load([
             'skema',
             'apl02.jawabans',
+            'umpanBalik.pengisi',
         ]);
 
         $hasil = $this->asesmen->ensureHasil($pendaftaran);
@@ -80,7 +88,35 @@ class HasilAsesmenController extends Controller
             'metodeLabels' => HasilAsesmenMetode::METODE_LABELS,
             'metodeDaftar' => HasilAsesmenMetode::METODES,
             'apl02Terverifikasi' => $pendaftaran->apl02?->status === Apl02Penilaian::STATUS_DIVERIFIKASI,
+            'rekapInstrumen' => $this->rekapInstrumen($pendaftaran),
         ]);
+    }
+
+    /**
+     * Rekap instrumen yang sudah ada (tidak membuat instrumen baru).
+     *
+     * @return array<string, array{label: string, instrumen: InstrumenAsesmen|null, rekap: array{total: int, tercapai: int, belum_tercapai: int, belum_dinilai: int}|null}>
+     */
+    private function rekapInstrumen(Pendaftaran $pendaftaran): array
+    {
+        $tersimpan = InstrumenAsesmen::query()
+            ->where('pendaftaran_id', $pendaftaran->id)
+            ->get()
+            ->keyBy('jenis');
+
+        $rekap = [];
+
+        foreach (InstrumenAsesmen::JENIS_LABELS as $jenis => $label) {
+            $instrumen = $tersimpan->get($jenis);
+
+            $rekap[$jenis] = [
+                'label' => $label,
+                'instrumen' => $instrumen,
+                'rekap' => $instrumen ? $this->instrumen->rekap($instrumen) : null,
+            ];
+        }
+
+        return $rekap;
     }
 
     /**
@@ -148,6 +184,21 @@ class HasilAsesmenController extends Controller
         if (! $pendaftaran->apl02?->status === Apl02Penilaian::STATUS_DIVERIFIKASI) {
             throw ValidationException::withMessages([
                 'hasil' => 'APL-02 harus diverifikasi sebelum FR.AK.02 difinalkan.',
+            ]);
+        }
+
+        // Gerbang pre-asesmen: seluruh dokumen pre-asesmen harus disetujui asesi.
+        if (! PersetujuanAsesmen::allApprovedFor($pendaftaran)) {
+            throw ValidationException::withMessages([
+                'hasil' => 'Dokumen pre-asesmen (FR.AK.01/04/07) belum lengkap disetujui asesi.',
+            ]);
+        }
+
+        // Gerbang MAPA: rencana asesmen harus difinal sebelum MAK-02 difinalkan.
+        $rencana = RencanaAsesmen::where('pendaftaran_id', $pendaftaran->id)->first();
+        if (! $rencana?->isFinal()) {
+            throw ValidationException::withMessages([
+                'hasil' => 'Rencana asesmen (MAPA.01) harus difinal sebelum FR.AK.02 difinalkan.',
             ]);
         }
 

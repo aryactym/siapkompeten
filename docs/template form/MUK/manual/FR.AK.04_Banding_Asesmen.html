@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FR.AK.04 Banding Asesmen</title><link rel="stylesheet" href="form.css"></head>
+<body>
+<div class="actions"><button onclick="print()">Cetak / Simpan PDF</button></div>
+<div class="page"><form>
+<table class="hd"><tr><td>FR.AK.04.</td><td>BANDING ASESMEN</td></tr></table>
+<div class="gap"></div>
+<table>
+<tr><td style="width:38%">Nama Asesi</td><td style="width:4mm">:</td><td><input type="text" name="asesi_nama"></td></tr>
+<tr><td>Nama Asesor</td><td>:</td><td><input type="text" name="asesor_nama"></td></tr>
+<tr><td>Tanggal Asesmen</td><td>:</td><td><input type="date" name="tanggal_asesmen"></td></tr>
+</table>
+<table>
+<thead><tr><th rowspan="2" style="width:8mm">No</th><th rowspan="2">Jawablah dengan Ya atau Tidak pertanyaan-pertanyaan berikut ini :</th><th colspan="2" class="c">Jawaban</th></tr>
+<tr><th class="c" style="width:16mm">YA</th><th class="c" style="width:16mm">TIDAK</th></tr></thead>
+<tbody id="tanya"></tbody>
+</table>
+<table>
+<tr><td>Banding ini diajukan atas Keputusan Asesmen yang dibuat terhadap Skema Sertifikasi (Kualifikasi/Klaster/Okupasi) berikut :</td></tr>
+<tr><td>
+<table class="nb inner">
+<tr><td style="width:45mm">Skema Sertifikasi</td><td style="width:28mm">Judul</td><td style="width:4mm">:</td><td><input type="text" name="skema_judul"></td></tr>
+<tr><td></td><td>Nomor</td><td>:</td><td><input type="text" name="skema_nomor"></td></tr>
+</table></td></tr>
+</table>
+<table>
+<tr><td><b>Banding ini diajukan atas alasan sebagai berikut :</b></td></tr>
+<tr><td><textarea name="alasan_banding" placeholder="Tuliskan alasan pengajuan banding…"></textarea></td></tr>
+</table>
+<table>
+<tr><td class="sm">Anda mempunyai hak mengajukan banding jika Anda menilai Proses Asesmen tidak sesuai SOP dan tidak memenuhi Prinsip Asesmen.</td></tr>
+</table>
+<table><tr>
+<td class="ttd" style="width:50%">Tanda tangan Asesi : <span id="ttd_asesi"></span><br><br><br>Tanggal : <input type="text" style="width:60%"></td>
+<td class="ttd">Tanda tangan Asesor : <span id="ttd_asesor"></span><br><br><br>Tanggal : <input type="text" style="width:60%"></td></tr></table>
+</form></div>
+<script>
+const TANYA=[
+"Apakah Proses Banding telah dijelaskan kepada Anda?",
+"Apakah Anda telah mendiskusikan Banding dengan Asesor?",
+"Apakah Anda mau melibatkan “orang lain” membantu Anda dalam Proses Banding?"];
+document.getElementById('tanya').innerHTML=TANYA.map((t,i)=>
+ `<tr><td class="c">${i+1}</td><td>${t}</td>
+ <td class="c"><input type="radio" name="q${i+1}" value="ya"></td>
+ <td class="c"><input type="radio" name="q${i+1}" value="tidak"></td></tr>`).join('');
+</script>
+</body></html>

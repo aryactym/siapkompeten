@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Institution;
+use App\Support\SignatureImage;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -110,5 +111,59 @@ class AdminInstitutionController extends Controller
 
         return back()
             ->with('success', 'Logo berhasil diperbarui.');
+    }
+
+    public function uploadSignature(Request $request, Institution $institution): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tanda_tangan_file' => ['required', 'file', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
+        ]);
+
+        $binary = file_get_contents($validated['tanda_tangan_file']->getRealPath());
+
+        if (! is_string($binary) || $binary === '') {
+            return back()->withErrors(['tanda_tangan_file' => 'Berkas tidak dapat dibaca.']);
+        }
+
+        try {
+            $payload = SignatureImage::encodePng($binary);
+        } catch (\InvalidArgumentException $exception) {
+            return back()->withErrors(['tanda_tangan_file' => $exception->getMessage()]);
+        }
+
+        $institution->forceFill([
+            'tanda_tangan_data' => $payload['data'],
+            'tanda_tangan_mime' => 'image/png',
+            'tanda_tangan_hash' => $payload['hash'],
+            'tanda_tangan_uploaded_at' => now(),
+            'tanda_tangan_path' => null,
+        ])->save();
+
+        activity('institution')
+            ->causedBy($request->user())
+            ->performedOn($institution)
+            ->withProperties(['action' => 'signature-store', 'hash' => $payload['hash']])
+            ->log('Tanda tangan Ketua LSP diperbarui.');
+
+        return back()->with('success', 'Tanda tangan Ketua LSP berhasil diperbarui.');
+    }
+
+    public function deleteSignature(Institution $institution): RedirectResponse
+    {
+        $institution->forceFill([
+            'tanda_tangan_data' => null,
+            'tanda_tangan_mime' => null,
+            'tanda_tangan_hash' => null,
+            'tanda_tangan_uploaded_at' => null,
+            'tanda_tangan_path' => null,
+        ])->save();
+
+        activity('institution')
+            ->causedBy(request()->user())
+            ->performedOn($institution)
+            ->withProperties(['action' => 'signature-delete'])
+            ->log('Tanda tangan Ketua LSP dihapus.');
+
+        return back()->with('success', 'Tanda tangan Ketua LSP berhasil dihapus.');
     }
 }

@@ -1,0 +1,39 @@
+@page{size:A4;margin:15mm}
+*{box-sizing:border-box}
+body{font:11pt/1.35 Arial,sans-serif;color:#000;background:#eef0f3;margin:0}
+.page{width:210mm;min-height:297mm;margin:10mm auto;padding:15mm;background:#fff;box-shadow:0 0 6px #0003}
+table{width:100%;border-collapse:collapse;margin-bottom:-1px}
+th,td{border:1px solid #000;padding:5px 7px;vertical-align:top;text-align:left}
+tr{page-break-inside:avoid}thead{display:table-header-group}
+.hd td{font-weight:bold;font-size:12pt}.hd td:first-child{width:28mm}
+.nb td,.nb th{border:0}.c{text-align:center}.b{font-weight:bold}.sm{font-size:9.5pt}
+.gap{height:10px}
+input[type=text],input[type=date],input[type=time],textarea{font:inherit;border:0;border-bottom:1px dotted #000;background:transparent;width:100%;padding:1px 2px}
+textarea{border:0;min-height:40mm;resize:vertical}
+input[type=checkbox],input[type=radio]{width:14px;height:14px;margin:0 6px 0 0;vertical-align:middle;accent-color:#000}
+label{cursor:pointer}
+.opt label{display:inline-block;margin-right:14px}
+.opt input:checked+span{font-weight:bold}
+.strike input:not(:checked)+span{text-decoration:line-through;color:#555}
+.ttd{height:25mm}
+.actions{width:210mm;margin:10mm auto 0;text-align:right}
+.actions button{padding:6px 14px;font:inherit;cursor:pointer}
+@media print{body{background:#fff}.page{margin:0;padding:0;width:auto;min-height:0;box-shadow:none}.actions{display:none}
+input[type=text],input[type=date],input[type=time]{border:0}textarea{border:0}}
+
+/* --- tambahan hasil konversi docx --- */
+p{margin:3px 0}
+td p,th p,td div,th div{margin:0}
+td{word-break:break-word}
+.gbr{max-width:100%;height:auto;vertical-align:middle}
+.txbx{margin:0 0 3px}
+.tab{display:inline-block;width:12mm}
+.u{text-decoration:underline}
+.li{padding-left:6mm;font-weight:bold;margin:6px 0 3px}
+.sep{text-align:center;width:4mm}
+td input[type=text]{min-width:18mm}
+.hd td:first-child{width:auto;white-space:nowrap}
+.cover{text-align:center;padding:28mm 0 22mm}
+.cover-judul{font:bold 34pt/1.1 Arial,sans-serif;letter-spacing:6px}
+.cover-sub{font-size:12pt;margin-top:8px}
+.cover-garis{width:60mm;height:3px;background:#000;margin:14px auto 0}

@@ -94,4 +94,19 @@ class PendaftaranPolicy
     {
         return $this->verifyApl02($user, $pendaftaran);
     }
+
+    public function catatPresensi(User $user, Pendaftaran $pendaftaran): bool
+    {
+        return $this->verifyApl02($user, $pendaftaran);
+    }
+
+    public function mulaiAsesmen(User $user, Pendaftaran $pendaftaran): bool
+    {
+        return $this->verifyApl02($user, $pendaftaran);
+    }
+
+    public function inputInstrumen(User $user, Pendaftaran $pendaftaran): bool
+    {
+        return $this->verifyApl02($user, $pendaftaran);
+    }
 }

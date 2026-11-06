@@ -123,17 +123,17 @@
         <tr style="height: 100%;">
             <td style="vertical-align: bottom; padding-bottom: 10px;">
                 <div>Asesi,</div>
-                <x-pdf.signature :path="$pendaftaran->asesi->user?->signature_path" label="Asesi" :height="60" :width="150" />
+                <x-pdf.signature :model="$pendaftaran->asesi?->user" label="Asesi" :height="60" :width="150" />
                 <div style="margin-top: 8px; font-size: 9px;">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
             </td>
             <td style="vertical-align: bottom; padding-bottom: 10px;">
                 <div>Asesor,</div>
-                <x-pdf.signature :path="$hasil?->asesor?->user?->signature_path" label="Asesor" :height="60" :width="150" />
+                <x-pdf.signature :model="$hasil?->asesor?->user" label="Asesor" :height="60" :width="150" />
                 <div style="margin-top: 8px; font-size: 9px;">{{ $hasil?->asesor?->user?->name ?? '________________' }}</div>
             </td>
             <td style="vertical-align: bottom; padding-bottom: 10px;">
                 <div>Ketua LSP,</div>
-                <x-pdf.signature :path="$pendaftaran->institution?->tanda_tangan_path" label="Ketua LSP" :height="60" :width="150" />
+                <x-pdf.signature :model="$pendaftaran->institution" label="Ketua LSP" :height="60" :width="150" />
                 <div style="margin-top: 8px; font-size: 9px;">{{ $pendaftaran->institution?->nama_ketua ?? '________________' }}</div>
             </td>
         </tr>

@@ -176,6 +176,18 @@
                         @enderror
                     @endif
                 </div>
+                <div class="mb-3">
+                    <label class="form-label required">Tujuan Asesmen</label>
+                    <select name="tujuan_asesmen" class="form-select @error('tujuan_asesmen') is-invalid @enderror" required>
+                        <option value="">— Pilih tujuan —</option>
+                        @foreach (\App\Models\Pendaftaran::TUJUAN_LABELS as $value => $label)
+                            <option value="{{ $value }}" @selected(old('tujuan_asesmen') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('tujuan_asesmen')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
                 <div class="form-hint">
                     Pendaftaran akan dibuat dengan status <strong>Draf</strong>. Dokumen persyaratan dapat diunggah dari halaman detail pendaftaran.
                 </div>

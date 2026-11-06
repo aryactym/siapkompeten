@@ -28,10 +28,11 @@ class Institution extends Model
         'logo_bnsp_path',
         'logo_lsp_path',
         'stempel_path',
-        'tanda_tangan_path',
         'is_active',
         'is_setup_completed',
     ];
+
+    protected $hidden = ['tanda_tangan_data'];
 
     protected function casts(): array
     {
@@ -39,6 +40,8 @@ class Institution extends Model
             'is_active' => 'boolean',
             'is_setup_completed' => 'boolean',
             'masa_berlaku_lisensi' => 'date',
+            'tanda_tangan_data' => 'encrypted',
+            'tanda_tangan_uploaded_at' => 'datetime',
         ];
     }
 

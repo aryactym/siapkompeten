@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\RencanaAsesmen;
 use App\Models\Skema;
+use App\Policies\RencanaAsesmenPolicy;
 use App\Policies\SkemaPolicy;
 use App\Services\Notifications\LogSmsGateway;
 use App\Services\Notifications\SmsGateway;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerPolicies(): void
     {
-        \Illuminate\Support\Facades\Gate::policy(Skema::class, SkemaPolicy::class);
+        Gate::policy(Skema::class, SkemaPolicy::class);
+        Gate::policy(RencanaAsesmen::class, RencanaAsesmenPolicy::class);
     }
 }

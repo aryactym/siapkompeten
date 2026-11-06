@@ -6,9 +6,12 @@ use App\Exports\PendaftaranExport;
 use App\Http\Controllers\Controller;
 use App\Models\Apl02Penilaian;
 use App\Models\Asesi;
+use App\Models\Institution;
 use App\Models\JadwalAsesmen;
 use App\Models\Pendaftaran;
+use App\Models\Sertifikat;
 use App\Models\Skema;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -98,6 +101,94 @@ class AdminPelaporanController extends Controller
         );
 
         return Excel::download(new PendaftaranExport($filters), $filename);
+    }
+
+    public function bnsp(Request $request): View
+    {
+        $dari = $request->string('dari')->toString() ?: now()->subYear()->toDateString();
+        $sampai = $request->string('sampai')->toString() ?: now()->toDateString();
+
+        $skemas = Skema::query()->aktif()->orderBy('nama_skema')->get(['id', 'nama_skema', 'kode_skema']);
+
+        $rekap = [];
+
+        foreach ($skemas as $skema) {
+            $asesiCount = Asesi::query()
+                ->whereHas('pendaftarans', fn ($q) => $q
+                    ->where('skema_id', $skema->id)
+                    ->whereBetween('created_at', [$dari.' 00:00:00', $sampai.' 23:59:59']))
+                ->count();
+
+            $kompetenCount = Asesi::query()
+                ->where('status_kompetensi', 'kompeten')
+                ->whereHas('pendaftarans', fn ($q) => $q
+                    ->where('skema_id', $skema->id)
+                    ->whereBetween('created_at', [$dari.' 00:00:00', $sampai.' 23:59:59']))
+                ->count();
+
+            $sertifikatCount = Sertifikat::query()
+                ->where('skema_id', $skema->id)
+                ->whereBetween('tanggal_terbit', [$dari.' 00:00:00', $sampai.' 23:59:59'])
+                ->count();
+
+            $rekap[] = [
+                'skema' => $skema,
+                'asesi' => $asesiCount,
+                'kompeten' => $kompetenCount,
+                'sertifikat' => $sertifikatCount,
+            ];
+        }
+
+        return view('admin.pelaporan.bnsp', [
+            'dari' => $dari,
+            'sampai' => $sampai,
+            'rekap' => $rekap,
+        ]);
+    }
+
+    public function bnspPdf(Request $request)
+    {
+        $dari = $request->string('dari')->toString() ?: now()->subYear()->toDateString();
+        $sampai = $request->string('sampai')->toString() ?: now()->toDateString();
+
+        $skemas = Skema::query()->aktif()->orderBy('nama_skema')->get(['id', 'nama_skema', 'kode_skema']);
+
+        $rekap = [];
+
+        foreach ($skemas as $skema) {
+            $asesiCount = Asesi::query()
+                ->whereHas('pendaftarans', fn ($q) => $q
+                    ->where('skema_id', $skema->id)
+                    ->whereBetween('created_at', [$dari.' 00:00:00', $sampai.' 23:59:59']))
+                ->count();
+
+            $kompetenCount = Asesi::query()
+                ->where('status_kompetensi', 'kompeten')
+                ->whereHas('pendaftarans', fn ($q) => $q
+                    ->where('skema_id', $skema->id)
+                    ->whereBetween('created_at', [$dari.' 00:00:00', $sampai.' 23:59:59']))
+                ->count();
+
+            $sertifikatCount = Sertifikat::query()
+                ->where('skema_id', $skema->id)
+                ->whereBetween('tanggal_terbit', [$dari.' 00:00:00', $sampai.' 23:59:59'])
+                ->count();
+
+            $rekap[] = [
+                'skema' => $skema,
+                'asesi' => $asesiCount,
+                'kompeten' => $kompetenCount,
+                'sertifikat' => $sertifikatCount,
+            ];
+        }
+
+        return Pdf::loadView('pdf.surat-pengantar-blanko', [
+            'institution' => Institution::first(),
+            'dari' => $dari,
+            'sampai' => $sampai,
+            'rekap' => $rekap,
+        ])->setPaper('a4', 'portrait')
+            ->stream(sprintf('SURAT-PENGANTAR-BLANKO-%s.pdf', now()->format('Ymd')));
     }
 
     public function apl02(Request $request): View

@@ -126,42 +126,54 @@ class PdfFormulirTest extends TestCase
         $this->pendaftaran = Pendaftaran::firstOrFail();
     }
 
-    public function test_mak01_uses_fr_ia_08_label_and_assigned_assessor_as_signer(): void
-    {
-        $pendaftaran = $this->pendaftaran->load([
-            'asesi.user',
-            'skema.persyaratans',
-            'dokumens.persyaratan',
-            'jadwal.asesors.user',
-        ]);
-
-        $this->view('pdf.mak01', [
-            'pendaftaran' => $pendaftaran,
-            'institution' => $this->institution,
-        ])
-            ->assertSee('FR.IA.08')
-            ->assertDontSee('FR.AK.01')
-            ->assertSee('Asesor / Verifikator')
-            ->assertSee('Asesor Penilai')
-            ->assertDontSee('Admin Pencetak');
-    }
-
-    public function test_mak03_uses_berita_acara_title_without_fr_ak_04(): void
+    public function test_mak01_renders_official_fr_ak_01_template(): void
     {
         $pendaftaran = $this->pendaftaran->load([
             'asesi.user',
             'skema',
             'jadwal.tuk',
             'jadwal.asesors.user',
+            'persetujuanAsesmens',
+        ]);
+
+        $this->view('pdf.mak01', [
+            'pendaftaran' => $pendaftaran,
+            'institution' => $this->institution,
+            'skema' => $pendaftaran->skema,
+            'jadwal' => $pendaftaran->jadwal,
+            'asesiUser' => $pendaftaran->asesi?->user,
+            'persetujuan' => null,
+            'data' => [],
+        ])
+            ->assertSee('FR.AK.01.')
+            ->assertSee('PERSETUJUAN ASESMEN DAN KERAHASIAAN')
+            ->assertSee('Bukti yang akan dikumpulkan')
+            ->assertDontSee('FR.IA.08');
+    }
+
+    public function test_mak03_renders_official_fr_ak_04_template(): void
+    {
+        $pendaftaran = $this->pendaftaran->load([
+            'asesi.user',
+            'skema',
+            'jadwal.tuk',
+            'jadwal.asesors.user',
+            'persetujuanAsesmens',
         ]);
 
         $this->view('pdf.mak03', [
             'pendaftaran' => $pendaftaran,
-            'hasil' => null,
             'institution' => $this->institution,
+            'skema' => $pendaftaran->skema,
+            'jadwal' => $pendaftaran->jadwal,
+            'asesiUser' => $pendaftaran->asesi?->user,
+            'persetujuan' => null,
+            'data' => [],
         ])
-            ->assertSee('Berita Acara Asesmen')
-            ->assertDontSee('FR.AK.04');
+            ->assertSee('FR.AK.04.')
+            ->assertSee('BANDING ASESMEN')
+            ->assertSee('Apakah Proses Banding telah dijelaskan')
+            ->assertDontSee('Berita Acara Asesmen');
     }
 
     public function test_apl01_uses_fr_apl_01_label_and_explicit_admin_signer(): void

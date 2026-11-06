@@ -14,7 +14,7 @@ class JadwalAsesmenPolicy
 
     public function view(User $user, JadwalAsesmen $jadwal): bool
     {
-        if ($user->hasAnyRole(['super-admin', 'admin'])) {
+        if ($user->hasAnyRole(['super-admin', 'admin', 'komite-teknis', 'manajer-sertifikasi'])) {
             return true;
         }
 

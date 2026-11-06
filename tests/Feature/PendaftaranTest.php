@@ -345,6 +345,46 @@ class PendaftaranTest extends TestCase
         $this->assertNull($pendaftaran->fresh()->jadwal_id);
     }
 
+    public function test_admin_can_verify_all_documents_at_once()
+    {
+        Storage::fake('local');
+
+        $pendaftaran = $this->createPendaftaran();
+
+        $this->asAsesi()->post(route('asesi.pendaftaran.dokumen.store', $pendaftaran), [
+            'skema_persyaratan_id' => $this->syaratWajib->id,
+            'file' => UploadedFile::fake()->create('ktp.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->asAsesi()->post(route('asesi.pendaftaran.dokumen.store', $pendaftaran), [
+            'skema_persyaratan_id' => $this->syaratOpsional->id,
+            'file' => UploadedFile::fake()->create('portofolio.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->asAsesi()->post(route('asesi.pendaftaran.submit', $pendaftaran));
+        $this->assertSame(Pendaftaran::STATUS_DOKUMEN_DIAJUKAN, $pendaftaran->fresh()->status);
+
+        $dokumenWajib = PendaftaranDokumen::where('pendaftaran_id', $pendaftaran->id)
+            ->where('skema_persyaratan_id', $this->syaratWajib->id)
+            ->firstOrFail();
+        $dokumenOpsional = PendaftaranDokumen::where('pendaftaran_id', $pendaftaran->id)
+            ->where('skema_persyaratan_id', $this->syaratOpsional->id)
+            ->firstOrFail();
+
+        $response = $this->asAdmin()->post(route('admin.pendaftaran.verify-all', $pendaftaran));
+        $response->assertSessionHas('success');
+        $response->assertSessionHas('success', 'Semua dokumen persyaratan berhasil disetujui.');
+
+        $dokumenWajib->refresh();
+        $dokumenOpsional->refresh();
+
+        $this->assertSame(PendaftaranDokumen::STATUS_DISETUJUI, $dokumenWajib->status);
+        $this->assertSame(PendaftaranDokumen::STATUS_DISETUJUI, $dokumenOpsional->status);
+        $this->assertSame($this->admin->id, $dokumenWajib->diverifikasi_oleh);
+        $this->assertNotNull($dokumenWajib->diverifikasi_pada);
+        $this->assertSame(Pendaftaran::STATUS_MENUNGGU_JADWAL, $pendaftaran->fresh()->status);
+    }
+
     public function test_asesi_cannot_access_another_tenant_pendaftaran(): void
     {
         $otherInstitution = Institution::create([

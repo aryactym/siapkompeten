@@ -677,31 +677,44 @@
 
         <!-- ===== TANDA TANGAN ===== -->
         <div class="signatures-section">
+            @php
+                $asesiUser = $pendaftaran->asesi?->user;
+                $asesorUser = $hasil?->asesor?->user;
+                $asesiSignature = \App\Support\SignatureImage::for($asesiUser);
+                $asesorSignature = \App\Support\SignatureImage::for($asesorUser);
+                $ketuaSignature = \App\Support\SignatureImage::for($pendaftaran->institution);
+            @endphp
             <table class="signatures-table">
                 <tr>
                     <td class="signatures-cell">
                         <div class="signature-label">Asesi,</div>
                         <div class="signature-space">
-                            @if ($pendaftaran->asesi->user->signature_path)
-                                <img src="{{ public_path('storage/' . $pendaftaran->asesi->user->signature_path) }}" alt="Tanda Tangan Asesi" class="signature-img">
+                            @if ($asesiSignature)
+                                <img src="{{ $asesiSignature }}" alt="Tanda Tangan Asesi" class="signature-img">
+                            @else
+                                <div class="signature-missing">Tanda tangan belum tersimpan.</div>
                             @endif
                         </div>
-                        <div class="signature-name">{{ $pendaftaran->asesi->user->name ?? '—' }}</div>
+                        <div class="signature-name">{{ $asesiUser?->name ?? '—' }}</div>
                     </td>
                     <td class="signatures-cell">
                         <div class="signature-label">Asesor,</div>
                         <div class="signature-space">
-                            @if ($hasil->asesor->user->signature_path)
-                                <img src="{{ public_path('storage/' . $hasil->asesor->user->signature_path) }}" alt="Tanda Tangan Asesor" class="signature-img">
+                            @if ($asesorSignature)
+                                <img src="{{ $asesorSignature }}" alt="Tanda Tangan Asesor" class="signature-img">
+                            @else
+                                <div class="signature-missing">Tanda tangan belum tersimpan.</div>
                             @endif
                         </div>
-                        <div class="signature-name">{{ $hasil->asesor->user->name ?? '—' }}</div>
+                        <div class="signature-name">{{ $asesorUser?->name ?? '—' }}</div>
                     </td>
                     <td class="signatures-cell">
                         <div class="signature-label">Ketua LSP,</div>
                         <div class="signature-space">
-                            @if ($pendaftaran->institution?->tanda_tangan_path)
-                                <img src="{{ public_path('storage/' . $pendaftaran->institution->tanda_tangan_path) }}" alt="Tanda Tangan Ketua LSP" class="signature-img">
+                            @if ($ketuaSignature)
+                                <img src="{{ $ketuaSignature }}" alt="Tanda Tangan Ketua LSP" class="signature-img">
+                            @else
+                                <div class="signature-missing">Tanda tangan belum tersimpan.</div>
                             @endif
                         </div>
                         <div class="signature-name">{{ $pendaftaran->institution?->nama_ketua ?? '—' }}</div>

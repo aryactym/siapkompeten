@@ -76,6 +76,9 @@
                                     <a href="{{ route('admin.jadwal.show', $jadwal) }}" class="btn btn-sm btn-outline-primary" title="Detail">
                                         <i class="ti ti-eye"></i>
                                     </a>
+                                    <a href="{{ route('pleno.show', $jadwal) }}" class="btn btn-sm btn-outline-secondary" title="Pleno">
+                                        <i class="ti ti-gavel"></i>
+                                    </a>
                                     <a href="{{ route('admin.jadwal.presensi', $jadwal) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Presensi">
                                         <i class="ti ti-printer"></i>
                                     </a>

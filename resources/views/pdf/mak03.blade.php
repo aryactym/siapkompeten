@@ -2,98 +2,114 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Berita Acara Asesmen · {{ $pendaftaran->no_pendaftaran }}</title>
-    <style>
-        @page { margin: 14mm 12mm; }
-        * { box-sizing: border-box; }
-        body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; color: #111; font-size: 10px; }
-        h1 { font-size: 13px; margin: 0 0 2px; text-align: center; text-transform: uppercase; }
-        h2 { font-size: 10.5px; margin: 0 0 12px; text-align: center; font-weight: normal; }
-        h3 { font-size: 10.5px; margin: 12px 0 4px; background: #eeeeee; padding: 3px 6px; }
-        table { width: 100%; border-collapse: collapse; }
-        .meta td { vertical-align: top; padding: 2px 0; }
-        .meta td:first-child { width: 34%; font-weight: bold; }
-        .items th, .items td { border: 1px solid #333; padding: 4px 6px; vertical-align: top; }
-        .items th { background: #eeeeee; font-size: 9px; text-transform: uppercase; }
-        .muted { color: #555; }
-        .signatures { margin-top: 30px; }
-        .signatures td { width: 33%; text-align: center; vertical-align: top; }
-        .signature-line { border-top: 1px solid #333; margin: 48px 12px 0; padding-top: 4px; }
-    </style>
+    <title>FR.AK.04 · {{ $pendaftaran->no_pendaftaran }}</title>
+    @include('pdf.partials.official-styles')
 </head>
 <body>
-    <h1>Berita Acara Asesmen</h1>
-    <h2>{{ $pendaftaran->skema->nama_skema }}</h2>
+    @php
+        $pendaftaran ??= null;
+        $skema = $skema ?? $pendaftaran?->skema;
+        $jadwal = $jadwal ?? $pendaftaran?->jadwal;
+        $persetujuan ??= null;
+        $data ??= [];
 
-    @php $a = $pendaftaran->asesi; $u = $a->user; @endphp
+        $asesiUser = $asesiUser ?? $pendaftaran?->asesi?->user;
+        $asesorUser = $jadwal?->asesors->first()?->user;
+        $asesiSignature = \App\Support\SignatureImage::for($asesiUser);
+        $asesorSignature = \App\Support\SignatureImage::for($asesorUser);
+        $data = $data ?? [];
+        $signedAt = $persetujuan?->disetujui_pada?->translatedFormat('d F Y') ?? ($data['tanggal'] ?? null);
+        $assessmentDate = $data['tanggal'] ?? $jadwal?->tanggal?->translatedFormat('d F Y') ?? '—';
+        $questions = [
+            1 => 'Apakah Proses Banding telah dijelaskan kepada Anda?',
+            2 => 'Apakah Anda telah mendiskusikan Banding dengan Asesor?',
+            3 => 'Apakah Anda mau melibatkan “orang lain” membantu Anda dalam Proses Banding?',
+        ];
+        $answers = [
+            1 => $data['proses_dijelaskan'] ?? null,
+            2 => $data['didiskusikan'] ?? null,
+            3 => $data['libatkan_orang_lain'] ?? null,
+        ];
+    @endphp
 
-    <h3>A. Data Asesmen</h3>
-    <table class="meta">
-        <tr><td>No. Pendaftaran</td><td>{{ $pendaftaran->no_pendaftaran }}</td></tr>
-        <tr><td>Nama Asesi</td><td>{{ $u->name ?? '—' }}</td></tr>
-        <tr><td>No. Registrasi</td><td>{{ $a->no_registrasi ?? '—' }}</td></tr>
-        <tr><td>Skema</td><td>{{ $pendaftaran->skema->nama_skema }} ({{ $pendaftaran->skema->kode_skema }})</td></tr>
-        <tr><td>TUK</td><td>{{ $pendaftaran->jadwal?->tuk?->nama_tuk ?? '—' }}</td></tr>
-        <tr><td>Tanggal Asesmen</td><td>{{ $pendaftaran->jadwal?->tanggal?->translatedFormat('d F Y') ?? '—' }}</td></tr>
-        <tr><td>Waktu</td><td>{{ $pendaftaran->jadwal?->jam_mulai }} – {{ $pendaftaran->jadwal?->jam_selesai }}</td></tr>
-        <tr><td>Asesor</td><td>{{ $pendaftaran->jadwal?->asesors->first()?->user?->name ?? '—' }}</td></tr>
+    <table class="hd">
+        <tr><td>FR.AK.04.</td><td>BANDING ASESMEN</td></tr>
+    </table>
+    <div class="gap"></div>
+
+    <table>
+        <colgroup><col style="width:38%"><col style="width:4mm"><col></colgroup>
+        <tr><td>Nama Asesi</td><td class="sep">:</td><td>{{ $data['asesi_nama'] ?? $asesiUser?->name ?? '—' }}</td></tr>
+        <tr><td>Nama Asesor</td><td class="sep">:</td><td>{{ $data['asesor_nama'] ?? $asesorUser?->name ?? '—' }}</td></tr>
+        <tr><td>Tanggal Asesmen</td><td class="sep">:</td><td>{{ $assessmentDate }}</td></tr>
     </table>
 
-    <h3>B. Keputusan Asesmen</h3>
-    <table class="meta">
-        <tr><td>Rekomendasi</td><td>{{ $hasil ? strtoupper(str_replace('_', ' ', $hasil->rekomendasi)) : '—' }}</td></tr>
-        <tr><td>Persen Kompeten</td><td>{{ $hasil ? number_format($hasil->persen_kompeten, 2).'%' : '—' }}</td></tr>
-        <tr><td>Status</td><td>{{ $hasil ? strtoupper($hasil->status) : '—' }}</td></tr>
-        <tr><td>Finalisasi</td><td>{{ $hasil?->finalized_at?->translatedFormat('d F Y H:i') ?: '—' }}</td></tr>
-        <tr><td>Umpan Balik Diberikan</td><td>{{ $hasil?->umpan_balik_diberikan ? 'Ya' : 'Tidak' }}</td></tr>
-    </table>
-
-    @if ($hasil && $hasil->units->isNotEmpty())
-        <h3>C. Keputusan per Unit</h3>
-        <table class="items">
-            <thead>
+    <table>
+        <thead>
+            <tr><th rowspan="2" class="c" style="width:8mm">No</th><th rowspan="2">Jawablah dengan Ya atau Tidak pertanyaan-pertanyaan berikut ini :</th><th colspan="2" class="c">Jawaban</th></tr>
+            <tr><th class="c" style="width:16mm">YA</th><th class="c" style="width:16mm">TIDAK</th></tr>
+        </thead>
+        <tbody>
+            @foreach ($questions as $number => $question)
+                @php $answer = strtolower((string) ($answers[$number] ?? '')); @endphp
                 <tr>
-                    <th style="width: 12%;">Kode Unit</th>
-                    <th style="width: 58%;">Judul Unit</th>
-                    <th style="width: 30%;">Keputusan</th>
+                    <td class="c">{{ $number }}</td>
+                    <td>{{ $question }}</td>
+                    <td class="c">{{ $answer === 'ya' ? 'X' : '' }}</td>
+                    <td class="c">{{ $answer === 'tidak' ? 'X' : '' }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($hasil->units as $hasilUnit)
-                    <tr>
-                        <td>{{ $hasilUnit->unit?->kode_unit ?? '—' }}</td>
-                        <td>{{ $hasilUnit->unit?->judul_unit ?? '—' }}</td>
-                        <td>{{ $hasilUnit->keputusan ? ucwords(str_replace('_', ' ', $hasilUnit->keputusan)) : '—' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
+            @endforeach
+        </tbody>
+    </table>
 
-    <h3>D. Pernyataan dan Tanda Tangan</h3>
-    <p class="muted">
-        Berita acara asesmen ini dibuat sebagai bukti pelaksanaan asesmen kompetensi sesuai ketentuan BNSP.
-    </p>
-
-    <table class="signatures">
+    <table>
+        <tr><td>Banding ini diajukan atas Keputusan Asesmen yang dibuat terhadap Skema Sertifikasi (Kualifikasi/Klaster/Okupasi) berikut :</td></tr>
         <tr>
             <td>
-                @php $asesorUser = $pendaftaran->jadwal?->asesors->first()?->user; @endphp
-                <x-pdf.signature :path="$asesorUser?->signature_path" label="Asesor" />
-                <div>Asesor</div>
-                <div>{{ $asesorUser?->name ?? '' }}</div>
-            </td>
-            <td>
-                <x-pdf.signature :path="$u?->signature_path" label="Asesi" />
-                <div>Asesi</div>
-                <div>{{ $u->name ?? '' }}</div>
-            </td>
-            <td>
-                <div class="signature-line"></div>
-                <div>Tanggal</div>
-                <div>{{ now()->translatedFormat('d F Y') }}</div>
+                <table class="nb">
+                    <colgroup><col style="width:45mm"><col style="width:28mm"><col style="width:4mm"><col></colgroup>
+                    <tr><td rowspan="2">Skema Sertifikasi</td><td>Judul</td><td class="sep">:</td><td>{{ $data['skema_judul'] ?? $skema?->nama_skema ?? '—' }}</td></tr>
+                    <tr><td>Nomor</td><td class="sep">:</td><td>{{ $data['skema_nomor'] ?? $skema?->nomor_skema ?? '—' }}</td></tr>
+                </table>
             </td>
         </tr>
     </table>
+
+    <table>
+        <tr><td><b>Banding ini diajukan atas alasan sebagai berikut :</b></td></tr>
+        <tr><td style="min-height: 45mm; white-space: pre-wrap;">{{ $data['alasan'] ?? '—' }}</td></tr>
+    </table>
+
+    <table>
+        <tr><td class="sm">Anda mempunyai hak mengajukan banding jika Anda menilai Proses Asesmen tidak sesuai SOP dan tidak memenuhi Prinsip Asesmen.</td></tr>
+    </table>
+
+    <table class="avoid-break" style="margin-bottom: 0">
+        <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+        <tr>
+            <td class="ttd">
+                Tanda tangan Asesi :<br>
+                @if ($asesiSignature)
+                    <img src="{{ $asesiSignature }}" alt="Tanda Tangan Asesi" style="max-height: 18mm; max-width: 45mm; margin-top: 3mm;">
+                @else
+                    <div class="sig-missing">Tanda tangan belum tersimpan.</div>
+                @endif
+                <br><span class="sm">Tanggal : {{ $signedAt ?? '—' }}</span>
+            </td>
+            <td class="ttd">
+                Tanda tangan Asesor :<br>
+                @if ($asesorSignature)
+                    <img src="{{ $asesorSignature }}" alt="Tanda Tangan Asesor" style="max-height: 18mm; max-width: 45mm; margin-top: 3mm;">
+                @else
+                    <div class="sig-missing">Tanda tangan belum tersimpan.</div>
+                @endif
+                <br><span class="sm">Tanggal : {{ $signedAt ?? '—' }}</span>
+            </td>
+        </tr>
+    </table>
+
+    @if ($persetujuan?->disetujui_pada)
+        <p><span class="b">Disetujui pada</span> {{ $persetujuan->disetujui_pada->translatedFormat('d F Y H:i') }}.</p>
+    @endif
 </body>
 </html>

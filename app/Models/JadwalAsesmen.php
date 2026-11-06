@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JadwalAsesmen extends Model
@@ -69,6 +70,11 @@ class JadwalAsesmen extends Model
     public function pendaftarans(): HasMany
     {
         return $this->hasMany(Pendaftaran::class, 'jadwal_id');
+    }
+
+    public function pleno(): HasOne
+    {
+        return $this->hasOne(Pleno::class, 'jadwal_id');
     }
 
     public function scopeAktif(Builder $query): Builder

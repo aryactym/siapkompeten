@@ -10,6 +10,11 @@
     --tblr-font-sans-serif: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
+/* Halaman auth yang panjang: jangan dipaksa ke tengah secara vertikal */
+.page-top {
+    justify-content: flex-start;
+}
+
 .avatar-institution {
     width: 32px;
     height: 32px;

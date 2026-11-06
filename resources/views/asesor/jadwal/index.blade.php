@@ -11,6 +11,11 @@
     </div>
 @else
     <x-tabler.card title="Penugasan Uji">
+        <x-slot:actions>
+            <a href="{{ route('asesor.jadwal.calendar') }}" class="btn btn-sm btn-outline-primary">
+                <i class="ti ti-calendar me-1"></i> Kalender
+            </a>
+        </x-slot:actions>
         @if ($jadwals->isEmpty())
             <x-tabler.empty
                 title="Belum ada penugasan"

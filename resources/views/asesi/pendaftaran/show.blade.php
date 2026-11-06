@@ -74,6 +74,21 @@
         <i class="ti ti-calendar-check me-1"></i>
         Anda telah terjadwal. Silakan cek detail jadwal di bawah.
     </div>
+@elseif ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_SELESAI)
+    <div class="alert alert-success d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <i class="ti ti-circle-check me-1"></i>
+            Asesmen telah selesai. Silakan isi umpan balik FR.AK.03 sebagai bagian dari evaluasi proses asesmen.
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('asesi.umpan-balik.show', $pendaftaran) }}" class="btn btn-success">
+                <i class="ti ti-message-2 me-1"></i> Isi Umpan Balik
+            </a>
+            <a href="{{ route('asesi.banding.show', $pendaftaran) }}" class="btn btn-outline-danger">
+                <i class="ti ti-gavel me-1"></i> Ajukan Banding
+            </a>
+        </div>
+    </div>
 @elseif ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_DITOLAK)
     <div class="alert alert-danger">
         <i class="ti ti-x me-1"></i>
@@ -106,6 +121,16 @@
         </div>
         <a href="{{ route('asesi.apl02.show', $pendaftaran) }}" class="btn btn-primary">
             <i class="ti ti-list-check me-1"></i> Buka APL-02
+        </a>
+    </div>
+
+    <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <i class="ti ti-file-check me-1"></i>
+            Dokumen pre-asesmen (FR.AK.01, FR.AK.04, FR.AK.07) wajib dibaca dan disetujui sebelum asesmen dimulai.
+        </div>
+        <a href="{{ route('asesi.pre-asesmen.show', $pendaftaran) }}" class="btn btn-warning">
+            <i class="ti ti-file-check me-1"></i> Buka Dokumen Pre-Asesmen
         </a>
     </div>
 @endif

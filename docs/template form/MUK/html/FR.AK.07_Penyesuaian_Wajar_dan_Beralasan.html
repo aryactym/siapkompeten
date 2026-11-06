@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FR.AK.07 Ceklis Penyesuaian yang Wajar dan Beralasan</title><link rel="stylesheet" href="form.css"></head>
+<body>
+<div class="actions"><button onclick="print()">Cetak / Simpan PDF</button></div>
+<div class="page"><form>
+<table class="hd"><tr><td>FR.AK.07.</td><td>CEKLIS PENYESUAIAN YANG WAJAR DAN BERALASAN</td></tr></table>
+<div class="gap"></div>
+<table>
+<tr><td rowspan="2" style="width:38%">Skema Sertifikasi (KKNI/Okupasi/Klaster)</td><td style="width:14mm">Judul</td><td style="width:4mm">:</td><td><input type="text" name="skema_judul"></td></tr>
+<tr><td>Nomor</td><td>:</td><td><input type="text" name="skema_nomor"></td></tr>
+<tr><td>TUK</td><td colspan="2">:</td><td class="strike">
+<label><input type="radio" name="tuk_jenis" value="Sewaktu" checked><span>Sewaktu</span></label> /
+<label><input type="radio" name="tuk_jenis" value="Tempat Kerja"><span>Tempat Kerja</span></label> /
+<label><input type="radio" name="tuk_jenis" value="Mandiri"><span>Mandiri</span></label>*</td></tr>
+<tr><td>Nama Asesor</td><td colspan="2">:</td><td><input type="text" name="asesor_nama"></td></tr>
+<tr><td>Nama Asesi</td><td colspan="2">:</td><td><input type="text" name="asesi_nama"></td></tr>
+<tr><td>Tanggal</td><td colspan="2">:</td><td><input type="date" name="tanggal"></td></tr>
+</table>
+<p class="sm">*Coret yang tidak perlu</p>
+
+<table><tr><th>PANDUAN BAGI ASESOR</th></tr>
+<tr><td class="sm">Formulir ini dapat digunakan (<span class="strike"><label><input type="checkbox" checked hidden><span>sebelum pra asesmen</span></label>, <label><input type="checkbox" checked hidden><span>saat pelaksanaan pra asesmen</span></label>, <label><input type="checkbox" checked hidden><span>setelah pra asesmen</span></label></span>)* jika ada asesi yang mempunyai keterbatasan sesuai karakteristik yang dimilikinya sehingga diperlukan penyesuaian yang wajar dan beralasan, jika rencana asesmen dan perangkat asesmen tidak sesuai dengan acuan pembanding, potensi asesi dan konteks asesi, jika asesi merasa keletihan, sakit, serta jika kondisi alam, listrik padam, ……..<br>
+Coretlah pada tanda * yang tidak sesuai.<br>
+Berilah tanda √ pada kotak ‘☐’ pada kolom potensi asesi.<br>
+Berilah tanda √ Ya atau Tidak pada tanda ** sesuai pilihan, jika jawaban Ya selanjutnya pada kolom keterangan berilah tanda √ di kotak ‘☐’ yang tersedia, pilihan boleh lebih dari satu.</td></tr></table>
+<div class="gap"></div>
+<table id="potensi"></table>
+<div class="gap"></div>
+<table id="utama">
+<thead><tr><th rowspan="2" style="width:8mm">No</th><th rowspan="2">Mengidentifikasi Persyaratan Modifikasi dan Kontekstualisasi** (karakteristik asesi):</th><th colspan="2" class="c">Diperlukan penyesuaian***</th><th rowspan="2">Keterangan</th></tr>
+<tr><th class="c" style="width:12mm">Ya</th><th class="c" style="width:14mm">Tidak</th></tr></thead>
+<tbody></tbody></table>
+<table><tr><td><b>Hasil Penyesuaian yang wajar dan beralasan disepakati menggunakan :</b><br><br>
+Acuan Pembanding Asesmen : <input type="text" name="acuan" style="width:60%"><br><br>
+Metode Asesmen : <input type="text" name="metode" style="width:70%"><br><br>
+Instrumen Asesmen : <input type="text" name="instrumen" style="width:65%"></td></tr></table>
+<table><tr><td class="ttd" style="width:50%">Nama Asesor : <input type="text" name="asesor_nama2" style="width:60%"></td><td>Tanggal dan Tanda Tangan Asesor:</td></tr>
+<tr><td class="ttd">Nama Asesi : <input type="text" name="asesi_nama2" style="width:65%"></td><td>Tanggal dan Tanda Tangan Asesi:</td></tr></table>
+</form></div>
+<script>
+// Data baris tabel; opsi ber-"…" menjadi checkbox + isian teks.
+const POTENSI=[
+"Hasil pelatihan dan / atau pendidikan, dimana Kurikulum dan fasilitas praktek mampu telusur terhadap standar kompetensi",
+"Hasil pelatihan dan / atau pendidikan, dimana kurikulum belum berbasis kompetensi.",
+"Pekerja berpengalaman, dimana berasal dari industri/tempat kerja yang dalam operasionalnya mampu telusur dengan standar kompetensi",
+"Pekerja berpengalaman, dimana berasal dari industri/tempat kerja yang dalam operasionalnya belum berbasis kompetensi.",
+"Pelatihan / belajar mandiri atau otodidak."];
+const ROWS=[
+["Keterbatasan asesi terhadap persyaratan bahasa, literasi, numerasi.",["Memerlukan dukungan pembaca, penerjemah, pelayan, penulis. untuk merekam jawaban asesi.","Melakukan asesmen verbal (gunakan pertanyaan lisan/pertanyaan wawancara) dengan dilengkapi gambar diagram dan bentuk-bentuk visual.","Menggunakan Hasil produksi","Menggunakan Ceklis observasi/demonstrasi.","Menggunakan daftar instruksi terstruktur."]],
+["Penyediaan dukungan pembaca, penerjemah, pelayan, penulis.",["Menggunakan pertanyaan lisan dengan dilengkapi gambar diagram dan bentuk-bentuk visual.","Menggunakan pertanyaan wawancara dengan dilengkapi gambar diagram dan bentuk-bentuk visual."]],
+["Penggunaan teknologi adaptif atau peralatan khusus. (Tidak dapat menggunakan teknologi adaptif (misal: mengoperasikan komputer dan printer, peralatan digital dsb).",["Ceklis observasi/demonstrasi Demonstrasi.","Pertanyaan lisan","Pertanyaan tertulis.","Pertanyaan wawancara.","Daftar instruksi terstruktur.","Ceklis verifikasi portofolio.","Menggunakan dukungan operator komputer."]],
+["Pelaksanaan asesmen secara fleksibel karena alasan keletihan atau keperluan pengobatan.",["Menggunakan juru tulis.","Menggunakan kamera perekam video/atau audio.","Memperbolehkan periode waktu yang lebih panjang untuk menyelesaikan tugas pekerjaan dalam asesmen.","Melakukan tugas pekerjaan dalam asesmen dengan waktu lebih pendek.","Menggunakan instruksi-instruksi spesifik pada proyek yang dapat dilakukan pada berbagai tingkatan."]],
+["Penyediaan peralatan asesmen berupa braille, audio/video-tape.",["Menggunakan pertanyaan lisan.","Menggunakan pertanyaan wawancara."]],
+["Penyesuaian tempat fisik/lingkungan asesmen",["Pertanyaan lisan.","Pertanyaan tulis.","Pertanyaan wawancara.","Ceklis Verifikasi portofolio.","Ceklis reviu produk.","Daftar instruksi terstruktur."]],
+["Pertimbangan umur/usia lanjut/gender asesi. (Adanya perbedaan usia dengan asesor yang lebih muda).",["Menggunakan studi kasus/daftar instruksi terstruktur","Menggunakan instrumen asesmen dengan huruf normal jangan terlalu kecil.","Menggunakan asesor dengan jenis kelamin yang sama dengan asesi.","Menggunakan instrumen asesmen yang sama walaupun berbeda jenis kelamin (tidak boleh memberi tanda tambahan pada instrumen asesmen yang digunakan dengan tujuan untuk membedakan jenis kelamin)."]],
+["Pertimbangan budaya/tradisi/agama.",["Menggunakan studi kasus daftar instruksi terstruktur","Menggunakan asesor tanpa pertimbangan budaya/tradisi/agama.","Menggunakan instrumen asesmen yang sama walaupun berbeda budaya/tradisi/agama)."]]];
+
+document.getElementById('potensi').innerHTML=POTENSI.map((t,i)=>
+ `<tr>${i?'':`<td rowspan="5" style="width:28mm"><b>Potensi Asesi</b></td>`}<td style="width:8mm"><input type="checkbox" name="potensi[]" value="${i+1}"></td><td>${t}</td></tr>`).join('');
+
+document.querySelector('#utama tbody').innerHTML=ROWS.map(([q,opts],n)=>{
+ const k=n+1,all=[...opts,null],rs=all.length;
+ return all.map((o,j)=>`<tr>${j?'':`<td rowspan="${rs}" class="c">${k}</td><td rowspan="${rs}">${q}</td>
+ <td rowspan="${rs}" class="c"><input type="radio" name="p${k}_perlu" value="ya"></td>
+ <td rowspan="${rs}" class="c"><input type="radio" name="p${k}_perlu" value="tidak"></td>`}
+ <td><label><input type="checkbox" name="p${k}_opsi[]" value="${o===null?'lainnya':j+1}">${o===null?'':o}</label>${o===null?`<input type="text" name="p${k}_lainnya" style="width:80%" placeholder="……………………">`:''}</td></tr>`).join('');
+}).join('');
+</script></body></html>

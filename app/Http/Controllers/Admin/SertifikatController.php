@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Pendaftaran;
 use App\Models\Sertifikat;
 use Barryvdh\DomPDF\Facade\Pdf;
+use chillerlan\QRCode\Common\EccLevel;
+use chillerlan\QRCode\Output\QRGdImagePNG;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -80,6 +84,20 @@ class SertifikatController extends Controller
             ]);
         }
 
+        $validasi = $pendaftaran->validasiAsesmen;
+        if (! $validasi?->isApproved()) {
+            throw ValidationException::withMessages([
+                'pendaftaran_id' => 'Validasi asesmen (FR.VA) belum disetujui.',
+            ]);
+        }
+
+        $pleno = $pendaftaran->jadwal?->pleno;
+        if (! $pleno?->isApproved()) {
+            throw ValidationException::withMessages([
+                'pendaftaran_id' => 'Pleno asesmen belum disetujui.',
+            ]);
+        }
+
         if ($pendaftaran->sertifikat()->exists()) {
             throw ValidationException::withMessages([
                 'pendaftaran_id' => 'Sertifikat untuk pendaftaran ini sudah diterbitkan.',
@@ -132,12 +150,34 @@ class SertifikatController extends Controller
             'penerbit',
         ]);
 
+        $qrCode = $this->generateQrCode($sertifikat->verifikasiUrl());
+
         return Pdf::loadView('pdf.sertifikat', [
             'sertifikat' => $sertifikat,
             'institution' => $sertifikat->institution,
+            'qrCode' => $qrCode,
         ])
             ->setPaper('a4', 'landscape')
             ->stream(sprintf('sertifikat-%s.pdf', $sertifikat->no_registrasi));
+    }
+
+    /**
+     * Generate QR code PNG data URI untuk verifikasi sertifikat.
+     */
+    private function generateQrCode(string $url): ?string
+    {
+        try {
+            $options = new QROptions([
+                'outputInterface' => QRGdImagePNG::class,
+                'outputBase64' => true,
+                'eccLevel' => EccLevel::M,
+                'scale' => 4,
+            ]);
+
+            return (new QRCode($options))->render($url);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**

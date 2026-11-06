@@ -17,11 +17,34 @@
 @section('content')
 <x-tabler.card>
     <x-slot:actions>
-        <form method="GET" action="{{ route('admin.pendaftaran.index') }}" class="d-flex gap-2">
+        <form method="GET" action="{{ route('admin.pendaftaran.index') }}" class="d-flex flex-wrap gap-2 align-items-end">
             <input type="hidden" name="tab" value="{{ $tab }}">
             <input type="search" name="q" value="{{ $search }}" class="form-control form-control-sm"
-                   placeholder="Cari no. pendaftaran / nama">
+                   placeholder="Cari no. pendaftaran / nama" style="min-width: 180px;">
+            <select name="skema" class="form-select form-select-sm" style="width: auto;">
+                <option value="">Semua Skema</option>
+                @foreach ($skemas as $skema)
+                    <option value="{{ $skema->id }}" {{ $filterSkema === $skema->id ? 'selected' : '' }}>
+                        {{ $skema->kode_skema }} · {{ $skema->nama_skema }}
+                    </option>
+                @endforeach
+            </select>
+            <select name="tuk" class="form-select form-select-sm" style="width: auto;">
+                <option value="">Semua TUK</option>
+                @foreach ($tuks as $tuk)
+                    <option value="{{ $tuk->id }}" {{ $filterTuk === $tuk->id ? 'selected' : '' }}>
+                        {{ $tuk->nama_tuk }}
+                    </option>
+                @endforeach
+            </select>
+            @php $waktuValue = ['start' => $filterWaktu['start'], 'end' => $filterWaktu['end']]; @endphp
+            <x-date-range name="waktu" :value="$waktuValue" />
             <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="ti ti-search"></i></button>
+            @if ($search || $filterSkema || $filterTuk || filled($filterWaktu['start']) || filled($filterWaktu['end']))
+                <a href="{{ route('admin.pendaftaran.index', ['tab' => $tab]) }}" class="btn btn-sm btn-outline-danger">
+                    <i class="ti ti-rotate-ccw"></i> Reset
+                </a>
+            @endif
         </form>
     </x-slot:actions>
 
@@ -29,8 +52,7 @@
         @foreach ($tabs as $key => $label)
             <li class="nav-item">
                 <a class="nav-link {{ $tab === $key ? 'active' : '' }}"
-                   href="{{ route('admin.pendaftaran.index', array_filter(['tab' => $key, 'q' => $search])) }}">
-                    {{ $label }}
+                   href="{{ route('admin.pendaftaran.index', array_filter(['tab' => $key, 'q' => $search, 'skema' => $filterSkema, 'tuk' => $filterTuk, 'waktu.start' => $filterWaktu['start'], 'waktu.end' => $filterWaktu['end']])) }}">                    {{ $label }}
                 </a>
             </li>
         @endforeach

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Perangkat Cover MUK</title><link rel="stylesheet" href="form.css"></head>
+<body>
+<div class="actions"><button onclick="print()">Cetak / Simpan PDF</button></div>
+<div class="page"><form>
+<table class="hd"><tr><td>000.</td><td>PERANGKAT COVER MUK</td></tr></table>
+<div class="gap"></div>
+
+<div class="cover">
+  <div class="cover-judul">PERANGKAT<br>MUK</div>
+  <div class="cover-sub">Materi Uji Kompetensi &mdash; Skema Sertifikasi</div>
+  <div class="cover-garis"></div>
+</div>
+
+<table>
+<tr><td style="width:38%">Nama</td><td style="width:4mm">:</td><td><input type="text" name="nama"></td></tr>
+<tr><td>No. Absen</td><td>:</td><td><input type="text" name="no_absen"></td></tr>
+<tr><td>Skema Sertifikasi</td><td>:</td><td><input type="text" name="skema_judul"></td></tr>
+<tr><td>Nomor Skema</td><td>:</td><td><input type="text" name="skema_nomor"></td></tr>
+<tr><td>Tanggal Asesmen</td><td>:</td><td><input type="date" name="tanggal"></td></tr>
+</table>
+<div class="gap"></div>
+
+<table>
+<thead><tr><th style="width:10mm">No</th><th>Dokumen</th><th style="width:26mm">Keterangan</th></tr></thead>
+<tbody id="daftar"></tbody>
+</table>
+</form></div>
+<script>
+const DOKUMEN = ["Dokumen ..................................", "Dokumen .................................."];
+document.getElementById('daftar').innerHTML = DOKUMEN.map((d, i) =>
+  `<tr><td class="c">${i + 1}</td><td>${d}</td><td><input type="text" name="ket${i + 1}"></td></tr>`).join('')
+  + Array.from({length: 6}, () => `<tr><td class="c"></td><td><input type="text" name="dok_extra"></td><td><input type="text"></td></tr>`).join('');
+</script>
+</body></html>

@@ -13,6 +13,8 @@ use App\Models\JadwalAsesmen;
 use App\Models\JadwalAsesor;
 use App\Models\KriteriaUnjukKerja;
 use App\Models\Pendaftaran;
+use App\Models\PersetujuanAsesmen;
+use App\Models\RencanaAsesmen;
 use App\Models\Skema;
 use App\Models\SkemaUnit;
 use App\Models\Tuk;
@@ -185,6 +187,29 @@ class AsesmenTest extends TestCase
             'skema_id' => $this->skema->id,
             'jadwal_id' => $jadwal->id,
             'status' => Pendaftaran::STATUS_TERJADWAL,
+        ]);
+
+        foreach (PersetujuanAsesmen::requiredJenis() as $jenis) {
+            PersetujuanAsesmen::create([
+                'institution_id' => $this->institution->id,
+                'pendaftaran_id' => $this->pendaftaran->id,
+                'jenis' => $jenis,
+                'status' => PersetujuanAsesmen::STATUS_DISETUJUI,
+                'disetujui_pada' => now(),
+                'disetujui_oleh' => $this->asesiUser->id,
+            ]);
+        }
+
+        // Rencana asesmen final agar MAK-02 dapat difinalkan (gating MAPA).
+        RencanaAsesmen::create([
+            'institution_id' => $this->institution->id,
+            'pendaftaran_id' => $this->pendaftaran->id,
+            'asesor_id' => $this->asesor->id,
+            'pendekatan' => 'observasi',
+            'tujuan' => 'Tujuan uji.',
+            'ruang_lingkup' => 'Lingkup uji.',
+            'tanggal_asesmen' => now()->addDays(7),
+            'status' => RencanaAsesmen::STATUS_FINAL,
         ]);
     }
 
@@ -397,6 +422,101 @@ class AsesmenTest extends TestCase
             ->from(route('asesor.mak02.show', $this->pendaftaran))
             ->post(route('asesor.mak02.store', $this->pendaftaran), $payload)
             ->assertSessionHasErrors('hasil');
+    }
+
+    public function test_asesi_can_view_pre_asesmen_with_empty_data_json(): void
+    {
+        // data_json masih null (belum diisi) — halaman tidak boleh error.
+        $this->actingAs($this->asesiUser)
+            ->get(route('asesi.pre-asesmen.show', $this->pendaftaran))
+            ->assertOk()
+            ->assertSee('AK.01')
+            ->assertSee('AK.07')
+            ->assertSee('Informasi Mengenai Banding Asesmen');
+    }
+
+    public function test_asesi_can_setujui_pre_asesmen(): void
+    {
+        // Buat pendaftaran baru dengan persetujuan belum diisi (menunggu).
+        $pendaftaran = Pendaftaran::create([
+            'no_pendaftaran' => 'PEND-ASM-0002',
+            'asesi_id' => $this->asesi->id,
+            'skema_id' => $this->skema->id,
+            'jadwal_id' => $this->pendaftaran->jadwal_id,
+            'status' => Pendaftaran::STATUS_TERJADWAL,
+        ]);
+
+        foreach (PersetujuanAsesmen::requiredJenis() as $jenis) {
+            PersetujuanAsesmen::create([
+                'institution_id' => $this->institution->id,
+                'pendaftaran_id' => $pendaftaran->id,
+                'jenis' => $jenis,
+                'status' => PersetujuanAsesmen::STATUS_MENUNGGU,
+            ]);
+        }
+
+        // Setujui FR.AK.01 saja.
+        $this->actingAs($this->asesiUser)
+            ->post(route('asesi.pre-asesmen.approve', $pendaftaran), [
+                'setuju_ak01' => '1',
+                'tanggal' => now()->format('Y-m-d'),
+            ])
+            ->assertRedirect(route('asesi.pre-asesmen.show', $pendaftaran))
+            ->assertSessionHas('success');
+
+        $this->assertTrue(
+            $pendaftaran->fresh()->persetujuanAsesmens->where('jenis', 'ak01')->first()->isApproved()
+        );
+        $this->assertFalse(
+            $pendaftaran->fresh()->persetujuanAsesmens->where('jenis', 'ak04')->first()->isApproved()
+        );
+
+        // Tanpa centang setuju sama sekali → ditolak.
+        $this->actingAs($this->asesiUser)
+            ->post(route('asesi.pre-asesmen.approve', $pendaftaran), [])
+            ->assertRedirect(route('asesi.pre-asesmen.show', $pendaftaran))
+            ->assertSessionHas('error');
+    }
+
+    public function test_asesi_can_setujui_frak07_with_data_json(): void
+    {
+        $pendaftaran = Pendaftaran::create([
+            'no_pendaftaran' => 'PEND-ASM-0003',
+            'asesi_id' => $this->asesi->id,
+            'skema_id' => $this->skema->id,
+            'jadwal_id' => $this->pendaftaran->jadwal_id,
+            'status' => Pendaftaran::STATUS_TERJADWAL,
+        ]);
+
+        foreach (PersetujuanAsesmen::requiredJenis() as $jenis) {
+            PersetujuanAsesmen::create([
+                'institution_id' => $this->institution->id,
+                'pendaftaran_id' => $pendaftaran->id,
+                'jenis' => $jenis,
+                'status' => PersetujuanAsesmen::STATUS_MENUNGGU,
+            ]);
+        }
+
+        $this->actingAs($this->asesiUser)
+            ->post(route('asesi.pre-asesmen.approve', $pendaftaran), [
+                'setuju_ak07' => '1',
+                'tanggal' => now()->format('Y-m-d'),
+                'acuan' => 'SKKNI 124 Tahun 2022',
+                'metode' => 'Observasi',
+                'instrumen' => 'FR.IA.02',
+                'potensi' => [1],
+                'p1_perlu' => 'ya',
+                'p1_lainnya' => 'Lainnya contoh',
+            ])
+            ->assertRedirect(route('asesi.pre-asesmen.show', $pendaftaran))
+            ->assertSessionHas('success');
+
+        $persetujuan = $pendaftaran->fresh()->persetujuanAsesmens->where('jenis', 'ak07')->first();
+        $this->assertTrue($persetujuan->isApproved());
+        $this->assertSame('SKKNI 124 Tahun 2022', $persetujuan->data_json['acuan'] ?? null);
+        $this->assertSame('Observasi', $persetujuan->data_json['metode'] ?? null);
+        $this->assertSame('FR.IA.02', $persetujuan->data_json['instrumen'] ?? null);
+        $this->assertContains(1, $persetujuan->data_json['potensi'] ?? []);
     }
 
     public function test_asesor_simpan_mak02_metode_tidak_digunakan(): void

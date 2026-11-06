@@ -46,7 +46,7 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
 
 - **Fase Saat Ini**: Fase 0–5 selesai — berikutnya Fase 6 (Hasil & Laporan). 68/68 feature tests passing (Dusk tertunda: `laravel/dusk` belum terpasang di `vendor`)
 - **Status Overall**: In Progress
-- **Terakhir Diperbarui**: 31 Oktober 2026
+- **Terakhir Diperbarui**: 4 November 2026
 
 ## Log Progress Per Fase
 
@@ -163,8 +163,8 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
 
 ### Fase 7: CMS & Publik
 
-- [ ] CMS konten frontpage (kategori template, sanitasi HTML) — FR-CMS-01/02
-- [ ] Halaman publik (skema, asesor, berita, kontak, daftar, masuk) — FR-CMS-03/04
+- [x] CMS konten frontpage (kategori template, sanitasi HTML) — FR-CMS-01/02
+- [x] Halaman publik (skema, asesor, berita, kontak, daftar, masuk) — FR-CMS-03/04
 - [ ] Meta SEO dari setup awal — FR-CMS-05
 
 ### Fase 8: Hardening & Go-Live
@@ -314,3 +314,329 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
   - **Fase 0 selesai (0.1–0.7)**: label formulir dikoreksi (`FR.IA.08` untuk MAK-01, Berita Acara Asesmen tanpa `FR.AK.04`, `FR.APL.01`/`FR.APL.02`), penandatangan MAK-01 diambil dari asesor jadwal, APL-01 memakai `adminLsp` eksplisit, dan `App\Support\PdfFile` + `x-pdf.signature` membuat kegagalan `storage:link` terlihat. File: `app/Support/PdfFile.php`, `resources/views/components/pdf/signature.blade.php`, `Admin\PendaftaranController`, `pdf/{mak01,mak03,apl01,apl02,mak02,mak02-ringkas}`, `admin/pendaftaran/show`, `tests/Feature/PdfFormulirTest.php`.
   - **Bug Blade diperbaiki**: `@php(...)` inline (5 file) dipasangkan compiler dengan `@endphp` berikutnya sehingga blok sesudahnya tidak dikompilasi; muncul ParseError `unexpected token "endif"` di `asesi/pendaftaran/show`. Semua inline diganti `@php ... @endphp`. File: `asesi/pendaftaran/{show,create}`, `asesor/jadwal/peserta`, `dashboard/asesi`, `admin/pendaftaran/show`, `asesi/panduan`.
   - **Catatan relasi**: `JadwalAsesmen::asesors()` adalah belongsToMany langsung ke `Asesor`, sehingga jalur yang benar `jadwal.asesors.user` (bukan `jadwal.asesors.asesor.user`).
+
+
+- **4 November 2026 — Sesi 12**
+  - Pengguna memperbarui acuan: `docs/Dokumentasi_Asesmen_Kompetensi_BNSP_v2.md` (alur swimlane, gerbang pre-asesmen) dan menyediakan template standar resmi di `docs/template form/MUK/`.
+  - `docs/GAP_ANALYSIS_ASESMEN_BNSP.md` disesuaikan ke v2 + template MUK: acuan primer v2, tambah FR.AK.07 (penyesuaian wajar dan beralasan) ke matriks formulir, tahap 4 diperluas (AK.01/AK.04/AK.07), dan Fase 2 mendapat pekerjaan FR.AK.07 + gating pre-asesmen.
+  - Belum ada perubahan kode; sinkronisasi formulir aplikasi ke template MUK (mulai FR.APL.01) menjadi pekerjaan berikutnya.
+
+
+- **4 November 2026 — Sesi 13**
+  - Implementasi gerbang pre-asesmen (FR.AK.01/FR.AK.04/FR.AK.07): migrasi `persetujuan_asesmens`, model `PersetujuanAsesmen`, controller asesi (lihat & setujui) dan asesor (lihat status), route `asesi.pre-asesmen.*` dan `asesor.pre-asesmen.*`.
+  - Menu asesi menambah item “Dokumen Pre-Asesmen”; pendaftaran detail menautkan ke halaman pre-asesmen; peserta asesor menambah tombol pre-asesmen; MAK-02 menampilkan peringatan dan memblokir finalisasi bila belum lengkap.
+  - Testing: suite tetap 100/100 lulus (penambahan persetujuan otomatis di setUp AsesmenTest).
+
+
+- **4 November 2026 — Sesi 14**
+  - Ganti judul menu asesi 'Status Pendaftaran' → 'Riwayat Uji Kompetensi' (sidebar + judul halaman).
+  - Pre-asesmen asesi berubah menjadi formulir isian langsung dari template MUK (FR.AK.01, FR.AK.04, FR.AK.07 HTML) — asesi mengisi data, centang bukti, Ya/Tidak banding, alasan, dan tanda tangan, bukan sekedar ceklis umum.
+  - Kolom `data_json` (JSON) ditambahkan ke tabel `persetujuan_asesmens` untuk menyimpan isian form.
+  - Halaman admin `/admin/pendaftaran/{id}` menampilkan status FR.AK.01/04/07 (disetujui/belum) agar admin LSP tahu asesi sudah setujui sebelum plotting asesmen.
+  - Testing: suite 101/101 lulus (termasuk SidebarMenuTest diperbarui).
+
+- **4 November 2026 — Sesi 15**
+  - Pre-asesmen asensi berubah menjadi modal read-only berbasis Tabler UI (tanpa input field): FR.AK.01, FR.AK.04, FR.AK.07 ditampilkan dalam modal masing-masing dengan isi default dari sistem/template MUK (skema, TUK, nama asesor/asesi, bukti, Ya/Tidak banding, alasan, ceklis penyesuaian, tanda tangan).
+  - PDF generation FR.AK.01/04/07 dari `data_json` via route `asesor/pendaftaran/{id}/pre-asesmen/{jenis}/pdf` (view `pdf/frak01`, `frak04`, `frak07`).
+  - Testing: suite 101/101 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 16**
+  - Perbaikan tampilan modal pre-asesmen asensi: modal dipindahkan ke `@stack('modals')` (di luar `.container-xl`, bukan nested) agar backdrop/layar penuh berfungsi; badge status dipindah dari atribut `title` card (yang di-escaped Blade) ke `x-slot:actions`; tombol "Buka Formulir" membuka modal masing-masing (FR.AK.01/04/07).
+  - Testing: suite 102/102 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 17**
+  - Modal pre-asesmen ditambahi konfirmasi setuju: checkbox "Saya telah membaca dan menyetujui isi formulir ini" + tombol Setujui (hanya muncul bila belum disetujui); tanda tangan dihapus dari tampilan — approve dianggap setuju dan tanda tangan.
+  - Controller approve sederhana: hanya membutuhkan `setuju` (accepted), lalu tandai `disetujui` dengan waktu, IP, user agent, dan hash dokumen.
+  - Redirect setelah approve ke halaman show pre-asesmen (bukan `back()` agar stabil di uji).
+  - Test baru `test_asesi_can_setujui_pre_asesmen`: setujui sukses + validasi gagal bila tidak centang setuju.
+  - Testing: suite 103/103 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 18**
+  - Modal FR.AK.07 (Penyesuaian Wajar dan Beralasan) jadi bisa diisi & disimpan: header (skema, nomor, TUK, nama asesor/asesi, tanggal), ceklis potensi asesi, tabel 8 baris (Ya/Tidak radio + opsi checkbox + keterangan teks), acuan/metode/instrumen, dan nama asesor/asesi — semakin disimpan ke kolom `data_json` saat disetujui.
+  - Test baru `test_asesi_can_setujui_frak07_with_data_json`: verifikasi data_json tersimpan lengkap (acuan, metode, instrumen, potensi, p1_perlu, p1_opsi, p1_lainnya).
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 19**
+  - Rapihkan modal FR.AK.07: ganti tata letak tabel barisan menjadi kartu Tabler (`x-tabler.card`) per seksi (Data Formulir, Nama, Potensi Asesi, Penyesuaian yang Diperlukan, Hasil Penyesuaian yang Disepakati); radio Ya/Tidak pakai badge inline; opsi checkbox pakai badge border; input keterangan rapi di bawah opsi; tombol Setujui memvalidasi centang konfirmasi sebelum submit.
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 20**
+  - Gabungkan AK.01 + AK.07 dalam satu modal sesuai layout pengguna (identitas asesmen, potensi asesi, 8 baris penyesuaian, persetujuan asesmen, konfirmasi setuju + tanggal); AK.04 (Banding) tetap terpisah.
+  - Controller approve disesuaikan: menerima `setuju_ak01`/`setuju_ak04`/`setuju_ak07`, menyimpan seluruh input form ke `data_json`, tandai disetujui dengan waktu/IP/user agent/hash. Jika tidak ada yang dicentang → error manual.
+  - Test disesuaikan ke field baru (`setuju_ak01/04/07`).
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 21**
+  - FR.AK.04 (Banding) sekarang dapat diisi: input Nama Asesi, Nama Asesor, Tanggal Asesmen, 3 pertanyaan Ya/Tidak (radio), Skema Sertifikasi, No. Skema Sertifikasi, Alasan Banding (textarea), konfirmasi setuju + tanggal. Semua pakai `old()` fallback agar data muncul saat dibuka kembali.
+  - AK.01/AK.07 modal ditambahkan `old()` fallback untuk potensi asesi dan semua input agar data tidak hilang saat dibuka kembali.
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 22**
+  - Gabungkan AK.07 + AK.01 + Informasi Banding dalam satu modal dengan judul kartu "Form Penyesuaian (AK.07), Persetujuan (AK.01) dan Informasi Mengenai Banding Asesmen".
+  - Hapus form AK.04 terpisah — diganti dengan satu kartu informasi: "Informasi prosedur banding asesmen telah dijelaskan dan dibaca sebelum asesmen dimulai" (alert info).
+  - Konfirmasi setuju mencakup 3 checkbox: AK.07, AK.01, dan Informasi Mengenai Banding Asesmen.
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 23**
+  - Perbaiki checkbox Potensi Asesi tidak muncul saat dibuka kembali: nilai dari form submit adalah string (mis. "1"), sedangkan loop menghasilkan integer ($i + 1). `in_array(..., true)` strict comparison gagal. Keduanya dikast ke string sebelum dibandingkan.
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 24**
+  - PDF cetak dokumen pre-asesmen gabungan (AK.07 + AK.01 + Informasi Banding): view `pdf/pre-asesmen-gabungan.blade.php`, route `asesi.pre-asesmen.pdf.gabungan` dan `asesor.pre-asesmen.pdf.gabungan`, controller `pdfGabungan` di kedua controller.
+  - Tombol "Cetak PDF" ditambahkan ke kartu dokumen pre-asesmen di portal asesi.
+  - `docs/GAP_ANALYSIS_ASESMEN_BNSP.md` diperbarui: tambah item PDF cetak pre-asesmen ke daftar P1.
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 25**
+  - Halaman admin `/admin/pendaftaran`: tambah filter skema, event, TUK, waktu (tanggal jadwal) di samping search yang ada. Pagination (`paginate(15)` + links) sudah ada, dipertahankan dengan `withQueryString` agar filter tidak hilang saat pindah halaman.
+  - Dropdown filter diambil dari `Skema::aktif()`, `EventAsesmen`, `Tuk`.
+  - Tombol Reset untuk menghapus semua filter.
+  - Tab link mempertahankan nilai filter saat pindah tab.
+  - Testing: suite 104/104 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 26 (Fase 1: MAPA.01 & MAPA.02)**
+  - Komponen `x-date-range`: satu komponen Blade dengan dua input date (dari/sampai) dalam satu wrapper, dipakai di filter admin pendaftaran mengganti dua input terpisah.
+  - Migrasi baru: `rencana_asesmens`, `rencana_asesmen_units`, `peta_instrumens` — semua dengan `institution_id` dan `BelongsToTenant`, unique constraints, indeks komposit.
+  - Model baru: `RencanaAsesmen`, `RencanaAsesmenUnit`, `PetaInstrumen` — relasi ke Pendaftaran, Asesor, UnitKompetensi, KriteriaUnjukKerja.
+  - Policy `RencanaAsesmenPolicy`: viewAny/view/create/update/finalize dengan RBAC (super-admin/admin/asesor), asesor hanya own data, final tidak bisa diubah.
+  - Controller `Asesor\RencanaAsesmenController`: index, create, store, edit, update, finalize, pdf (MAPA.01), pdfMapa02 (MAPA.02). Workflow: buat rencana draf → pilih unit + peta instrumen per KUK → finalisasi (kunci).
+  - Route `asesor.rencana-asesmen.*` di prefix `asesor`, menu sidebar asesor ditambahkan item "Rencana Asesmen (MAPA)".
+  - View: index (daftar rencana), create (identitas rencana), edit (unit + peta instrumen tabel, finalisasi tombol).
+  - PDF `pdf/mapa01.blade.php` dan `pdf/mapa02.blade.php`, ditampilkan sebagai tombol cetak setelah final.
+  - Gerbang MAK-02: `HasilAsesmenController@final` menolak bila `PersetujuanAsesmen` belum lengkap ATAU `RencanaAsesmen` belum final.
+  - `AppServiceProvider`: register `RencanaAsesmenPolicy`.
+  - Test baru `tests/Feature/RencanaAsesmenTest.php`: create+finalize rencana, asesi tidak bisa akses, MAK-02 blocked bila rencana belum final, MAK-02 diizinkan bila rencana final.
+  - Testing: suite 108/108 lulus, `pint` bersih.
+
+- **4 November 2026 — Sesi 27 (Sinkronisasi data pre-asesmen)**
+  - Perbaikan asesor `/asesor/pendaftaran/{id}/pre-asesmen`: menampilkan isi formulir lengkap dari `data_json` per jenis (AK.01: jenis bukti + 3 pernyataan; AK.04: 3 pertanyaan Ya/Tidak + skema + alasan; AK.07: potensi asesi + 8 baris Ya/Tidak + keterangan + acuan/metode/instrumen). Ditambahkan tombol Cetak PDF gabungan.
+  - Perbaikan admin `/admin/pendaftaran/{id}`: card "Dokumen Pre-Asesmen" menampilkan detail isian formulir per jenis yang approved.
+  - Hapus route PDF individual (`asesor.pre-asesmen.pdf`) karena sekarang pakai PDF gabungan (`pdf.pre-asesmen-gabungan`). Hapus tombol cetak per jenis di view asesor.
+  - Test baru `test_asesor_can_see_asesi_persetujuan_data`: verifikasi data asesi muncul saat asesor buka halaman pre-asesmen.
+  - Testing: suite 109/109 lulus, `pint` bersih.
+  - Tambah route redirect dari `/pre-asesmen/{jenis}/pdf` (lama) ke `/pre-asesmen/pdf` (gabungan) agar bookmark lama tidak 404.
+
+- **5 November 2026 — Sesi 28 (Perbaikan radio FR.AK.07 di PDF pre-asesmen)**
+  - Akar masalah: di `resources/views/pdf/pre-asesmen-gabungan.blade.php`, ekspresi `$data['p'.$k.'_perlu'] ?? '' === 'ya'` salah presedensi operator. PHP mengevaluasi `??` lebih dulu daripada `===`, sehingga kondisi menjadi `$data[...] ?? false`; nilai `"ya"`/`"tidak"` sama-sama truthy → kedua radio tercentang.
+  - Fix: bungkus operand kiri — `($data['p'.$k.'_perlu'] ?? '') === 'ya'` dan `=== 'tidak'`. Kini hanya satu pilihan yang tercentang; baris tanpa data tidak tercentang.
+  - Revert eksperimen KUK-UUID pada form asesi (`p{UUID}_perlu`): FR.AK.07 memakai 8 baris karakteristik tetap (1–8) sesuai formulir BNSP, bukan per KUK. Form asesi kembali memakai kunci `p1_perlu`…`p8_perlu`, konsisten dengan view asesor, admin, PDF, dan test.
+  - Hapus eager-load `skema.skemaUnits...` yang tidak lagi dipakai di `Asesi\PersetujuanAsesmenController@show`.
+  - Hapus kolom `peta_instrumens.perlu` (migration `2026_11_04_092809` di-rollback lalu file dihapus) dan buang penyimpanan `perlu` dari `Asesor\RencanaAsesmenController@update` — data penyesuaian hidup di `persetujuan_asesmens.data_json`, bukan di peta instrumen.
+  - Rapikan `resources/views/pdf/frak07.blade.php` (dead code per-form) agar juga memakai baris 1–8 dan kolom Ya/Tidak terpisah; tidak lagi mereferensikan `$rencana` yang tak pernah dikirim.
+  - Regression test: `test_asesor_can_see_asesi_persetujuan_data` kini me-render view PDF dan memastikan tidak ada baris yang mencentang Ya **dan** Tidak sekaligus, baris 1 hanya `ya`, baris 2 tanpa centang.
+  - Testing: suite 109/109 lulus (613 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 29 (Presensi digital + transisi status asesmen)**
+  - Migrasi baru `presensi_asesis`: `institution_id`, `pendaftaran_id` (unique), `jadwal_id`, status `hadir|izin|tidak_hadir`, catatan, `dicatat_oleh`, `dicatat_pada`, `terkunci_pada`; model `PresensiAsesi` dengan `BelongsToTenant`.
+  - `Pendaftaran::presensi()` (hasOne) ditambahkan.
+  - `PresensiService`: `catat()` (upsert + audit log), `mulaiAsesmen()` (transisi `terjadwal` → `asesmen_berjalan`, wajib FR.AK.01/04/07 disetujui), `kunci()` (isi `terkunci_pada`).
+  - `AsesmenService::finalkan()` kini mengunci seluruh presensi pendaftaran saat status menjadi `selesai`.
+  - Controller `Asesor\PresensiController` (`catat`, `mulai`) + route `asesor.presensi.catat` dan `asesor.pendaftaran.mulai-asesmen`; method admin `catatPresensi` + route `admin.pendaftaran.presensi.catat` untuk koreksi.
+  - Policy `PendaftaranPolicy`: `catatPresensi` dan `mulaiAsesmen` (asesor pemilik jadwal atau admin).
+  - UI asesor peserta: kolom Presensi (badge + select simpan, terkunci saat selesai) dan tombol Mulai Asesmen (nonaktif bila pre-asesmen belum lengkap). UI admin: card "Presensi Asesi" dengan status, pencatat, catatan, dan form koreksi.
+  - Test baru `tests/Feature/PresensiAsesmenTest.php` (10 test, 35 assertions): pencatatan asesor, 403 asesor lain, gating mulai asesmen, transisi status, presensi terkunci, koreksi admin, kunci via service, render halaman asesor/admin.
+  - Bonus: `routes/web.php` tidak mengimpor `WilayahController`, sehingga `php artisan route:list` gagal (`ReflectionClass("WilayahController")`). Import ditambahkan; endpoint publik `/wilayah/provinsi/{code}/kota` kini terdaftar benar.
+  - Testing: suite 119/119 lulus (648 assertions), `pint` bersih. Dusk belum dijalankan (shim `vendor/bin/dusk` dan `phpunit.dusk.xml` tidak tersedia).
+
+- **5 November 2026 — Sesi 30 (Instrumen inti FR.IA.01 & FR.IA.02)**
+  - Migrasi `instrumen_asesmens` (header per pendaftaran + jenis, unik `pendaftaran_id`+`jenis`, status `draf|final`, `finalized_at`, `finalized_by`) dan `instrumen_asesmen_items` (satu baris per KUK, unik `instrumen_asesmen_id`+`kuk_id`, `unit_kompetensi_id`, `urutan`, `hasil` `tercapai|belum_tercapai`, `catatan`).
+  - Model `InstrumenAsesmen` (`JENIS_IA01`, `JENIS_IA02`, `JENIS_LABELS`, relasi `items`/`finalizer`, `isFinal()`, `label()`) dan `InstrumenAsesmenItem` (`HASIL_LABELS`, relasi `kuk`/`unitKompetensi`, `isTercapai()`); keduanya memakai `BelongsToTenant`.
+  - `InstrumenAsesmenService`: `ensure()` membuat header + item dari KUK skema (idempoten via `firstOrCreate`), `simpan()` per item, `finalkan()` menolak bila masih ada item belum dinilai, `rekap()` menghitung total/tercapai/belum tercapai/belum dinilai.
+  - `Asesor\InstrumenAsesmenController` (`show`, `store`, `final`, `pdf`) + route `asesor.instrumen.show/store/final/pdf`; policy `PendaftaranPolicy@inputInstrumen`.
+  - Gating: isi/final hanya saat status `asesmen_berjalan`; instrumen `final` mengunci seluruh input. Jenis di luar `ia01|ia02` → 404.
+  - UI `asesor/instrumen/show.blade.php`: dikelompokkan per unit, radio Tercapai/Belum + catatan per KUK, catatan umum, rekap, tombol final; tombol akses IA.01/IA.02 ditambahkan di halaman peserta asesor.
+  - PDF `pdf/instrumen-asesmen.blade.php`: header skema/asesi/asesor/jadwal/TUK, tabel per unit dengan kolom Tercapai/Belum, rekap, tanda tangan.
+  - Test baru `tests/Feature/InstrumenAsesmenTest.php` (9 test, 38 assertions): generate item per KUK, simpan hasil, final ditolak bila belum lengkap, final mengunci edit, gating status, 403 asesor lain, 404 jenis tak dikenal, render PDF, dan rekap instrumen tampil di FR.AK.02.
+  - FR.AK.02 (`asesor/mak02/show`) kini menampilkan card "Sumber Bukti Instrumen" berisi status draf/final, rekap tercapai/belum/belum dinilai, tautan buka + cetak per instrumen (read-only; keputusan tetap manual).
+  - Testing: suite 128/128 lulus (686 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 32 (Calendar view jadwal asesor)**
+  - Tambah tampilan kalender bulanan untuk `/asesor/jadwal`: route `asesor.jadwal.calendar` / `asesor.jadwal.kalender`, method `JadwalController::calendar`, view `asesor/jadwal/calendar.blade.php`.
+  - Navigasi bulan sebelum/sesudah, tautan balik ke daftar, dan tombol "Kalender" di tampilan daftar.
+  - Index juga mendukung `?view=calendar&month=YYYY-MM`.
+  - Test baru `tests/Feature/AsesorJadwalCalendarTest.php` (3 test) lulus.
+
+- **5 November 2026 — Sesi 31 (FR.AK.03 umpan balik terstruktur)**
+  - Migrasi `umpan_balik_asesmens`: `institution_id`, `pendaftaran_id` (unique), `komponen_json`, `catatan`, `disubmit_pada`, `disubmit_oleh`; model `UmpanBalikAsesmen` dengan `KOMPONEN` (10 butir template MUK), `JAWABAN_LABELS`, `isSubmitted()`, `jawaban()`.
+  - `Pendaftaran::umpanBalik()` (hasOne).
+  - `UmpanBalikService::submit()`: hanya saat status `selesai`, wajib 10 komponen `ya|tidak`, sekali kirim (setelah itu terkunci), audit log; `rekap()` menghitung Ya/Tidak.
+  - `Asesi\UmpanBalikController` (`show`, `store`, `pdf`) + route `asesi.umpan-balik.show/store/pdf`; PDF juga tersedia untuk asesor (`asesor.umpan-balik.pdf`) dan admin (`admin.pendaftaran.umpan-balik.pdf`) lewat policy `view`.
+  - UI asesi `asesi/umpan-balik/show`: radio Ya/Tidak per komponen, catatan umum, rekap setelah kirim, tombol PDF; form terkunci sebelum keputusan dan setelah dikirim.
+  - Integrasi: tombol "Isi Umpan Balik" di halaman pendaftaran asesi saat `selesai`; card status FR.AK.03 di FR.AK.02 asesor dan detail pendaftaran admin.
+  - PDF `pdf/ak03.blade.php`: header skema/asesi/asesor/TUK/tanggal, tabel komponen dengan centang, rekap, catatan, tanda tangan.
+  - Boolean `umpan_balik_diberikan` pada `hasil_asesmens` dipertahankan sebagai penanda finalisasi MAK-02; detail kini ada di FR.AK.03.
+  - Test baru `tests/Feature/UmpanBalikAsesmenTest.php` (12 test, 45 assertions): kirim setelah keputusan, blokir sebelum keputusan, validasi 10 komponen, tidak bisa kirim dua kali, 403 asesi lain, form terkunci, tautan halaman pendaftaran, PDF asesor/admin, 404 sebelum kirim, card di MAK-02 dan admin.
+  - Testing: suite 140/140 lulus (731 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 32 (FR.AK.05 laporan asesmen)**
+  - Migrasi `laporan_asesmens`: `institution_id`, `jadwal_id` (unique), `asesor_id`, `aspek_positif`, `aspek_negatif`, `pencatatan_penolakan`, `saran_perbaikan`, `catatan`, status `draf|final`, `finalized_at`, `finalized_by`; model `LaporanAsesmen`.
+  - `LaporanAsesmenService`: `rekapAsesi()` menurunkan baris K/BK dari FR.AK.02 final + daftar unit BK; `penghambat()` mendeteksi pendaftaran yang belum `selesai` atau hasil belum final; `simpan()` menolak laporan final; `finalkan()` memblokir bila masih ada penghambat, mencatat audit log.
+  - `Asesor\LaporanAsesmenController` (`show`, `store`, `final`, `pdf`) + route `asesor.laporan-asesmen.show/store/final/pdf`; PDF admin via `admin.jadwal.laporan-asesmen.pdf`.
+  - UI `asesor/laporan-asesmen/show`: info jadwal, rekap asesi (nama, K, BK, unit BK), lima field narasi, tombol simpan/final, peringatan penghambat; tombol "Laporan FR.AK.05" di halaman peserta.
+  - PDF `pdf/ak05.blade.php`: rekap K/BK, keterangan unit, aspek positif/negatif, penolakan, saran, catatan, status draf/final, tanda tangan.
+  - Test baru `tests/Feature/LaporanAsesmenTest.php` (9 test, 31 assertions): buka laporan, 403 asesor lain, simpan narasi, blokir final bila belum selesai, final mengunci, 404 sebelum dibuat, PDF asesor/admin, tautan halaman peserta.
+  - Testing: suite 149/149 lulus (762 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 33 (FR.AK.06 tinjauan proses asesmen)**
+  - Migrasi `tinjauan_proses_asesmens`: `institution_id`, `jadwal_id` (unique), `asesor_id`, `proses_json`, `rekomendasi_proses`, `dimensi_json`, `rekomendasi_dimensi`, `komentar`, status `draf|final`, `finalized_at/by`; model `TinjauanProsesAsesmen` dengan konstanta `PROSES` (5), `PRINSIP` (4), `DIMENSI` (5).
+  - `TinjauanProsesService`: `simpan()` membersihkan matriks sesuai kunci yang dikenal, `finalkan()` memakai `LaporanAsesmenService::penghambat()` (semua pendaftaran harus selesai + hasil final), audit log.
+  - `Asesor\TinjauanProsesController` (`show`, `store`, `final`, `pdf`) + route `asesor.tinjauan-proses.show/store/final/pdf`; PDF admin `admin.jadwal.tinjauan-proses.pdf`.
+  - UI `asesor/tinjauan-proses/show`: matriks 5 prosedur × 4 prinsip (input teks bukti/instrumen), matriks 5 dimensi kompetensi, rekomendasi + komentar, tombol simpan/final, peringatan penghambat.
+  - PDF `pdf/ak06.blade.php` (landscape): dua matriks, rekomendasi, komentar, status draf/final, tanda tangan.
+  - Tombol "Tinjauan FR.AK.06" ditambahkan di halaman peserta asesor.
+  - Test baru `tests/Feature/TinjauanProsesAsesmenTest.php` (9 test, 34 assertions): buka halaman, 403 asesor lain, simpan matriks, blokir final, final mengunci, 404, PDF asesor/admin, tautan.
+  - Testing: suite 158/158 lulus (796 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 34 (FR.AK.04 banding asesmen)**
+  - Migrasi `bandings` (`institution_id`, `pendaftaran_id` unique, `pengaju_id`, `alasan`, status `diajukan|ditinjau|diterima|ditolak|selesai`, `keputusan`, `ditinjau_oleh`, `ditinjau_pada`) dan `banding_status_histories` (`banding_id`, `status`, `catatan`, `created_by`).
+  - Model `Banding` (`STATUS_LABELS`, `isClosed()`, relasi `histories`/`pengaju`/`peninjau`) dan `BandingStatusHistory`.
+  - `Pendaftaran::banding()` (hasOne).
+  - `BandingService`: `ajukan()` (hanya saat `selesai`, blokir bila ada banding aktif, audit via history, notifikasi asesor/admin), `tinjau()` (validasi status, wajib keputusan untuk diterima/ditolak, notifikasi asesi, efek reopen: pendaftaran→`asesmen_berjalan` dan hasil→`draf` bila diterima), `pdf()`.
+  - `Asesi\BandingController` (`show`, `store`, `pdf`) + route `asesi.banding.show/store/pdf`; `Asesor\BandingController` (`show`, `review`, `pdf`) + route `asesor.banding.show/review/pdf`; PDF admin via `admin.pendaftaran.banding.pdf`.
+  - UI asesi: form ajukan alasan, status + riwayat, PDF; tombol "Ajukan Banding" di halaman pendaftaran saat `selesai`.
+  - UI asesor: detail banding, form tinjau (status + keputusan), riwayat, PDF; tombol "Banding" per peserta.
+  - UI admin: card "Banding (FR.AK.04)" + PDF di detail pendaftaran.
+  - PDF `pdf/ak04.blade.php`: header, alasan, keputusan, riwayat status, tanda tangan.
+  - Test baru `tests/Feature/BandingAsesmenTest.php` (16 test, 54 assertions): ajukan setelah keputusan, blokir sebelum, alasan wajib, tidak bisa kirim dua kali, 403 asesi lain, tautan, tinjau, keputusan wajib, reopen, halaman asesor, PDF asesi/asesor/admin, 404, card admin, tautan peserta.
+  - Testing: suite 174/174 lulus (850 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 35 (FR.IA.08 portofolio via modul instrumen)**
+  - Tambah jenis `ia08` ke `InstrumenAsesmen::JENIS_LABELS` (FR.IA.08 — Ceklis Verifikasi Portofolio) dan migrasi `allow_ia08_in_instrumen_asesmens` untuk memperluas enum `jenis`.
+  - Tombol akses FR.IA.08 ditambahkan di halaman peserta asesor; modul generik (item per KUK, hasil, final, PDF) langsung berlaku.
+  - Test `InstrumenAsesmenTest::test_ia08_instrument_is_available` (buka + PDF).
+  - Testing: suite 175/175 lulus (855 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 36 (FR.VA validasi asesmen + gating sertifikat)**
+  - Migrasi `validasi_asesmens`: `institution_id`, `pendaftaran_id` (unique), `validator_id`, `aspek_validitas`, `aspek_reliabilitas`, `aspek_keadilan`, `aspek_kesesuaian`, `keputusan` (`disetujui|revisi|ditolak`), `catatan`, status `draf|final`, `finalized_at/by`; model `ValidasiAsesmen` (`isApproved()`).
+  - `Pendaftaran::validasiAsesmen()` (hasOne).
+  - `ValidasiAsesmenService`: `simpan()`, `finalkan()` (wajib keputusan), audit log.
+  - `Admin\ValidasiAsesmenController` (`show`, `store`, `final`, `pdf`) + route group `validasi.*` (role komite-teknis/admin/super-admin/manajer-sertifikasi); PDF admin.
+  - UI `admin/validasi-asesmen/show`: 4 aspek, keputusan, catatan, simpan/final; card status di detail pendaftaran admin.
+  - PDF `pdf/va.blade.php`.
+  - Gating: `SertifikatController@store` dan `BundleSertifikatController@store` menolak penerbitan bila validasi belum disetujui (final). `SertifikatBundleTest` diperbarui: helper membuat validasi disetujui.
+  - Role `komite-teknis` dan `manajer-sertifikasi` ditambahkan ke `RolePermissionSeeder`.
+  - Test baru `tests/Feature/ValidasiAsesmenTest.php` (7 test, 22 assertions): buka halaman, simpan+final, final tanpa keputusan, 404, PDF, blokir sertifikat tanpa validasi, izin dengan validasi disetujui.
+  - Testing: suite 182/182 lulus (877 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 37 (Pleno + berita acara asesmen)**
+  - Migrasi `plenos` (`institution_id`, `jadwal_id` unique, `nomor_ba`, `tanggal`, `keputusan` `disetujui|ditolak`, `catatan`, status `draf|final`, `finalized_at/by`) dan `pleno_pesertas` (`pleno_id`, `pendaftaran_id`, `keputusan` `kompeten|belum_kompeten`, `catatan`).
+  - Model `Pleno` (`isFinal()`, `isApproved()`, relasi `pesertas`/`jadwal`/`finalizer`) dan `PlenoPeserta`; `JadwalAsesmen::pleno()` (hasOne).
+  - `PlenoService`: `ensure()` (buat pleno draf + peserta dari pendaftaran selesai dengan keputusan awal dari FR.AK.02), `simpan()`, `finalkan()` (wajib keputusan pleno + keputusan per peserta).
+  - `Admin\PlenoController` (`show`, `store`, `final`, `pdf`) + route group `pleno.*` (role komite-teknis/admin/super-admin/manajer-sertifikasi).
+  - UI `admin/pleno/show`: data BA, peserta dengan radio K/BK + catatan, simpan/final, peringatan penghambat.
+  - PDF `pdf/ba-pleno.blade.php`: BA pleno, tabel peserta, catatan, tanda tangan.
+  - Gating penerbitan sertifikat kini juga mensyaratkan pleno disetujui (final + keputusan disetujui).
+  - Test baru `tests/Feature/PlenoAsesmenTest.php` (5 test, 18 assertions).
+  - Testing: suite 190/190 lulus (905 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 38 (QR sertifikat + perbaikan export laporan)**
+  - Tambah dependensi `chillerlan/php-qrcode` (^6.0) dan generate QR PNG (data URI) di `SertifikatController::pdf`, ditampilkan di `pdf/sertifikat.blade.php` (mengarah ke `sertifikat.verifikasi`).
+  - Perbaiki `PendaftaranExport`: load `hasilAsesmen`; kolom "Status Kompetensi" kini diturunkan dari hasil asesmen final (Kompeten/Belum Kompeten) bila ada, bukan hanya `asesi.status_kompetensi` global — menghindari tampilan "kompeten" untuk pendaftaran yang belum dinilai.
+  - Test baru `tests/Feature/QrSertifikatPdfTest.php` (1 test) memverifikasi generator QR menghasilkan data URI PNG.
+  - Testing: suite 191/191 lulus (907 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 39 (FR.IA.03 PMO)**
+  - Migrasi `ia03_asesmens` + `ia03_items` (pertanyaan, tanggapan, pencapaian, catatan, umpan balik, status, finalisasi).
+  - `Pendaftaran::ia03Asesmen()` (hasOne).
+  - `Ia03Service`: ensure, tambah/hapus pertanyaan, simpan (tanggapan + pencapaian Ya/Tidak + catatan + umpan balik), finalkan (minimal satu pertanyaan, semua dinilai).
+  - `Asesor\Ia03Controller` (`show`, `tambah`, `hapus`, `store`, `final`, `pdf`) + route `asesor.ia03.*`; policy `inputInstrumen`.
+  - UI `asesor/ia03/show`: tambah pertanyaan, tabel pertanyaan dengan input pencapaian/tanggapan/catatan, umpan balik, simpan/final; tombol di halaman peserta.
+  - PDF `pdf/ia03.blade.php`.
+  - Test baru `tests/Feature/Ia03AsesmenTest.php` (5 test, 15 assertions).
+  - Testing: suite 196/196 lulus (922 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 40 (FR.IA.07 pertanyaan lisan)**
+  - Migrasi `ia07_asesmens` + `ia07_items`; model `Ia07Asesmen`/`Ia07Item`; `Pendaftaran::ia07Asesmen()`.
+  - `Ia07Service` (ensure, tambah/hapus, simpan, finalkan) + `Asesor\Ia07Controller` + route `asesor.ia07.*` + policy `inputInstrumen`.
+  - UI `asesor/ia07/show` + PDF `pdf/ia07.blade.php`; tombol di halaman peserta.
+  - Testing: suite 196/196 lulus (922 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 41 (FR.IA.11 reviu produk via modul instrumen)**
+  - Tambah jenis `ia11` ke `InstrumenAsesmen::JENIS_LABELS` + migrasi `allow_ia11_in_instrumen_asesmens`.
+  - Tombol akses FR.IA.11 ditambahkan di halaman peserta asesor.
+  - Testing: suite 196/196 lulus (922 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 42 (FR.IA.09 wawancara via modul pertanyaan)**
+  - Migrasi `ia09_asesmens` + `ia09_items`; model `Ia09Asesmen`/`Ia09Item`; `Pendaftaran::ia09Asesmen()`.
+  - `Ia09Service` + `Asesor\Ia09Controller` + route `asesor.ia09.*` + policy `inputInstrumen`.
+  - UI `asesor/ia09/show` + PDF `pdf/ia09.blade.php`; tombol di halaman peserta.
+  - Testing: suite 196/196 lulus (922 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 43 (FR.IA.10 klarifikasi pihak ketiga)**
+  - Migrasi `ia10_asesmens`; model `Ia10Asesmen`; `Pendaftaran::ia10Asesmen()`.
+  - `Ia10Service` + `Asesor\Ia10Controller` + route `asesor.ia10.*` + policy `inputInstrumen`.
+  - UI `asesor/ia10/show` + PDF `pdf/ia10.blade.php`; tombol di halaman peserta.
+  - Testing: suite 196/196 lulus (922 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 44 (FR.APL.01 tujuan asesmen)**
+  - Migrasi `add_tujuan_asesmen_to_pendaftarans` + `add_pkt_to_tujuan_asesmen`: kolom `tujuan_asesmen` (enum sertifikasi/PKT/RPL/penyetaraan/lainnya) dan `catatan_tujuan`.
+  - `Pendaftaran::TUJUAN_LABELS`; fillable diperbarui.
+  - Form create pendaftaran asesi kini meminta tujuan asesmen; store menyimpannya.
+  - PDF `pdf/apl01` menampilkan tujuan asesmen; admin detail pendaftaran menampilkan tujuan.
+  - Testing: suite 196/196 lulus (922 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 45 (FR.IA.04 proyek singkat / kegiatan terstruktur)**
+  - Migrasi `ia04_asesmens` + `ia04_items`; model `Ia04Asesmen`/`Ia04Item`; `Pendaftaran::ia04Asesmen()`.
+  - `Ia04Service` (ensure, tambah/hapus butir, simpan, finalkan) + `Asesor\Ia04Controller` + route `asesor.ia04.*`.
+  - UI `asesor/ia04/show`: FR.IA.04.A (skenario, hal dipersiapkan, hasil presentasi, umpan balik) + FR.IA.04.B (butir pertanyaan per lingkup, tanggapan, pencapaian, rekomendasi).
+  - PDF `pdf/ia04` dua halaman (A dan B); tombol di halaman peserta asesor.
+  - Perbaikan bug kapitalisasi view `asesor.Ia07`/`Ia09` → `asesor.ia07`/`ia09` (akan gagal di Linux).
+  - Testing: suite 202/202 lulus (941 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 46 (FR.IA.05 pilihan ganda)**
+  - Migrasi `ia05_asesmens` + `ia05_soals`; model `Ia05Asesmen`/`Ia05Soal`; `Pendaftaran::ia05Asesmen()`.
+  - `Ia05Service` (ensure, tambah/hapus soal, simpan, finalkan) + `Asesor\Ia05Controller` + route `asesor.ia05.*`.
+  - UI `asesor/ia05/show`: bank soal, opsi A–D, kunci, jawaban asesi, skor benar otomatis, umpan balik.
+  - PDF `pdf/ia05` tiga bagian: A soal, B kunci jawaban, C lembar jawaban.
+  - Testing: suite 213/213 lulus (975 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 47 (FR.IA.06 esai)**
+  - Migrasi `ia06_asesmens` + `ia06_soals`; model `Ia06Asesmen`/`Ia06Soal`; `Pendaftaran::ia06Asesmen()`.
+  - `Ia06Service` (ensure, tambah/hapus soal, simpan, finalkan) + `Asesor\Ia06Controller` + route `asesor.ia06.*`.
+  - UI `asesor/ia06/show`: pertanyaan esai, kunci/rambu jawaban, jawaban asesi, pencapaian Ya/Tidak, umpan balik.
+  - PDF `pdf/ia06` tiga bagian: A soal, B kunci, C lembar jawaban.
+  - Testing: suite 213/213 lulus (975 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 48 (CMS publik, sanitasi HTML, verifikasi sertifikat)**
+  - `App\Support\HtmlSanitizer`: sanitasi DOM berbasis allowlist (tag berbahaya dibuang beserta isi, tag tak dikenal di-unwrap, atribut `on*`/URL berbahaya dihapus, `target=_blank` diberi `rel`).
+  - `CmsContent::setIsiAttribute` memakai sanitizer; 8 unit test payload XSS di `tests/Unit/HtmlSanitizerTest.php`.
+  - Landing publik `/beranda` dirender dari CMS: `slide_banner`, `welcome`, `layanan`, `portfolio`, `berita`, `hubungi_kami`, `google_maps`, `footer_menu`; anchor `skema`, `layanan`, `jadwal`, `asesor`, `tuk`, `portfolio`, `berita`, `verifikasi-sertifikat`, `daftar`, `kontak`.
+  - Navbar/footer publik memakai nama lembaga + menu footer CMS dengan filter skema URL; tombol daftar ke `route('register')`.
+  - Root `/` menampilkan landing untuk tamu (auth tetap ke dashboard); `ExampleTest` disesuaikan.
+  - Verifikasi sertifikat publik: form `/verifikasi-sertifikat`, lookup berdasarkan `no_registrasi`/`no_seri_blangko`/`qr_token`, throttle 30/1 dan 10/1.
+  - `tests/Feature/CmsPublicTest.php` (7 test): landing, seksi CMS, konten nonaktif, sanitasi XSS, buat konten admin, lookup, form verifikasi.
+  - Testing: suite 228/228 lulus (1021 assertions), `pint` bersih.
+
+- **5 November 2026 — Sesi 49 (patch keamanan dependensi)**
+  - `composer audit` menemukan 7 advisory (4 paket Symfony `v8.1.10`).
+  - Patch ke `v8.1.11`: `symfony/http-foundation`, `symfony/http-kernel`, `symfony/routing`, `symfony/yaml` via PHP 8.4 (composer bawaan memakai PHP 8.3).
+  - `composer audit` bersih; `npm audit` 0 kerentanan.
+  - `phpunit.dusk.xml` ditambahkan (stub Dusk) + `tests/Browser/CmsPublicTest.php` (landing CMS, form verifikasi).
+  - Dusk dapat dijalankan via `php artisan dusk` selama `php artisan serve --port=8123` aktif; 2 test Dusk lulus (10 assertions).
+  - Testing ulang: suite 228/228 lulus (1021 assertions).
+
+- **6 November 2026 — Sesi 33 (Tanda tangan terenkripsi di database)**
+  - Migration `2026_11_06_025432_add_signature_content_columns.php`: kolom `signature_data/mime/hash/uploaded_at` di `users`, `tanda_tangan_data/mime/hash/uploaded_at` di `institutions`, backfill tanda tangan legacy dari disk setelah validasi/re-enkripsi PNG, transaksi DB.
+  - `App\Support\SignatureImage`: validasi gambar, re-encode PNG, hash SHA-256, generate data URI untuk DomPDF.
+  - `SignatureController` dan `AdminInstitutionController` menyimpan tanda tangan terenkripsi di DB; controller menambahkan throttle dan activity log; tidak lagi menulis disk publik.
+  - Semua PDF/komponen yang menampilkan tanda tangan (APL-01, APL-02, MAK-01, MAK-02, MAK-02 ringkas/redesign, MAK-03, sertifikat) memakai data dari DB, bukan path file publik. Sertifikat memakai logo LSP yang benar dan tanda tangan Ketua LSP/penerbit; QR disatukan.
+  - UI baru: menu "Tanda Tangan" di portal admin dan "Tanda Tangan Ketua LSP" di Profil Lembaga (tab Logo).
+  - `storage/app/public/signatures` dipindahkan ke `storage/app/private/signatures-legacy-20261106`; akses publik ditutup.
+  - Test baru `SignatureDatabaseTest` (4 test) dan `SertifikatPdfTest` (1 test); suite **235/235 lulus (1051 assertions)**; `pint` bersih.
+
+- **6 November 2026 — Sesi 34 (PDF APL-01, MAK-01, MAK-03 resmi BNSP)**
+  - `pdf.apl01` dibuat ulang mengikuti FR.APL.01: data pribadi, pekerjaan, skema, tujuan asesmen, daftar unit kompetensi dari DB, tabel bukti dasar/administratif dari dokumen aktual, rekomendasi LSP, tanda tangan dari database.
+  - `pdf.mak01` menjadi FR.AK.01 Persetujuan Asesmen dan Kerahasiaan sesuai template MUK; `frak01` menjadi include resmi yang sama.
+  - `pdf.mak03` menjadi FR.AK.04 Banding Asesmen sesuai template MUK; `frak04` menjadi include resmi yang sama.
+  - Controller memuat relasi unit/KUK/skkni dan dokumen persyaratan; admin LSP PDF memakai user yang menyetujui pendaftaran (fallback user yang mencetak).
+  - Tombol admin berubah menjadi “Unduh FR.AK.01 (MAK-01)” dan “Unduh FR.AK.04 (MAK-03)”.
+  - Style BNSP disatukan di `pdf/partials/official-styles.blade.php`.
+  - Test `PdfFormulirTest` diperbarui; suite **235/235 lulus (1052 assertions)**; `pint` bersih.
+
+- **5 November 2026 — Sesi 50 (optimasi UI/UX registrasi asesi & kebijakan privasi)**
+  - `resources/views/auth/register.blade.php`: form dibagi menjadi 4 section (Akun, Data Pribadi, Alamat, Pendidikan) dengan judul jelas, grid 2 kolom, error per field, summary alert, serta tampilan lega (`container-md`, max ±720px, padding card ±32px desktop / ±16px mobile).
+  - `resources/css/register.css`: style terisolasi, font 15px, label 14px, hint 12.5px, section-title 16px, gap field ±16px, jarak section ±32px, password strength satu progress bar, focus-visible/outlined controls, 44px tap targets, dark-mode compatible.
+  - `resources/js/register.js`: NIK digit-only dengan counter `0/16`; HP Indonesia validasi (`08`, `+62`, `62`); toggle password; autocomplete; select provinsi/kota searchable ringan tanpa library; daftar kota diisi via endpoint yang sudah ada; reset kota saat provinsi berubah; alamat counter `/1000`; tanggal lahir max hari ini; konfirmasi password; double-submit disabled + spinner; auto-scroll ke field pertama salah.
+  - Perbaikan bug kritis: pemilih opsi tidak memicu event `change` pada native select, sehingga daftar kota tidak termuat; sekarang event `change` dikirim, provinsi → kota bekerja.
+  - `/kebijakan-privasi` (publik) tersedia; link consent membuka tab baru dengan `rel="noopener noreferrer"`.
+  - Verifikasi: screenshot 360/768/1280 px, cek tanpa horizontal overflow; flow provinsi → kota berfungsi; validasi client + server tetap; Dusk `tests/Browser/RegisterPageTest.php` 2 test lulus; feature `RegisterPageTest.php` 2 test lulus; Dusk terkait tetap hijau; suite 230/230 lulus (1034 assertions); `npm run build`, `pint` bersih.

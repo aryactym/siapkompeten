@@ -82,6 +82,7 @@ class PendaftaranController extends Controller
                     ->where('institution_id', $asesi->institution_id)
                     ->where('is_active', true),
             ],
+            'tujuan_asesmen' => ['required', Rule::in(array_keys(Pendaftaran::TUJUAN_LABELS))],
         ]);
 
         $existing = $asesi->pendaftarans()
@@ -98,6 +99,7 @@ class PendaftaranController extends Controller
                 'no_pendaftaran' => $this->generateNoPendaftaran($asesi->institution_id),
                 'asesi_id' => $asesi->id,
                 'skema_id' => $validated['skema_id'],
+                'tujuan_asesmen' => $validated['tujuan_asesmen'],
                 'status' => Pendaftaran::STATUS_DRAF,
             ]);
 
