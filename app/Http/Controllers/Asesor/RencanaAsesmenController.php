@@ -90,6 +90,7 @@ class RencanaAsesmenController extends Controller
                 'tanggal_asesmen' => $validated['tanggal_asesmen'],
                 'status' => RencanaAsesmen::STATUS_DRAF,
                 'catatan' => $validated['catatan'] ?? null,
+                'instrumen_terpilih' => $pendaftaran->jadwal?->instrumen_terpilih,
             ]);
 
             // Buat unit default dari skema jika ada

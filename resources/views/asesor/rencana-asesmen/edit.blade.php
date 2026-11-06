@@ -91,9 +91,11 @@
             'ia10' => 'FR.IA.10 — Verifikasi Pihak Ketiga',
             'ia11' => 'FR.IA.11 — Reviu Produk',
         ];
-        $selectedFrIa = is_array($rencana->instrumen_terpilih) && ! empty($rencana->instrumen_terpilih)
+        $selectedFrIa = is_array($rencana->instrumen_terpilih)
             ? $rencana->instrumen_terpilih
-            : array_keys($allFrIa);
+            : (is_array($rencana->pendaftaran->jadwal?->instrumen_terpilih)
+                ? $rencana->pendaftaran->jadwal->instrumen_terpilih
+                : []);
     @endphp
 
     <x-tabler.card title="Instrumen FR.IA yang Digunakan" class="mb-3">

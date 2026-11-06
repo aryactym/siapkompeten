@@ -30,6 +30,7 @@ class JadwalAsesmen extends Model
         'lingkup_asesor',
         'no_surat_tugas',
         'status',
+        'instrumen_terpilih',
     ];
 
     protected function casts(): array
@@ -37,6 +38,7 @@ class JadwalAsesmen extends Model
         return [
             'tanggal' => 'date',
             'kuota' => 'integer',
+            'instrumen_terpilih' => 'array',
         ];
     }
 

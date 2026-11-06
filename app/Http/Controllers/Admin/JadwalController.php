@@ -310,6 +310,8 @@ class JadwalController extends Controller
             'lingkup_asesor' => ['required', 'in:wilayah,nonwilayah'],
             'no_surat_tugas' => ['nullable', 'string', 'max:100'],
             'status' => ['required', 'in:draf,terbuka,berjalan,selesai,dibatalkan'],
+            'instrumen_terpilih' => ['nullable', 'array'],
+            'instrumen_terpilih.*' => ['string', 'in:ia02,ia03,ia04,ia05,ia06,ia07,ia08,ia09,ia10,ia11'],
         ]);
     }
 

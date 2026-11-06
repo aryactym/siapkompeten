@@ -108,6 +108,42 @@
             </div>
         </div>
 
+        @php
+            $allFrIa = [
+                'ia02' => 'FR.IA.02 — Tugas Praktik Demonstrasi',
+                'ia03' => 'FR.IA.03 — Pertanyaan Mendukung Observasi (PMO)',
+                'ia04' => 'FR.IA.04 — Proyek Singkat',
+                'ia05' => 'FR.IA.05 — Pilihan Ganda',
+                'ia06' => 'FR.IA.06 — Esai',
+                'ia07' => 'FR.IA.07 — Pertanyaan Lisan',
+                'ia08' => 'FR.IA.08 — Verifikasi Portofolio',
+                'ia09' => 'FR.IA.09 — Wawancara',
+                'ia10' => 'FR.IA.10 — Verifikasi Pihak Ketiga',
+                'ia11' => 'FR.IA.11 — Reviu Produk',
+            ];
+            $selectedJadwalIa = is_array($jadwal->instrumen_terpilih) && ! empty($jadwal->instrumen_terpilih)
+                ? $jadwal->instrumen_terpilih
+                : array_keys($allFrIa);
+        @endphp
+
+        <x-tabler.card title="Instrumen FR.IA Default (Paket)" class="mt-3">
+            <p class="text-secondary small mb-2">
+                Tentukan paket instrumen default untuk semua asesi pada jadwal ini. Dapat diubah per asesi di Rencana Asesmen (override).
+            </p>
+            <div class="row g-2">
+                @foreach ($allFrIa as $key => $label)
+                    <div class="col-md-6">
+                        <label class="form-check">
+                            <input type="checkbox" name="instrumen_terpilih[]" value="{{ $key }}"
+                                   class="form-check-input"
+                                   @checked(in_array($key, old('instrumen_terpilih', $selectedJadwalIa), true))>
+                            <span class="form-check-label small">{{ $label }}</span>
+                        </label>
+                    </div>
+                @endforeach
+            </div>
+        </x-tabler.card>
+
         <div class="mt-4 d-flex gap-2">
             <a href="{{ $jadwal->exists ? route('admin.jadwal.show', $jadwal) : route('admin.jadwal.index') }}" class="btn btn-outline-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">
