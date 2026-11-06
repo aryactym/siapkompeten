@@ -52,7 +52,7 @@ class RencanaAsesmenController extends Controller
                 ->with('info', 'Rencana asesmen untuk pendaftaran ini sudah ada.');
         }
 
-        $skema = $pendaftaran->skema->load(['skemaUnits.unitKompetensi.elemenKompetensi.kriteriaUnjukKerjas']);
+        $skema = $pendaftaran->skema->load(['skemaUnits.unitKompetensi.elemenKompetensis.kriteriaUnjukKerjas']);
 
         $units = $skema->skemaUnits->map(fn ($su) => $su->unitKompetensi)->sortBy('kode_unit');
 
@@ -126,14 +126,14 @@ class RencanaAsesmenController extends Controller
     {
         $this->authorize('update', $rencana);
 
-        $rencana->load(['pendaftaran.skema.skemaUnits.unitKompetensi', 'units.unitKompetensi.elemenKompetensi.kriteriaUnjukKerjas', 'units.petaInstrumens.kuk']);
+        $rencana->load(['pendaftaran.skema.skemaUnits.unitKompetensi', 'units.unitKompetensi.elemenKompetensis.kriteriaUnjukKerjas', 'units.petaInstrumens.kuk']);
 
         $skema = $rencana->pendaftaran->skema;
         $allUnits = $skema->skemaUnits->map(fn ($su) => $su->unitKompetensi)->sortBy('kode_unit');
         $selectedUnitIds = $rencana->units->pluck('unit_kompetensi_id')->all();
 
         // KUK untuk semua unit yang tersedia pada skema (digunakan sebagai referensi pemetaan instrumen)
-        $kukIds = $allUnits->flatMap(fn ($u) => $u->elemenKompetensi->flatMap(fn ($e) => $e->kriteriaUnjukKerjas->pluck('id')))->unique()->values()->all();
+        $kukIds = $allUnits->flatMap(fn ($u) => $u->elemenKompetensis->flatMap(fn ($e) => $e->kriteriaUnjukKerjas->pluck('id')))->unique()->values()->all();
         $kuks = KriteriaUnjukKerja::whereIn('id', $kukIds)->get();
 
         return view('asesor.rencana-asesmen.edit', [
@@ -263,7 +263,7 @@ class RencanaAsesmenController extends Controller
     {
         $this->authorize('view', $rencana);
 
-        $rencana->load(['pendaftaran.skema', 'units.unitKompetensi.elemenKompetensi.kriteriaUnjukKerjas', 'units.petaInstrumens.kuk']);
+        $rencana->load(['pendaftaran.skema', 'units.unitKompetensi.elemenKompetensis.kriteriaUnjukKerjas', 'units.petaInstrumens.kuk']);
 
         return Pdf::loadView('pdf.mapa01', [
             'rencana' => $rencana,
@@ -279,7 +279,7 @@ class RencanaAsesmenController extends Controller
 
         $rencana->load([
             'pendaftaran.skema',
-            'units.unitKompetensi.elemenKompetensi.kriteriaUnjukKerjas',
+            'units.unitKompetensi.elemenKompetensis.kriteriaUnjukKerjas',
             'units.petaInstrumens.kuk',
         ]);
 

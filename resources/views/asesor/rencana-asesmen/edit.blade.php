@@ -154,8 +154,7 @@
                             <div class="text-secondary small">{{ $unit->nama_unit }}</div>
                         </td>
                         <td>
-                            @php $kuks = $unit->elemenKompetensi->flatMap(fn ($e) => $e->kriteriaUnjukKerjas); @endphp
-                            @foreach ($kuks as $kuk)
+                            @php $kuks = $unit->elemenKompetensis->flatMap(fn ($e) => $e->kriteriaUnjukKerjas); @endphp                            @foreach ($kuks as $kuk)
                                 <div class="form-check form-check-inline mb-1">
                                     <input type="checkbox" name="units[{{ $unit->id }}][kuks][]" value="{{ $kuk->id }}"
                                            class="form-check-input kuk-check"
