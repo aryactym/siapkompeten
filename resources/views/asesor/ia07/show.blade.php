@@ -24,7 +24,7 @@
     @endif
 
     @php
-        $terkunci = $ia07->isFinal() || $pendaftaran->status !== \App\Models\Pendaftaran::STATUS_ASESMEN_BERJALAN;
+        $terkunci = $Ia07->isFinal() || $pendaftaran->status !== \App\Models\Pendaftaran::STATUS_ASESMEN_BERJALAN;
     @endphp
 
     @unless ($terkunci)
@@ -57,7 +57,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($ia07->items as $item)
+                        @forelse ($Ia07->items as $item)
                             <tr>
                                 <td class="text-secondary">{{ $item->urutan }}</td>
                                 <td>
@@ -96,7 +96,7 @@
 
             <div class="mt-3">
                 <label class="form-label" for="ia07-umpan">Umpan balik untuk asesi</label>
-                <textarea name="umpan_balik" id="ia07-umpan" rows="3" maxlength="2000" class="form-control" @disabled($terkunci)>{{ old('umpan_balik', $ia07->umpan_balik) }}</textarea>
+                <textarea name="umpan_balik" id="ia07-umpan" rows="3" maxlength="2000" class="form-control" @disabled($terkunci)>{{ old('umpan_balik', $Ia07->umpan_balik) }}</textarea>
             </div>
 
             @unless ($terkunci)
@@ -109,8 +109,8 @@
         </x-tabler.card>
     </form>
 
-    @unless ($ia07->isFinal())
-        @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_ASESMEN_BERJALAN && $ia07->items->count() > 0)
+    @unless ($Ia07->isFinal())
+        @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_ASESMEN_BERJALAN && $Ia07->items->count() > 0)
             <form method="POST" action="{{ route('asesor.ia07.final', $pendaftaran) }}">
                 @csrf
                 <button type="submit" class="btn btn-outline-success" onclick="return confirm('Finalkan FR.IA.07?')">
@@ -120,9 +120,9 @@
         @endif
     @endunless
 
-    @if ($ia07->isFinal())
+    @if ($Ia07->isFinal())
         <div class="alert alert-success mt-3">
-            <i class="ti ti-lock me-1"></i> Difinalkan {{ $ia07->finalized_at?->translatedFormat('d F Y H:i') }}.
+            <i class="ti ti-lock me-1"></i> Difinalkan {{ $Ia07->finalized_at?->translatedFormat('d F Y H:i') }}.
         </div>
     @endif
 @endsection
