@@ -121,8 +121,6 @@ class PortalNavigation
 
             ['title' => 'Komunikasi', 'items' => [
                 ['label' => 'Outbox Notifikasi', 'icon' => 'ti-bell-ringing', 'route' => 'admin.notifikasi.index', 'match' => 'admin.notifikasi.*'],
-                ['label' => 'Pengguna & Peran', 'icon' => 'ti-users-group', 'route' => 'admin.pengguna.index', 'match' => 'admin.pengguna.*', 'planned' => true],
-                ['label' => 'Audit Log', 'icon' => 'ti-history', 'route' => 'admin.audit.index', 'match' => 'admin.audit.*', 'planned' => true],
             ]],
 
             ['title' => 'Konten & Publik', 'items' => [
