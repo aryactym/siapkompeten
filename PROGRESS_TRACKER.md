@@ -44,8 +44,7 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
 
 ## Status Ringkasan
 
-- **Fase Saat Ini**: Fase 0–5 selesai — berikutnya Fase 6 (Hasil & Laporan). 68/68 feature tests passing (Dusk tertunda: `laravel/dusk` belum terpasang di `vendor`)
-- **Status Overall**: In Progress
+- **Fase Saat Ini**: Fase 0–6 selesai — berikutnya Fase 7 (CMS & Publik). 235/235 feature tests passing.- **Status Overall**: In Progress
 - **Terakhir Diperbarui**: 4 November 2026
 
 ## Log Progress Per Fase
@@ -155,12 +154,11 @@ Branch ini adalah varian penyederhanaan arsitektur untuk deployment satu LSP per
 - [ ] PDF APL-01, MAK-01, MAK-03 (sesuai template resmi BNSP) — FR-FRM-01/03/05
 - [x] PDF APL-02, MAK-02, presensi, surat tugas — FR-FRM-02/04/05
 
-### Fase 6: Hasil & Laporan
+### Fase 6: Hasil & Laporan (SELESAI)
 
-- [ ] Dashboard admin (statistik + grafik) — FR-RPT-01/02
-- [ ] Laporan + ekspor Excel/PDF — FR-RPT-03
-- [ ] Sertifikat Kompetensi BNSP: pemisahan dua nomor unik (`no_seri_blangko` kertas fisik BNSP + `no_registrasi` lisensi nasional) & validasi regex BNSP `^[A-Z0-9\-\.]+\.[A-Z0-9\-\.]+\.\d{5,}\.\d{4}$` + QR verifikasi — FR-RPT-04 / FR-CMS-06
-
+- [x] Dashboard admin (statistik + grafik) — FR-RPT-01/02
+- [x] Laporan + ekspor Excel/PDF — FR-RPT-03
+- [x] Sertifikat Kompetensi BNSP: pemisahan dua nomor unik (`no_seri_blangko` kertas fisik BNSP + `no_registrasi` lisensi nasional) & validasi regex BNSP `^[A-Z0-9\-\.]+\.[A-Z0-9\-\.]+\.\d{5,}\.\d{4}$` + QR verifikasi — FR-RPT-04 / FR-CMS-06
 ### Fase 7: CMS & Publik
 
 - [x] CMS konten frontpage (kategori template, sanitasi HTML) — FR-CMS-01/02
