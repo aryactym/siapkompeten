@@ -213,6 +213,17 @@
                                         <i class="ti ti-clipboard-check"></i>
                                     </a>
                                     @endif
+                                    @if ($pendaftaran->rencanaAsesmen)
+                                        <a href="{{ route('asesor.rencana-asesmen.edit', $pendaftaran->rencanaAsesmen) }}"
+                                           class="btn btn-sm btn-outline-primary" title="Rencana Asesmen (MAPA)">
+                                            <i class="ti ti-file-description"></i>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('asesor.rencana-asesmen.create', $pendaftaran) }}"
+                                           class="btn btn-sm btn-outline-primary" title="Buat Rencana Asesmen (MAPA)">
+                                            <i class="ti ti-file-plus"></i>
+                                        </a>
+                                    @endif
                                     <a href="{{ route('asesor.banding.show', $pendaftaran) }}"
                                        class="btn btn-sm btn-outline-secondary" title="FR.AK.04 Banding">
                                         <i class="ti ti-gavel"></i>

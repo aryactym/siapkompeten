@@ -18,6 +18,9 @@
             <a href="{{ route('asesor.jadwal.index') }}" class="btn btn-sm btn-outline-secondary">
                 <i class="ti ti-calendar me-1"></i> Jadwal Saya
             </a>
+            <a href="{{ route('asesor.jadwal.index') }}" class="btn btn-sm btn-primary">
+                <i class="ti ti-file-plus me-1"></i> Buat dari Jadwal
+            </a>
         </div>
 
         <form method="GET" action="{{ route('asesor.rencana-asesmen.index') }}" class="d-flex flex-wrap gap-2 align-items-end mb-3">
