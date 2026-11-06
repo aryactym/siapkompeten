@@ -133,13 +133,9 @@
                                 @php
                                     $allFrIa = ['ia02','ia03','ia04','ia05','ia06','ia07','ia08','ia09','ia10','ia11'];
                                     $rencanaPeserta = $pendaftaran->rencanaAsesmen;
-                                    if ($rencanaPeserta) {
-                                        $selectedFrIa = is_array($rencanaPeserta->instrumen_terpilih)
-                                            ? $rencanaPeserta->instrumen_terpilih
-                                            : [];
-                                    } else {
-                                        $selectedFrIa = $allFrIa;
-                                    }
+                                    $selectedFrIa = is_array($rencanaPeserta?->instrumen_terpilih)
+                                        ? $rencanaPeserta->instrumen_terpilih
+                                        : [];
                                 @endphp
                                 <div class="btn-list flex-nowrap">
                                     @if ($pendaftaran->status === \App\Models\Pendaftaran::STATUS_TERJADWAL)
