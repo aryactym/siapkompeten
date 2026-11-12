@@ -6,6 +6,7 @@ use App\Models\Asesor;
 use App\Models\EventAsesmen;
 use App\Models\Institution;
 use App\Models\JadwalAsesmen;
+use App\Models\Pendaftaran;
 use App\Models\Skema;
 use App\Models\SkemaPersyaratan;
 use App\Models\Tuk;
@@ -157,11 +158,19 @@ class AlurPenjadwalanDanPendaftaranTest extends DuskTestCase
                 ->type('password', 'Password123')
                 ->type('password_confirmation', 'Password123')
                 ->select('jenis_kelamin', 'L')
-                ->type('tempat_lahir', 'Jakarta')
-                ->type('tanggal_lahir', '2000-01-01')
-                ->type('alamat_rumah', 'Jl. Dusk No. 1')
-                ->select('provinsi_code', '31')
-                ->select('kota_code', '3171')
+                ->type('tempat_lahir', 'Jakarta');
+
+            // Input tanggal lahir diisi via JS: typing pada input date tidak stabil di Chrome.
+            $browser->script("const el = document.getElementById('tanggal_lahir'); el.value = '2000-01-01'; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));");
+
+            $browser->type('alamat_rumah', 'Jl. Dusk No. 1')
+                ->type('#provinsi_code_search', 'DKI')
+                ->waitFor('#provinsi_code_option_0')
+                ->click('#provinsi_code_option_0')
+                ->waitUntil("document.getElementById('kota_code').disabled === false")
+                ->type('#kota_code_search', 'Jakarta Selatan')
+                ->waitFor('#kota_code_option_0')
+                ->click('#kota_code_option_0')
                 ->type('pendidikan_terakhir', 'D3 Informatika')
                 ->check('consent')
                 ->press('Daftar Sebagai Asesi')
@@ -170,11 +179,28 @@ class AlurPenjadwalanDanPendaftaranTest extends DuskTestCase
                 ->visit('/asesi/pendaftaran/create')
                 ->assertSee($this->skema->nama_skema)
                 ->radio('skema_id', $this->skema->id)
+                ->select('tujuan_asesmen', 'sertifikasi')
                 ->press('Ajukan Pendaftaran')
                 ->waitForDialog()
                 ->acceptDialog()
                 ->waitForText('Pendaftaran skema berhasil dibuat')
                 ->assertSee('Unggah Dokumen');
+
+            $pendaftaran = Pendaftaran::withoutTenantScope()->firstOrFail();
+
+            $browser->logout()
+                ->visit('/login')
+                ->type('login', 'admin.dusk@example.test')
+                ->type('password', 'password')
+                ->press('Masuk Sekarang')
+                ->screenshot('admin-login')
+                ->waitForLocation('/dashboard')
+                ->visit('/admin/pendaftaran/'.$pendaftaran->id)
+                ->assertSee('Data Pendaftar')
+                ->assertSee('Domisili')
+                ->assertSee('Dokumen Persyaratan')
+                ->assertPresent('.col-md-8')
+                ->assertPresent('.col-md-4');
         });
     }
 }

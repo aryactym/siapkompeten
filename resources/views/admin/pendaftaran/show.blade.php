@@ -26,7 +26,7 @@
                     <div class="text-secondary small">{{ $pendaftaran->asesi->no_registrasi }}</div>
                 </div>
                 <div class="col-md-6">
-                    <div class="text-secondary small">NIK (terenkripsi)</div>
+                    <div class="text-secondary small">NIK</div>
                     <div class="fw-semibold">{{ $pendaftaran->asesi->user->masked_nik ?? '—' }}</div>
                 </div>
                 <div class="col-md-6">
@@ -40,6 +40,8 @@
                         {{ \App\Models\Pendaftaran::TUJUAN_LABELS[$pendaftaran->tujuan_asesmen] ?? '—' }}
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="text-secondary small">Domisili</div>
                     <div class="fw-semibold">
                         {{ $pendaftaran->asesi->city?->name ?? '—' }}
                         {{ $pendaftaran->asesi->province ? ', '.$pendaftaran->asesi->province->name : '' }}
